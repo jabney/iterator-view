@@ -11,7 +11,7 @@ export function arrayView<T>(array: readonly T[], start?: number, end?: number):
     const _start = normalizeStart(array.length, start ?? 0)
     const _end = normalizeEnd(array.length, end ?? array.length)
 
-    const self: ArrayView<T> = augment(array, Object.create(array), _start, _end, arrayView)
+    const self: ArrayView<T> = augment(Object.create(null), array, _start, _end, arrayView)
 
     Object.defineProperties(self, {
         length: {

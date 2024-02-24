@@ -5,8 +5,7 @@ const notImplemented: (symbol | string)[] = [
     'concat',
     'copyWithin',
     // "entries",
-    'every',
-    'fill',
+    // 'every',
     // "filter",
     'find',
     'findIndex',
@@ -24,14 +23,13 @@ const notImplemented: (symbol | string)[] = [
     // "reduce",
     'reduceRight',
     // "slice",
-    'some',
+    // 'some',
     'toLocaleString',
     'toReversed',
     'toSorted',
     'toSpliced',
     'toString',
     // "values",
-    'with',
 ]
 
 export const excluded = new Map<string | symbol, true>([...disallowed, ...notImplemented].map(key => [key, true]))
