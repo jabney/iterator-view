@@ -11,10 +11,20 @@ export const augment = <T>(
     createView: CreateView<T>
 ): ArrayView<T> => {
     view.at = (index: number) => {
-        if (index < 0) {
-            return array[start + index + array.length]
+        return array[start + normalizeStart(view.length, index)]
+    }
+    view.concat = (...items: (T | ConcatArray<T>)[]): T[] => {
+        return array.slice(start, end).concat(...items)
+    }
+    view.find = (predicate: (value: T, index: number, obj: ArrayView<T>) => unknown, thisArg?: any): T | undefined => {
+        for (let i = start; i < end; i++) {
+            if (predicate.call(thisArg, array[i], i - start, view)) {
+                return array[i]
+            }
         }
-        return array[start + index]
+    }
+    view.join = (separator?: string): string => {
+        return array.slice(start, end).join(separator)
     }
     view.keys = function* keys(): IterableIterator<number> {
         for (let i = start; i < end; i++) {
@@ -23,17 +33,17 @@ export const augment = <T>(
     }
     view.values = function* values(): IterableIterator<T> {
         for (let i = start; i < end; i++) {
-            yield array[i - start]
+            yield array[i]
         }
     }
     view.entries = function* entries(): IterableIterator<[number, T]> {
         for (let i = start; i < end; i++) {
-            yield [i - start, array[i - start]]
+            yield [i - start, array[i]]
         }
     }
     view.every = (predicate: (value: T, index: number, array: ArrayView<T>) => unknown, thisArg?: any): boolean => {
         for (let i = start; i < end; i++) {
-            if (!predicate.call(thisArg, array[i], i, view)) {
+            if (!predicate.call(thisArg, array[i], i - start, view)) {
                 return false
             }
         }
@@ -42,14 +52,14 @@ export const augment = <T>(
     view.map = <U>(callbackfn: (value: T, index: number, view: ArrayView<T>) => U, thisArg?: any): U[] => {
         const list: U[] = []
         for (let i = start; i < end; i++) {
-            list.push(callbackfn.call(thisArg, array[i - start], i - start, view))
+            list.push(callbackfn.call(thisArg, array[i], i - start, view))
         }
         return list
     }
     view.mapAsync = async <U>(callbackfn: (value: T, index: number, view: ArrayView<T>) => Promise<U>, thisArg?: any): Promise<U[]> => {
         const list: U[] = []
         for (let i = start; i < end; i++) {
-            let value = await callbackfn.call(thisArg, array[i - start], i - start, view)
+            let value = await callbackfn.call(thisArg, array[i], i - start, view)
             list.push(value)
         }
         return list
@@ -57,8 +67,8 @@ export const augment = <T>(
     view.filter = <S extends T>(predicate: (value: T, index: number, array: ArrayView<T>) => value is S, thisArg?: any): S[] => {
         const list: S[] = []
         for (let i = start; i < end; i++) {
-            if (predicate.call(thisArg, array[i - start], i - start, view) === true) {
-                list.push(array[i - start] as S)
+            if (predicate.call(thisArg, array[i], i - start, view) === true) {
+                list.push(array[i] as S)
             }
         }
         return list
@@ -69,9 +79,9 @@ export const augment = <T>(
     ): Promise<S[]> => {
         const list: S[] = []
         for (let i = start; i < end; i++) {
-            const result = await predicate.call(thisArg, array[i - start], i - start, view)
+            const result = await predicate.call(thisArg, array[i], i - start, view)
             if (result === true) {
-                list.push(array[i - start] as S)
+                list.push(array[i] as S)
             }
         }
         return list

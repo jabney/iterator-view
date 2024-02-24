@@ -2,12 +2,12 @@ const disallowed: (symbol | string)[] = ['push', 'pop', 'shift', 'unshift', 'spl
 
 const notImplemented: (symbol | string)[] = [
     // "at",
-    'concat',
+    // 'concat',
     'copyWithin',
     // "entries",
     // 'every',
     // "filter",
-    'find',
+    // 'find',
     'findIndex',
     'findLast',
     'findLastIndex',
@@ -16,7 +16,7 @@ const notImplemented: (symbol | string)[] = [
     'forEach',
     'includes',
     'indexOf',
-    'join',
+    // 'join',
     // "keys",
     'lastIndexOf',
     // "map",
@@ -25,9 +25,6 @@ const notImplemented: (symbol | string)[] = [
     // "slice",
     // 'some',
     'toLocaleString',
-    'toReversed',
-    'toSorted',
-    'toSpliced',
     'toString',
     // "values",
 ]
