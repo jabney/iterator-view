@@ -1,30 +1,5 @@
+import { normalizeEnd, normalizeStart } from './normalize'
 import { ArrayView } from './types'
-
-const normalizeStart = (length: number, start: number | undefined): number => {
-    start = start ?? 0
-
-    if (start < 0) {
-        start = start + length
-    } else if (start < -length) {
-        start = 0
-    } else if (start >= length) {
-        start = length
-    }
-    return start
-}
-
-const normalizeEnd = (length: number, end: number | undefined): number => {
-    end = end ?? length
-
-    if (end < 0) {
-        end = end + length
-    } else if (end < -length) {
-        end = 0
-    } else if (end >= length) {
-        end = length
-    }
-    return end
-}
 
 type CreateView<T> = (array: readonly T[], start: number, end: number) => ArrayView<T>
 
@@ -132,13 +107,34 @@ export const augment = <T>(
         }
         return curr as U
     }
-    view.slice = (start?: number, end?: number): ArrayView<T> => {
-        start = normalizeStart(array.length, start)
-        end = normalizeEnd(array.length, end)
-        if (end <= start) {
+    view.slice = (_start?: number | null, _end?: number | null): ArrayView<T> => {
+        const s = start + normalizeStart(view.length, _start ?? 0)
+        const e = start + normalizeEnd(view.length, _end ?? view.length)
+
+        if (e <= s) {
             return view
         }
-        return createView(array, start, end)
+        return createView(array, s, e)
     }
     return view
 }
+
+// const list =  ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'] // 10
+// const list2 = [    'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] // 8
+// const list3 = [         'c', 'd', 'e', 'f', 'g', 'h'] // 6
+
+// console.log(list2.slice(1, -1))
+
+// console.log(list.slice(normalizeStart(list.length, -1)))
+
+// for (let i = -list.length - 1; i <= list.length + 1; i++) {
+//     console.log(`normalizeStart(${list.length}, ${i})`, normalizeStart(list.length, i))
+// }
+
+// for (let i = -list.length - 1; i <= list.length + 1; i++) {
+//     console.log(`normalizeEnd(${list.length}, ${i})`, normalizeEnd(list.length, i))
+// }
+
+// for (let i = -list.length - 1; i <= list.length + 1; i++) {
+//     console.log(`slice(0, ${i})`, list.slice(0, normalizeEnd(list.length, i)))
+// }
