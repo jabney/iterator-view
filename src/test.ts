@@ -130,7 +130,7 @@ const runAll = async () => {
 
                 const c = b.slice(1)
                 test.equals(b.length - 1, c.length, 'view c is 1 less than view b')
-                test.equals('b', c[0], 'c first element of b was trimmed')
+                test.equals('b', c[0], 'first element of view b was trimmed')
                 test.equals('j', c[c.length - 1], ' cend element is unchanged')
 
                 const d = c.slice(1)

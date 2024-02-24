@@ -1,22 +1,22 @@
 import { normalizeEnd, normalizeStart } from './normalize'
-import { ArrayView } from './types'
+import { IArrayView } from './types'
 
-type CreateView<T> = (array: readonly T[], start: number, end: number) => ArrayView<T>
+type CreateView<T> = (array: readonly T[], start: number, end: number) => IArrayView<T>
 
 export const augment = <T>(
-    view: ArrayView<T>,
+    view: IArrayView<T>,
     array: readonly T[],
     start: number,
     end: number,
     createView: CreateView<T>
-): ArrayView<T> => {
+): IArrayView<T> => {
     view.at = (index: number) => {
         return array[start + normalizeStart(view.length, index)]
     }
     view.concat = (...items: (T | ConcatArray<T>)[]): T[] => {
         return array.slice(start, end).concat(...items)
     }
-    view.find = (predicate: (value: T, index: number, obj: ArrayView<T>) => unknown, thisArg?: any): T | undefined => {
+    view.find = (predicate: (value: T, index: number, obj: IArrayView<T>) => unknown, thisArg?: any): T | undefined => {
         for (let i = start; i < end; i++) {
             if (predicate.call(thisArg, array[i], i - start, view)) {
                 return array[i]
@@ -41,7 +41,7 @@ export const augment = <T>(
             yield [i - start, array[i]]
         }
     }
-    view.every = (predicate: (value: T, index: number, array: ArrayView<T>) => unknown, thisArg?: any): boolean => {
+    view.every = (predicate: (value: T, index: number, array: IArrayView<T>) => unknown, thisArg?: any): boolean => {
         for (let i = start; i < end; i++) {
             if (!predicate.call(thisArg, array[i], i - start, view)) {
                 return false
@@ -49,14 +49,14 @@ export const augment = <T>(
         }
         return true
     }
-    view.map = <U>(callbackfn: (value: T, index: number, view: ArrayView<T>) => U, thisArg?: any): U[] => {
+    view.map = <U>(callbackfn: (value: T, index: number, view: IArrayView<T>) => U, thisArg?: any): U[] => {
         const list: U[] = []
         for (let i = start; i < end; i++) {
             list.push(callbackfn.call(thisArg, array[i], i - start, view))
         }
         return list
     }
-    view.mapAsync = async <U>(callbackfn: (value: T, index: number, view: ArrayView<T>) => Promise<U>, thisArg?: any): Promise<U[]> => {
+    view.mapAsync = async <U>(callbackfn: (value: T, index: number, view: IArrayView<T>) => Promise<U>, thisArg?: any): Promise<U[]> => {
         const list: U[] = []
         for (let i = start; i < end; i++) {
             let value = await callbackfn.call(thisArg, array[i], i - start, view)
@@ -64,7 +64,7 @@ export const augment = <T>(
         }
         return list
     }
-    view.filter = <S extends T>(predicate: (value: T, index: number, array: ArrayView<T>) => value is S, thisArg?: any): S[] => {
+    view.filter = <S extends T>(predicate: (value: T, index: number, array: IArrayView<T>) => value is S, thisArg?: any): S[] => {
         const list: S[] = []
         for (let i = start; i < end; i++) {
             if (predicate.call(thisArg, array[i], i - start, view) === true) {
@@ -74,7 +74,7 @@ export const augment = <T>(
         return list
     }
     view.filterAsync = async <S extends T>(
-        predicate: (value: T, index: number, array: ArrayView<T>) => Promise<boolean>,
+        predicate: (value: T, index: number, array: IArrayView<T>) => Promise<boolean>,
         thisArg?: any
     ): Promise<S[]> => {
         const list: S[] = []
@@ -87,7 +87,7 @@ export const augment = <T>(
         return list
     }
     view.reduce = <U>(
-        callbackfn: (previousValue: T | U, currentValue: T | U, currentIndex: number, array: ArrayView<T>) => U,
+        callbackfn: (previousValue: T | U, currentValue: T | U, currentIndex: number, array: IArrayView<T>) => U,
         initialValue?: U
     ): U => {
         const first = initialValue == null ? start + 1 : start
@@ -101,7 +101,7 @@ export const augment = <T>(
         return curr as U
     }
     view.reduceAsync = async <U>(
-        callbackfn: (previousValue: T | U, currentValue: T | U, currentIndex: number, array: ArrayView<T>) => Promise<U>,
+        callbackfn: (previousValue: T | U, currentValue: T | U, currentIndex: number, array: IArrayView<T>) => Promise<U>,
         initialValue?: U
     ): Promise<U> => {
         const first = initialValue == null ? start + 1 : start
@@ -114,7 +114,7 @@ export const augment = <T>(
         }
         return curr as U
     }
-    view.slice = (_start?: number | null, _end?: number | null): ArrayView<T> => {
+    view.slice = (_start?: number | null, _end?: number | null): IArrayView<T> => {
         const s = start + normalizeStart(view.length, _start ?? 0)
         const e = start + normalizeEnd(view.length, _end ?? view.length)
 
@@ -123,7 +123,7 @@ export const augment = <T>(
         }
         return createView(array, s, e)
     }
-    view.some = (predicate: (value: T, index: number, view: ArrayView<T>) => unknown, thisArg?: any): boolean => {
+    view.some = (predicate: (value: T, index: number, view: IArrayView<T>) => unknown, thisArg?: any): boolean => {
         for (let i = start; i < end; i++) {
             if (predicate.call(thisArg, array[i], i, view)) {
                 return true
