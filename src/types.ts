@@ -168,5 +168,10 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      */
     some(predicate: (value: T, index: number, view: IArrayView<T>) => unknown, thisArg?: any): boolean
 
+    /**
+     * Render the view as an array.
+     */
+    toArray(): T[]
+
     [Symbol.asyncIterator](): AsyncIterableIterator<T>
 }

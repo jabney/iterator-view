@@ -19,7 +19,7 @@ class ArrayView<T> implements IArrayView<T> {
     }
 
     concat(...items: (T | ConcatArray<T>)[]): T[] {
-        return this.array.slice(this.start, this.end).concat(...items)
+        return this.toArray().concat(...items)
     }
 
     find(predicate: (value: T, index: number, obj: IArrayView<T>) => unknown, thisArg?: any): T | undefined {
@@ -40,11 +40,11 @@ class ArrayView<T> implements IArrayView<T> {
     }
 
     flat<A = any, D extends number = 1>(depth?: D): FlatArray<A, D> {
-        return this.array.slice(this.start, this.end).flat(depth) as FlatArray<A, D>
+        return this.toArray().flat(depth) as FlatArray<A, D>
     }
 
     flatMap<U>(callback: (value: T, index: number, view: IArrayView<T>) => U | ReadonlyArray<U>, thisArg?: any): U[] {
-        return this.array.slice(this.start, this.end).flatMap((v, i) => callback.call(thisArg, v, i, this))
+        return this.toArray().flatMap((v, i) => callback.call(thisArg, v, i, this))
     }
 
     includes(searchElement: T, fromIndex?: number): boolean {
@@ -60,7 +60,7 @@ class ArrayView<T> implements IArrayView<T> {
     }
 
     join(separator?: string): string {
-        return this.array.slice(this.start, this.end).join(separator)
+        return this.toArray().join(separator)
     }
 
     *keys(): IterableIterator<number> {
@@ -224,6 +224,10 @@ class ArrayView<T> implements IArrayView<T> {
             }
         }
         return false
+    }
+
+    toArray(): T[] {
+        return this.array.slice(this.start, this.end)
     }
 
     [Symbol.iterator]() {

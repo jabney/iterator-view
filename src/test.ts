@@ -25,7 +25,7 @@ const errMsg = (error: string, msg?: string | null) => {
 class TestLib {
     private sign = true
 
-    constructor(private readonly desc: string) {}
+    constructor() {}
 
     get not(): this {
         this.sign = !this.sign
@@ -43,20 +43,41 @@ class TestLib {
     }
 }
 
+interface Options {
+    only?: boolean
+    skip?: boolean
+}
+
 export class Test {
     static readonly test = (desc: string, fn: TestFn): Test => {
-        const test = new Test(desc, fn)
-        return test
+        return new Test(desc, fn)
+    }
+
+    static readonly only = (desc: string, fn: TestFn): Test => {
+        return new Test(desc, fn, { only: true })
+    }
+
+    static readonly skip = (desc: string, fn: TestFn): Test => {
+        return new Test(desc, fn, { skip: true })
     }
 
     constructor(
         readonly desc: string,
-        private readonly fn: TestFn
+        private readonly fn: TestFn,
+        private readonly options: Options = {}
     ) {}
+
+    get only() {
+        return this.options?.only ?? false
+    }
+
+    get skip() {
+        return this.options?.skip ?? false
+    }
 
     async run(): Promise<TestResult> {
         try {
-            const result = await this.fn(new TestLib(this.desc))
+            const result = await this.fn(new TestLib())
             return new TestResult(this.desc, result)
         } catch (e) {
             return new TestResult(this.desc, e)
@@ -65,7 +86,9 @@ export class Test {
 }
 
 export const run = async (title: string, tests: Test[]) => {
-    const results = await Promise.all(tests.map(t => t.run()))
+    const only = tests.filter(t => t.only)
+    const t = only.length > 0 ? only : tests
+    const results = await Promise.all(t.filter(x => !x.skip).map(t => t.run()))
 
     console.log(`${title}`)
     console.log(`${'-'.repeat(title.length)}\n`)
@@ -94,24 +117,24 @@ const runAll = async () => {
      */
     const results = await Promise.all([
         run('Array View Core', [
-            Test.test('View Creation', test => {
+            Test.test('View Creation', t => {
                 const array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                 const view = arrayView(array)
-                test.equals(array.length, view.length, 'array and view length are the same')
+                t.equals(array.length, view.length, 'array and view length are the same')
             }),
-            Test.test('View Bounds from start', test => {
+            Test.test('View Bounds from start', t => {
                 const array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
                 const view = arrayView(array, 1)
-                test.equals(array.length - 1, view.length, 'view length is 1 less than array length')
-                test.equals('b', view[0])
-                test.equals('j', view[view.length - 1])
+                t.equals(array.length - 1, view.length, 'view length is 1 less than array length')
+                t.equals('b', view[0])
+                t.equals('j', view[view.length - 1])
             }),
-            Test.test('View Bounds from start and end', test => {
+            Test.test('View Bounds from start and end', t => {
                 const array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
                 const view = arrayView(array, 1, -1)
-                test.equals(array.length - 2, view.length, 'view length is 2 less than array length')
-                test.equals('b', view[0])
-                test.equals('i', view[view.length - 1])
+                t.equals(array.length - 2, view.length, 'view length is 2 less than array length')
+                t.equals('b', view[0])
+                t.equals('i', view[view.length - 1])
             }),
         ]),
 
@@ -119,43 +142,43 @@ const runAll = async () => {
          *
          */
         run('Array View Methods', [
-            Test.test('Slice from start', test => {
+            Test.test('Slice from start', t => {
                 const array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
 
                 const a = arrayView(array)
-                test.equals(array.length, a.length, 'array and view length are the same')
+                t.equals(array.length, a.length, 'array and view length are the same')
 
                 const b = a.slice(0)
-                test.equals(a.length, b.length, 'views a and b are same length')
+                t.equals(a.length, b.length, 'views a and b are same length')
 
                 const c = b.slice(1)
-                test.equals(b.length - 1, c.length, 'view c is 1 less than view b')
-                test.equals('b', c[0], 'first element of view b was trimmed')
-                test.equals('j', c[c.length - 1], ' cend element is unchanged')
+                t.equals(b.length - 1, c.length, 'view c is 1 less than view b')
+                t.equals('b', c[0], 'first element of view b was trimmed')
+                t.equals('j', c[c.length - 1], ' cend element is unchanged')
 
                 const d = c.slice(1)
-                test.equals(c.length - 1, d.length, 'view d is 1 less than view c')
-                test.equals('c', d[0], 'd first element was trimmed')
-                test.equals('j', d[d.length - 1], 'end element is unchanged')
+                t.equals(c.length - 1, d.length, 'view d is 1 less than view c')
+                t.equals('c', d[0], 'd first element was trimmed')
+                t.equals('j', d[d.length - 1], 'end element is unchanged')
             }),
-            Test.test('Slice from end', test => {
+            Test.test('Slice from end', t => {
                 const array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
 
                 const a = arrayView(array)
-                test.equals(array.length, a.length, 'view and array are same length')
+                t.equals(array.length, a.length, 'view and array are same length')
 
                 const b = a.slice(0, a.length)
-                test.equals(a.length, b.length, 'views a and b are same length')
+                t.equals(a.length, b.length, 'views a and b are same length')
 
                 const c = b.slice(1, -1)
-                test.equals(b.length - 2, c.length, 'view c is 2 less than view b')
-                test.equals('b', c[0], 'first element of view b was trimmed')
-                test.equals('i', c[c.length - 1], 'end element of view b was trimmed')
+                t.equals(b.length - 2, c.length, 'view c is 2 less than view b')
+                t.equals('b', c[0], 'first element of view b was trimmed')
+                t.equals('i', c[c.length - 1], 'end element of view b was trimmed')
 
                 const d = c.slice(1, -1)
-                test.equals(c.length - 2, d.length, 'view d is 2 less than view c')
-                test.equals('c', d[0], 'first element of view c was trimmed')
-                test.equals('h', d[d.length - 1], 'end element of view c was trimmed')
+                t.equals(c.length - 2, d.length, 'view d is 2 less than view c')
+                t.equals('c', d[0], 'first element of view c was trimmed')
+                t.equals('h', d[d.length - 1], 'end element of view c was trimmed')
             }),
         ]),
     ])
