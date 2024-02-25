@@ -43,7 +43,7 @@ class TestLib {
     }
 }
 
-interface Options {
+interface TestState {
     only?: boolean
     skip?: boolean
 }
@@ -61,18 +61,30 @@ export class Test {
         return new Test(desc, fn, { skip: true })
     }
 
+    private readonly _state: Readonly<TestState>
+
     constructor(
         readonly desc: string,
         private readonly fn: TestFn,
-        private readonly options: Options = {}
-    ) {}
+        state: TestState = {}
+    ) {
+        this._state = Object.freeze({
+            only: Boolean(state.only ?? false),
+            skip: Boolean(state.skip ?? false),
+        })
+        Object.freeze(this)
+    }
 
     get only() {
-        return this.options?.only ?? false
+        return this._state?.only ?? false
     }
 
     get skip() {
-        return this.options?.skip ?? false
+        return this._state?.skip ?? false
+    }
+
+    getState = (): TestState => {
+        return this._state
     }
 
     async run(): Promise<TestResult> {
