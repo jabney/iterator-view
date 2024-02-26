@@ -10,7 +10,7 @@
     "typescript": "~5.3.3"
   },
   "scripts": {
-    "test": "ts-node src/test"
+    "test": "ts-node src/unit-test"
   },
   "repository": {
     "type": "git",
