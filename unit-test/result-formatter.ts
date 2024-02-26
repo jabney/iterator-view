@@ -3,8 +3,7 @@ import { IResultSummary, ITestSummary, SummaryTotals } from './types'
 
 const c = Color
 
-export const formatResults = ({ description, items, totals }: ITestSummary) => {
-    const indent = 4
+export const formatResults = ({ description, items, totals }: ITestSummary, indent = 4) => {
     const lines = [description, '-'.repeat(description.length), '']
 
     const recurse = (items: IResultSummary[], depth = 0): string[] => {
@@ -13,8 +12,17 @@ export const formatResults = ({ description, items, totals }: ITestSummary) => {
         for (const item of items) {
             switch (item.type) {
                 case 'aggregate-result':
-                    // lines.push(item.description, '')
-                    lines.push(...recurse(item.items!, depth + 1))
+                    if (item.skipped > 0) {
+                        if (item.skipped === item.items!.length) {
+                            lines.push(c.gray(pad(item.description)).str, ``)
+                        } else {
+                            lines.push(...recurse(item.items!, depth + 1).reverse())
+                        }
+                        break
+                    }
+                    lines.push(pad(item.description), ``)
+                    lines.push(...recurse(item.items!, depth + 1).reverse())
+                    break
                 default:
                     if (item.error instanceof Error) {
                         lines.push(pad(c.red(item.error.stack ?? item.error.message).str))
@@ -35,7 +43,7 @@ export const formatResults = ({ description, items, totals }: ITestSummary) => {
 }
 
 const padding = (indent: number, depth: number) => {
-    const rePad = /\n( +at )/g
+    const rePad = /\n( {4})/g
     const pad = ' '.repeat(indent * depth)
     return (str: string) => `${pad}${str.replace(rePad, `\n${pad}$1`)}`
 }
