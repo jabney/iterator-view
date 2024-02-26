@@ -7,10 +7,7 @@ interface TestState {
     readonly skip: boolean
 }
 
-interface Options {
-    readonly only?: boolean
-    readonly skip?: boolean
-}
+type Options = Partial<TestState>
 
 export class TestSuite implements IUnitTest {
     static readonly group = (desc: string, items: readonly IUnitTest[]): TestSuite => {

@@ -10,10 +10,7 @@ interface TestState {
     readonly skip: boolean
 }
 
-interface Options {
-    readonly only?: boolean
-    readonly skip?: boolean
-}
+type Options = Partial<TestState>
 
 export class UnitTest implements IUnitTest {
     static readonly test = (desc: string, fn: TestFn): UnitTest => {

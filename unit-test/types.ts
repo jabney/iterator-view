@@ -33,3 +33,11 @@ export interface IUnitTest {
     readonly skip: boolean
     run(skip?: boolean): Promise<TestResult>
 }
+
+export type SummaryTotals = Omit<IResultSummary, 'type' | 'description'>
+
+export interface ITestSummary {
+    description: string
+    items: IResultSummary[]
+    totals: SummaryTotals
+}
