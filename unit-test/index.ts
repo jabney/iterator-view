@@ -7,7 +7,7 @@ Runner.run('Array View Tests', [
     /**
      *
      */
-    Suite.group('Array View Core', [
+    Suite.test('Array View Core', [
         T.test('View Creation', t => {
             const array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
             const view = arrayView(array)
@@ -32,7 +32,7 @@ Runner.run('Array View Tests', [
     /**
      *
      */
-    Suite.group('Array View Methods', [
+    Suite.test('Array View Methods', [
         T.test('Slice from start', t => {
             const array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
 

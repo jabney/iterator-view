@@ -10,7 +10,7 @@ interface TestState {
 type Options = Partial<TestState>
 
 export class TestSuite implements IUnitTest {
-    static readonly group = (desc: string, items: readonly IUnitTest[]): TestSuite => {
+    static readonly test = (desc: string, items: readonly IUnitTest[]): TestSuite => {
         return new TestSuite(desc, items)
     }
 

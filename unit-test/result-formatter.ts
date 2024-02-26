@@ -1,45 +1,54 @@
 import { Color } from './color'
-import { IResultSummary, ITestSummary, SummaryTotals } from './types'
+import { IResultSummary, ITestSummary, SummaryTotals, TestResult } from './types'
 
 const c = Color
 
-export const formatResults = ({ description, items, totals }: ITestSummary, indent = 4) => {
-    const lines = [description, '-'.repeat(description.length), '']
+export const formatResults = ({ description, results, totals }: ITestSummary, indent = 4) => {
+    const output: string[] = [description, '-'.repeat(description.length), '']
 
-    const recurse = (items: IResultSummary[], depth = 0): string[] => {
-        const pad = padding(indent, depth)
-
-        for (const item of items) {
-            switch (item.type) {
-                case 'aggregate-result':
-                    if (item.skipped > 0) {
-                        if (item.skipped === item.items!.length) {
-                            lines.push(c.gray(pad(item.description)).str, ``)
-                        } else {
-                            lines.push(...recurse(item.items!, depth + 1).reverse())
-                        }
-                        break
-                    }
-                    lines.push(pad(item.description), ``)
-                    lines.push(...recurse(item.items!, depth + 1).reverse())
-                    break
-                default:
-                    if (item.error instanceof Error) {
-                        lines.push(pad(c.red(item.error.stack ?? item.error.message).str))
-                    } else {
-                        lines.push(pad(item.description))
-                    }
-            }
-            lines.push('')
-        }
-        return []
+    for (const r of results) {
+        output.push(...visitResult(r, indent, 1))
     }
 
-    lines.push(...recurse(items, 1))
+    output.push(...formatTotals(totals))
 
-    lines.push(...formatTotals(totals))
+    return `\n${output.join('\n')}\n`
+}
 
-    return `\n${lines.join('\n')}\n`
+const visitResult = (item: TestResult, indent: number, depth: number): string[] => {
+    const pad = padding(indent, depth)
+    const output: string[] = []
+
+    switch (item.type) {
+        case 'aggregate-result':
+            if (item.failed > 0) {
+                output.push(pad(c.red(item.description).str))
+            } else if (item.skipped > 0) {
+                if (item.skipped === item.results.length) {
+                    output.push(pad(c.gray(item.description).str))
+                } else {
+                    output.push(pad(item.description))
+                }
+            } else {
+                console.log('PASSED')
+                output.push(pad(c.green(item.description).str))
+            }
+            for (const r of item.results) {
+                output.push(...visitResult(r, indent, depth + 1))
+            }
+            break
+        case 'test-result':
+            if (item.error instanceof Error) {
+                output.push(pad(c.red(item.error.stack ?? item.error.message).str))
+            } else {
+                output.push(pad(item.description))
+            }
+            break
+        case 'skipped-result':
+            output.push(pad(c.gray(item.description).str))
+            break
+    }
+    return output
 }
 
 const padding = (indent: number, depth: number) => {
@@ -51,11 +60,11 @@ const padding = (indent: number, depth: number) => {
 const formatTotals = ({ passed, failed, skipped, total }: SummaryTotals): string[] => {
     return [
         `Summary:`,
-        `${c.green(`- Passed: ${passed}`)}`,
+        passed > 0 && c.green(`- Passed: ${passed}`).str,
         failed > 0 && c.red(`- Failed: ${failed}`).str,
         skipped > 0 && c.gray(`- Skipped: ${skipped}`).str,
         c.bright(`Total: ${total}`).str,
-        passed === total - skipped && `\n${c.br.green(`All tests passed`)}`,
-        failed > 0 && `\n${c.br.red(`${failed} test${failed != 1 ? 's' : ''} failed`)}`,
+
+        failed === 0 ? `\n${c.br.green(`All tests passed`)}` : `\n${c.br.red(`${failed} test${failed != 1 ? 's' : ''} failed`)}`,
     ].filter((x): x is string => typeof x === 'string')
 }

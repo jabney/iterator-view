@@ -1,6 +1,6 @@
-import { IResultSummary, TestResult } from './types'
+import { TestResult } from './types'
 
-export const resultObject = (result: TestResult): IResultSummary => {
+export const resultObject = (result: TestResult): any => {
     const obj = {
         type: result.type,
         description: result.description,
@@ -12,7 +12,7 @@ export const resultObject = (result: TestResult): IResultSummary => {
 
     switch (result.type) {
         case 'aggregate-result':
-            return { ...obj, items: result.results.map(resultObject) }
+            return { ...obj, results: result.results.map(resultObject) }
         case 'test-result':
             return result.failed ? { ...obj, error: result.error } : obj
         case 'skipped-result':

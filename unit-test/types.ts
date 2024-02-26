@@ -7,8 +7,6 @@ export interface IResultSummary {
     readonly failed: number
     readonly skipped: number
     readonly total: number
-    readonly items?: IResultSummary[]
-    readonly error?: Error | null
 }
 
 export interface IUnitResult extends IResultSummary {
@@ -38,6 +36,6 @@ export type SummaryTotals = Omit<IResultSummary, 'type' | 'description'>
 
 export interface ITestSummary {
     description: string
-    items: IResultSummary[]
+    results: TestResult[]
     totals: SummaryTotals
 }

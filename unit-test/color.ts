@@ -108,7 +108,6 @@ export class Color {
         return `${m}${c}${this.text}${codes.reset}`
     }
 
-    color(): Color
     color(key: ColorKey | null): Color
     color(key: ColorKey | null, mod: ColorMod | null): Color
     color(key: ColorKey | null = null, mod: ColorMod | null = null) {
