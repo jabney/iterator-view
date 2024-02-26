@@ -1,28 +1,21 @@
-import { TestLib } from './test-lib'
+import { SkippedResult } from './skipped-result'
+import { TestLib } from './lib'
+import { TestResult } from './test-result'
+import { IUnitTest, ResultType } from './types'
 
-export class TestResult {
-    constructor(
-        readonly desc: string,
-        readonly result: unknown
-    ) {}
+type TestFn = (test: TestLib) => unknown | Promise<unknown>
 
-    get passed() {
-        return !(this.result instanceof Error)
-    }
-
-    get failed() {
-        return !this.passed
-    }
+interface TestState {
+    readonly only: boolean
+    readonly skip: boolean
 }
 
-export type TestFn = <T>(test: TestLib) => (T | void) | Promise<T | void>
-
-export interface TestState {
-    only?: boolean
-    skip?: boolean
+interface Options {
+    readonly only?: boolean
+    readonly skip?: boolean
 }
 
-export class UnitTest {
+export class UnitTest implements IUnitTest {
     static readonly test = (desc: string, fn: TestFn): UnitTest => {
         return new UnitTest(desc, fn)
     }
@@ -35,33 +28,37 @@ export class UnitTest {
         return new UnitTest(desc, fn, { skip: true })
     }
 
-    private readonly _state: Readonly<TestState>
+    private readonly state: Readonly<TestState>
 
     constructor(
-        readonly desc: string,
+        readonly description: string,
         private readonly fn: TestFn,
-        state: TestState = {}
+        state: Options = {}
     ) {
-        this._state = {
+        this.state = Object.freeze({
             only: Boolean(state.only ?? false),
             skip: Boolean(state.skip ?? false),
-        }
+        })
     }
 
     get only() {
-        return this._state?.only ?? false
+        return this.state.only
     }
 
     get skip() {
-        return this._state?.skip ?? false
+        return this.state.skip
     }
 
-    async run(): Promise<TestResult> {
+    async run(skip = false): Promise<ResultType> {
+        if (skip || this.skip) {
+            return new SkippedResult(this.description)
+        }
         try {
-            const result = await this.fn(new TestLib())
-            return new TestResult(this.desc, result)
-        } catch (e) {
-            return new TestResult(this.desc, e)
+            await this.fn(new TestLib())
+            return new TestResult(this.description)
+        } catch (e: any) {
+            const error = e instanceof Error ? e : new Error(e?.toString?.() ?? 'unknown error')
+            return new TestResult(this.description, error)
         }
     }
 }
