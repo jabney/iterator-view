@@ -1,4 +1,5 @@
-import { ISkippedResult } from './types'
+import { resultObject } from './result-object'
+import { IResultSummary, ISkippedResult } from './types'
 
 export class SkippedResult implements ISkippedResult {
     readonly type = 'skipped-result'
@@ -10,4 +11,8 @@ export class SkippedResult implements ISkippedResult {
         readonly description: string,
         readonly skipped = 1
     ) {}
+
+    toJSON(): IResultSummary {
+        return resultObject(this)
+    }
 }

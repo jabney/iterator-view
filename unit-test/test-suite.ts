@@ -1,6 +1,6 @@
 import { AggregateResult } from './aggregate-result'
 import { skipLogic } from './skip-logic'
-import { IUnitTest, ResultType } from './types'
+import { IUnitTest, TestResult } from './types'
 
 interface TestState {
     readonly only: boolean
@@ -46,7 +46,7 @@ export class TestSuite implements IUnitTest {
         return this.state.skip!
     }
 
-    async run(skip = false): Promise<ResultType> {
+    async run(skip = false): Promise<TestResult> {
         const skipTest = skipLogic(this.tests, skip || this.skip)
         const results = await Promise.all(this.tests.map(t => t.run(skipTest(t))))
         return new AggregateResult(this.description, results)

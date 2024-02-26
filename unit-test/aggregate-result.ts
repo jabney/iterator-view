@@ -1,4 +1,5 @@
-import { IAggregateResult, ResultType } from './types'
+import { resultObject } from './result-object'
+import { IAggregateResult, IResultSummary, TestResult } from './types'
 
 export class AggregateResult implements IAggregateResult {
     readonly type = 'aggregate-result'
@@ -10,7 +11,7 @@ export class AggregateResult implements IAggregateResult {
 
     constructor(
         readonly description: string,
-        readonly results: ResultType[]
+        readonly results: TestResult[]
     ) {}
 
     get passed(): number {
@@ -39,5 +40,9 @@ export class AggregateResult implements IAggregateResult {
             this._total = this.results.reduce((total, r) => total + r.total, 0)
         }
         return this._total
+    }
+
+    toJSON(): IResultSummary {
+        return resultObject(this)
     }
 }

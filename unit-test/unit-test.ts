@@ -1,7 +1,7 @@
 import { SkippedResult } from './skipped-result'
 import { TestLib } from './lib'
-import { TestResult } from './test-result'
-import { IUnitTest, ResultType } from './types'
+import { UnitResult } from './test-result'
+import { IUnitTest, TestResult } from './types'
 
 type TestFn = (test: TestLib) => unknown | Promise<unknown>
 
@@ -49,16 +49,16 @@ export class UnitTest implements IUnitTest {
         return this.state.skip
     }
 
-    async run(skip = false): Promise<ResultType> {
+    async run(skip = false): Promise<TestResult> {
         if (skip || this.skip) {
             return new SkippedResult(this.description)
         }
         try {
             await this.fn(new TestLib())
-            return new TestResult(this.description)
+            return new UnitResult(this.description)
         } catch (e: any) {
             const error = e instanceof Error ? e : new Error(e?.toString?.() ?? 'unknown error')
-            return new TestResult(this.description, error)
+            return new UnitResult(this.description, error)
         }
     }
 }

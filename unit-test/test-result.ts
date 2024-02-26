@@ -1,6 +1,7 @@
-import { ITestResult } from './types'
+import { resultObject } from './result-object'
+import { IResultSummary, IUnitResult } from './types'
 
-export class TestResult implements ITestResult {
+export class UnitResult implements IUnitResult {
     readonly type = 'test-result'
     readonly skipped = 0
     readonly total = 1
@@ -16,5 +17,9 @@ export class TestResult implements ITestResult {
 
     get failed(): number {
         return 1 - this.passed
+    }
+
+    toJSON(): IResultSummary {
+        return resultObject(this)
     }
 }

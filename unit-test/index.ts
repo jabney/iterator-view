@@ -1,4 +1,4 @@
-import { arrayView } from '../array-view'
+import { arrayView } from '../src/array-view'
 import { TestRunner as Runner } from './test-runner'
 import { TestSuite as Suite } from './test-suite'
 import { UnitTest as T } from './unit-test'
@@ -17,15 +17,15 @@ Runner.run('Array View Tests', [
             const array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
             const view = arrayView(array, 1)
             t.equals(array.length - 1, view.length, 'view length is 1 less than array length')
-            t.equals('b', view[0])
-            t.equals('j', view[view.length - 1])
+            t.equals('b', view[0], "first element is 'b'")
+            t.equals('j', view[view.length - 1], "last element is 'j'")
         }),
         T.test('View Bounds from start and end', t => {
             const array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
             const view = arrayView(array, 1, -1)
             t.equals(array.length - 2, view.length, 'view length is 2 less than array length')
-            t.equals('b', view[0])
-            t.equals('i', view[view.length - 1])
+            t.equals('b', view[0], "first element is 'b'")
+            t.equals('x', view[view.length - 1], "last element is 'i'")
         }),
     ]),
 
