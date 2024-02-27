@@ -28,123 +28,177 @@ const codes = {
     bgGray: '\x1b[100m',
 }
 
-type ColorKey = keyof typeof codes
-type ColorMod = Extract<ColorKey, 'bright' | 'dim' | 'underscore'>
+type Mods = 'bright' | 'dim' | 'underscore' | 'blink' | 'reverse' | 'hidden'
+type ColorKey = Exclude<keyof typeof codes, Mods | 'reset'>
+type ColorMod = Extract<keyof typeof codes, Mods>
 
 export class Color {
-    static string(str: string) {
+    static text(str: string) {
         return new Color(str)
     }
-    static color(str: string): Color
-    static color(str: string, key: ColorKey): Color
-    static color(str: string, key: ColorKey, mod: ColorMod): Color
-    static color(str: string, key: ColorKey | null = null, mod: ColorMod | null = null) {
-        return new Color(str, key, mod)
+
+    static black(str: string | null = null) {
+        return new Color(str, 'black')
+    }
+    static red(str: string | null = null) {
+        return new Color(str, 'red')
+    }
+    static green(str: string | null = null) {
+        return new Color(str, 'green')
+    }
+    static yellow(str: string | null = null) {
+        return new Color(str, 'yellow')
+    }
+    static blue(str: string | null = null) {
+        return new Color(str, 'blue')
+    }
+    static magenta(str: string | null = null) {
+        return new Color(str, 'magenta')
+    }
+    static cyan(str: string | null = null) {
+        return new Color(str, 'cyan')
+    }
+    static white(str: string | null = null) {
+        return new Color(str, 'white')
+    }
+    static gray(str: string | null = null) {
+        return new Color(str, 'gray')
+    }
+    static bright(str: string | null = null) {
+        return new Color(str, null, 'bright')
+    }
+    static dim(str: string | null = null) {
+        return new Color(str, null, 'dim')
+    }
+    static underscore(str: string | null = null) {
+        return new Color(str, null, 'underscore')
+    }
+    static blink(str: string | null = null) {
+        return new Color(str, null, 'blink')
+    }
+    static reverse(str: string | null = null) {
+        return new Color(str, null, 'reverse')
+    }
+    static hidden(str: string | null = null) {
+        return new Color(str, null, 'hidden')
     }
 
-    static black = (str: string) => this.color(str, 'black')
-    static red = (str: string) => this.color(str, 'red')
-    static green = (str: string) => this.color(str, 'green')
-    static yellow = (str: string) => this.color(str, 'yellow')
-    static blue = (str: string) => this.color(str, 'blue')
-    static magenta = (str: string) => this.color(str, 'magenta')
-    static cyan = (str: string) => this.color(str, 'cyan')
-    static white = (str: string) => this.color(str, 'white')
-    static gray = (str: string) => this.color(str, 'gray')
-    static reset = (str: string) => this.color(str, 'reset')
-    static bright = (str: string) => this.color(str, 'bright')
-    static dim = (str: string) => this.color(str, 'dim')
-    static underscore = (str: string) => this.color(str, 'underscore')
-    static blink = (str: string) => this.color(str, 'blink')
-    static reverse = (str: string) => this.color(str, 'reverse')
-    static hidden = (str: string) => this.color(str, 'hidden')
+    static get br() {
+        return this.bright()
+    }
 
-    static readonly br = Object.freeze({
-        red: (str: string) => this.color(str, 'red', 'bright'),
-        green: (str: string) => this.color(str, 'green', 'bright'),
-        yellow: (str: string) => this.color(str, 'yellow', 'bright'),
-        blue: (str: string) => this.color(str, 'blue', 'bright'),
-        magenta: (str: string) => this.color(str, 'magenta', 'bright'),
-        cyan: (str: string) => this.color(str, 'cyan', 'bright'),
-        white: (str: string) => this.color(str, 'white', 'bright'),
-        gray: (str: string) => this.color(str, 'gray', 'bright'),
-        reset: (str: string) => this.color(str, 'reset', 'bright'),
-    })
-    static readonly dk = Object.freeze({
-        red: (str: string) => this.color(str, 'red', 'dim'),
-        green: (str: string) => this.color(str, 'green', 'dim'),
-        yellow: (str: string) => this.color(str, 'yellow', 'dim'),
-        blue: (str: string) => this.color(str, 'blue', 'dim'),
-        magenta: (str: string) => this.color(str, 'magenta', 'dim'),
-        cyan: (str: string) => this.color(str, 'cyan', 'dim'),
-        white: (str: string) => this.color(str, 'white', 'dim'),
-        gray: (str: string) => this.color(str, 'gray', 'dim'),
-        reset: (str: string) => this.color(str, 'reset', 'dim'),
-    })
-    static readonly ul = Object.freeze({
-        red: (str: string) => this.color(str, 'red', 'underscore'),
-        green: (str: string) => this.color(str, 'green', 'underscore'),
-        yellow: (str: string) => this.color(str, 'yellow', 'underscore'),
-        blue: (str: string) => this.color(str, 'blue', 'underscore'),
-        magenta: (str: string) => this.color(str, 'magenta', 'underscore'),
-        cyan: (str: string) => this.color(str, 'cyan', 'underscore'),
-        white: (str: string) => this.color(str, 'white', 'underscore'),
-        gray: (str: string) => this.color(str, 'gray', 'underscore'),
-        reset: (str: string) => this.color(str, 'reset', 'underscore'),
-    })
+    static get dk() {
+        return this.dim()
+    }
 
-    constructor(text: string)
-    constructor(text: string, key: ColorKey | null)
-    constructor(text: string, key: ColorKey | null, mod: ColorMod | null)
+    static get ul() {
+        return this.underscore()
+    }
+
+    constructor()
+    constructor(text: string | null)
+    constructor(text: string | null, key: ColorKey | null)
+    constructor(text: string | null, key: ColorKey | null, mod: ColorMod | null)
     constructor(
-        private text: string,
-        private key: ColorKey | null = null,
-        private mod: ColorMod | null = null
+        private readonly string: string | null = null,
+        private readonly key: ColorKey | null = null,
+        private readonly mod: ColorMod | null = null
     ) {}
 
     toString() {
         const c = this.key != null ? codes[this.key] ?? '' : ''
         const m = this.mod != null ? codes[this.mod] ?? '' : ''
-        return `${m}${c}${this.text}${codes.reset}`
+        const t = this.string ?? ''
+        return `${m}${c}${t}${codes.reset}`
     }
 
+    text(str: string) {
+        return new Color(str, this.key, this.mod)
+    }
+
+    color(): Color
     color(key: ColorKey | null): Color
     color(key: ColorKey | null, mod: ColorMod | null): Color
     color(key: ColorKey | null = null, mod: ColorMod | null = null) {
-        this.key = key
-        this.mod = mod != null ? mod : this.mod
-        return this
+        return new Color(this.string, key, mod)
     }
 
-    get str() {
+    get str(): string {
         return this.toString()
     }
 
-    get bright() {
-        return this.color(this.key, 'bright')
+    get reset(): Color {
+        return this.color()
     }
+
+    //
+    // Colors
+    //
+
+    get black() {
+        return new Color(this.string, 'black', this.mod)
+    }
+    get red() {
+        return new Color(this.string, 'red', this.mod)
+    }
+    get green() {
+        return new Color(this.string, 'green', this.mod)
+    }
+    get yellow() {
+        return new Color(this.string, 'yellow', this.mod)
+    }
+    get blue() {
+        return new Color(this.string, 'blue', this.mod)
+    }
+    get magenta() {
+        return new Color(this.string, 'magenta', this.mod)
+    }
+    get cyan() {
+        return new Color(this.string, 'cyan', this.mod)
+    }
+    get white() {
+        return new Color(this.string, 'white', this.mod)
+    }
+    get gray() {
+        return new Color(this.string, 'gray', this.mod)
+    }
+
+    //
+    // Mods
+    //
+
+    get bright() {
+        return new Color(this.string, this.key, 'bright')
+    }
+    get dim() {
+        return new Color(this.string, this.key, 'dim')
+    }
+    get underscore() {
+        return new Color(this.string, this.key, 'underscore')
+    }
+    get blink() {
+        return new Color(this.string, this.key, 'blink')
+    }
+    get reverse() {
+        return new Color(this.string, this.key, 'reverse')
+    }
+    get hidden() {
+        return new Color(this.string, this.key, 'hidden')
+    }
+
+    //
+    // Alias
+    //
 
     get br() {
         return this.bright
-    }
-
-    get dim() {
-        return this.color(this.key, 'dim')
     }
 
     get dk() {
         return this.dim
     }
 
-    get red() {
-        return this.color('red')
-    }
-
-    get green() {
-        return this.color('green')
-    }
-
-    get gray() {
-        return this.color('gray')
+    get ul() {
+        return this.underscore
     }
 }

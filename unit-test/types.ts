@@ -32,7 +32,7 @@ export interface IUnitTest {
     run(skip?: boolean): Promise<TestResult>
 }
 
-export type SummaryTotals = Omit<IResultSummary, 'type' | 'description'>
+export type SummaryTotals = Pick<TestResult, 'passed' | 'failed' | 'skipped' | 'total'>
 
 export interface ITestSummary {
     description: string
