@@ -127,7 +127,10 @@ class ArrayView<T> implements IArrayView<T> {
         return list
     }
 
-    async filterAsync<S extends T>(predicate: (value: T, index: number, view: IArrayView<T>) => Promise<unknown>, thisArg?: any): Promise<S[]> {
+    async filterAsync<S extends T>(
+        predicate: (value: T, index: number, view: IArrayView<T>) => Promise<unknown>,
+        thisArg?: any
+    ): Promise<S[]> {
         const list: S[] = []
         for (let i = this.start; i < this.end; i++) {
             const result = await predicate.call(thisArg, this.array[i], i - this.start, this)
@@ -162,7 +165,10 @@ class ArrayView<T> implements IArrayView<T> {
         return curr as U
     }
 
-    async reduceAsync<U>(callbackfn: (previous: T | U, current: T | U, index: number, view: IArrayView<T>) => Promise<U>, initialValue?: U): Promise<U> {
+    async reduceAsync<U>(
+        callbackfn: (previous: T | U, current: T | U, index: number, view: IArrayView<T>) => Promise<U>,
+        initialValue?: U
+    ): Promise<U> {
         const first = initialValue == null ? this.start + 1 : this.start
         let prev: T | U = initialValue == null ? this.array[first] : initialValue
         let curr: T | U = this.array[first]
@@ -186,7 +192,10 @@ class ArrayView<T> implements IArrayView<T> {
         return curr
     }
 
-    async reduceRightAsync(callbackfn: (previous: T, current: T, index: number, view: IArrayView<T>) => Promise<T>, initialValue?: T): Promise<T> {
+    async reduceRightAsync(
+        callbackfn: (previous: T, current: T, index: number, view: IArrayView<T>) => Promise<T>,
+        initialValue?: T
+    ): Promise<T> {
         const last = initialValue == null ? this.end - 2 : this.end - 1
         let prev: T = initialValue == null ? this.array[last] : initialValue
         let curr: T = this.array[last]
@@ -224,6 +233,14 @@ class ArrayView<T> implements IArrayView<T> {
             }
         }
         return false
+    }
+
+    first(): T {
+        return this.array[this.start]
+    }
+
+    last(): T {
+        return this.array[this.end - 1]
     }
 
     toArray(): T[] {
