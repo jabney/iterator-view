@@ -1,15 +1,4 @@
-type Redefined =
-    | 'every'
-    | 'filter'
-    | 'find'
-    | 'findIndex'
-    | 'flatMap'
-    | 'forEach'
-    | 'map'
-    | 'reduce'
-    | 'reduceRight'
-    | 'slice'
-    | 'some'
+type Redefined = 'every' | 'filter' | 'find' | 'findIndex' | 'flatMap' | 'forEach' | 'map' | 'reduce' | 'reduceRight' | 'slice' | 'some'
 
 export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
     /**
@@ -20,10 +9,7 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      * @param thisArg An object to which the this keyword can refer in the predicate function.
      * If thisArg is omitted, undefined is used as the this value.
      */
-    every<S extends T>(
-        predicate: (value: T, index: number, view: IArrayView<T>) => value is S,
-        thisArg?: any
-    ): this is S[]
+    every<S extends T>(predicate: (value: T, index: number, view: IArrayView<T>) => value is S, thisArg?: any): this is S[]
     /**
      * Determines whether all the members of an array satisfy the specified test.
      * @param predicate A function that accepts up to three arguments. The every method calls
@@ -53,10 +39,7 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      * @param thisArg An object to which the this keyword can refer in the predicate function.
      * If thisArg is omitted, undefined is used as the this value.
      */
-    everyAsync(
-        predicate: (value: T, index: number, view: IArrayView<T>) => Promise<unknown>,
-        thisArg?: any
-    ): Promise<boolean>
+    everyAsync(predicate: (value: T, index: number, view: IArrayView<T>) => Promise<unknown>, thisArg?: any): Promise<boolean>
     /**
      * Returns the elements of a view that meet the condition specified in a callback function.
      * @param predicate A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the view.
@@ -76,10 +59,7 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      * @param thisArg If provided, it will be used as the this value for each invocation of
      * predicate. If it is not provided, undefined is used instead.
      */
-    find<S extends T>(
-        predicate: (value: T, index: number, obj: IArrayView<T>) => value is S,
-        thisArg?: any
-    ): S | undefined
+    find<S extends T>(predicate: (value: T, index: number, obj: IArrayView<T>) => value is S, thisArg?: any): S | undefined
     find(predicate: (value: T, index: number, obj: IArrayView<T>) => unknown, thisArg?: any): T | undefined
     /**
      * Returns the index of the first element in the array where predicate is true, and -1
@@ -107,10 +87,7 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      * @param thisArg An object to which the this keyword can refer in the callback function. If
      * thisArg is omitted, undefined is used as the this value.
      */
-    forEachAsync(
-        callbackfn: (value: T, index: number, view: IArrayView<T>) => Promise<void>,
-        thisArg?: any
-    ): Promise<void>
+    forEachAsync(callbackfn: (value: T, index: number, view: IArrayView<T>) => Promise<void>, thisArg?: any): Promise<void>
     /**
      * Calls a defined callback function on each element of an array. Then, flattens the result into
      * a new array.
@@ -138,27 +115,19 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of a view value.
      */
     reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => T): T
-    reduce(
-        callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => T,
-        initialValue: T
-    ): T
+    reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => T, initialValue: T): T
     /**
      * Calls the specified callback function for all the elements in a view. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
      * @param callbackfn A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the view.
      * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of a view value.
      */
-    reduce<U>(
-        callbackfn: (previousValue: U, currentValue: T, currentIndex: number, view: IArrayView<T>) => U,
-        initialValue: U
-    ): U
+    reduce<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, view: IArrayView<T>) => U, initialValue: U): U
     /**
      * Calls the specified callback function for all the elements in aa voew. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
      * @param callbackfn A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the view.
      * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of a view value.
      */
-    reduceAsync(
-        callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => T | Promise<T>
-    ): Promise<T>
+    reduceAsync(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => T | Promise<T>): Promise<T>
     reduceAsync(
         callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => T | Promise<T>,
         initialValue: T
@@ -184,27 +153,19 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
      */
     reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => T): T
-    reduceRight(
-        callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => T,
-        initialValue: T
-    ): T
+    reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => T, initialValue: T): T
     /**
      * Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
      * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array.
      * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
      */
-    reduceRight<U>(
-        callbackfn: (previousValue: U, currentValue: T, currentIndex: number, view: IArrayView<T>) => U,
-        initialValue: U
-    ): U
+    reduceRight<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, view: IArrayView<T>) => U, initialValue: U): U
     /**
      * Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
      * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array.
      * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
      */
-    reduceRightAsync(
-        callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => Promise<T>
-    ): Promise<T>
+    reduceRightAsync(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => Promise<T>): Promise<T>
     reduceRightAsync(
         callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => Promise<T>,
         initialValue: T
@@ -230,6 +191,11 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
 
     first(): T
     last(): T
+
+    /**
+     * Returns a new array view relative to the internal array.
+     */
+    reset(start?: number, end?: number): IArrayView<T>
 
     /**
      * Render the view as an array.

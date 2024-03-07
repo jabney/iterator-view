@@ -14,7 +14,7 @@ class ArrayView<T> implements IArrayView<T> {
         return this.end - this.start
     }
 
-    at(index: number) {
+    at(index: number): T {
         return this.array[this.start + normalizeStart(this.length, index)]
     }
 
@@ -241,6 +241,10 @@ class ArrayView<T> implements IArrayView<T> {
 
     last(): T {
         return this.array[this.end - 1]
+    }
+
+    reset(start?: number, end?: number) {
+        return arrayView(this.array, start, end)
     }
 
     toArray(): T[] {
