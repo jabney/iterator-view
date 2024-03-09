@@ -3,7 +3,7 @@ import { arrayIterator, arrayIteratorAsync } from './array-iterator'
 import { normalizeEnd, normalizeStart } from './normalize'
 import { createProxy } from './proxy'
 import { IArrayView } from './types'
-import { KeyFn, groupify, groupifyAsync, mapify, mapifyAsync, partition, partitionAsync, range } from './util'
+import { KeyFn, groupify, groupifyAsync, mapify, mapifyAsync, partition, partitionAsync, range } from './iterator'
 
 class ArrayView<T> implements IArrayView<T> {
     private subArray: ArrayBuilder<T>

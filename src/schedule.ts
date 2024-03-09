@@ -4,15 +4,15 @@ type Fn<T> = () => T
 type MaybePromise<T> = () => Promise<T> | T
 type PromiseFn<T> = () => Promise<T>
 
-function timeout(ms: number): Promise<void> {
+export function timeout(ms: number): Promise<void> {
     return new Promise(resolve => void setTimeout(resolve, ms))
 }
 
-function immediate(): Promise<void> {
+export function immediate(): Promise<void> {
     return new Promise(resolve => setImmediate(resolve))
 }
 
-interface IScheduler {
+export interface IScheduler {
     schedule: <T>(fn: MaybePromise<T>) => Promise<T>
 }
 

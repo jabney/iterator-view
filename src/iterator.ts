@@ -83,6 +83,18 @@ export function* enumerate<T>(it: Iterable<T>): IterableIterator<[number, T]> {
     }
 }
 
+const normalizeRange = (start: number, end: number, dir: ScanDir): [ScanDir, number, number] => {
+    if (start <= end) {
+        return dir === 'fwd' ? [dir, start, end] : [dir, start - 1, end - 1]
+    }
+
+    if (dir === 'fwd') {
+        return ['rev', end, start]
+    } else {
+        return ['fwd', end + 1, start + 1]
+    }
+}
+
 export function* range(start: number, end: number, dir: ScanDir = 'fwd'): IterableIterator<number> {
     const [$dir, min, max] = normalizeRange(start, end, dir)
 
@@ -126,20 +138,6 @@ export function* count(num: number): IterableIterator<number> {
     }
 }
 
-const normalizeRange = (start: number, end: number, dir: ScanDir): [ScanDir, number, number] => {
-    if (start <= end) {
-        return dir === 'fwd' ? [dir, start, end] : [dir, start - 1, end - 1]
-    }
-
-    if (dir === 'fwd') {
-        return ['rev', end, start]
-    } else {
-        return ['fwd', end + 1, start + 1]
-    }
-}
-
-const clamp = (min: number, max: number, value: number) => Math.max(min, Math.min(max, value))
-
 export function* arrayRangeIterator<T>(array: readonly T[], start = 0, end = array.length, dir: ScanDir) {
     start = normalizeStart(array.length, start)
     end = normalizeEnd(array.length, end)
@@ -175,87 +173,3 @@ export function* takeIterator<T>(it: Iterable<T>, num: number): IterableIterator
 export async function* asyncIterable<T>(it: Iterable<T>): AsyncIterableIterator<T> {
     //
 }
-
-interface IView {}
-
-class View<T> implements Iterable<T> {
-    static create<T>(it: Iterable<T>) {
-        new View(it)
-    }
-
-    static fromArray<T>(array: readonly T[], start?: number, end?: number, dir: ScanDir = 'fwd') {
-        return new View(arrayRangeIterator(array, start, end, dir))
-    }
-
-    constructor(private readonly it: Iterable<T>) {}
-
-    map<U>(mapper: Mapper<T, U>): View<U> {
-        return new View<U>(mapIterator(this.it, mapper))
-    }
-
-    filter(predicate: Predicate<T>): View<T> {
-        return new View(filterIterator(this.it, predicate))
-    }
-
-    enumerate(): IterableIterator<[number, T]> {
-        return enumerate(this)
-    }
-
-    skip(num: number): View<T> {
-        return new View(skipIterator(this.it, num))
-    }
-
-    take(num: number): View<T> {
-        return new View(takeIterator(this.it, num))
-    }
-
-    render(): View<T> {
-        return new View(this.toArray())
-    }
-
-    toArray(): T[] {
-        return [...this.it]
-    }
-
-    *iterator(): Iterator<T> {
-        for (const v of this.it) yield v
-    }
-
-    async *asyncIterator(): AsyncIterator<T> {
-        for await (const v of this.it) yield v
-    }
-
-    *[Symbol.iterator](): IterableIterator<T> {
-        for (const v of this.it) yield v
-    }
-}
-
-const list = [...count(100)]
-const view = new View(count(10))
-
-// const r = view
-//     .filter(x => x % 2 === 0)
-//     .map(x => x ** 2)
-//     .enumerate()
-
-const r = view.skip(3).take(3)
-
-for (const v of r) {
-    console.log(v)
-}
-
-// const it = r.iterator()
-// console.log(it.next())
-// console.log(it.next())
-// console.log(it.next())
-// console.log(it.next())
-
-/**
- *
- */
-
-// const it = reverseIterator(list, 0, 9)
-
-// for (const [v, i] of it) {
-//     console.log(`[${i}]:`, v)
-// }

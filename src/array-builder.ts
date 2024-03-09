@@ -1,5 +1,5 @@
 import { normalizeEnd, normalizeStart } from './normalize'
-import { ValueFn, range } from './util'
+import { ValueFn, range } from './iterator'
 
 export type ArrayBuilder<T> = <U>(fn: ValueFn<T, U>) => U[]
 export type ArrayBuilderAsync<T> = <U>(fn: ValueFn<T, Promise<U>>) => Promise<U[]>
