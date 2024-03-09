@@ -1,5 +1,5 @@
-import { Schedule } from './schedule'
-const Soon = Schedule.Soon
+import { Scheduler } from './schedule'
+const immediate = Scheduler.immediate()
 
 export function* arrayIterator<T>(array: readonly T[], start: number, end: number): IterableIterator<T> {
     for (let i = start; i < end; i++) {
@@ -7,8 +7,13 @@ export function* arrayIterator<T>(array: readonly T[], start: number, end: numbe
     }
 }
 
-export async function* arrayIteratorAsync<T>(a: readonly T[], start: number, end: number, scheduler = Soon): AsyncIterableIterator<T> {
+export async function* arrayIteratorAsync<T>(
+    array: readonly T[],
+    start: number,
+    end: number,
+    scheduler = immediate
+): AsyncIterableIterator<T> {
     for (let i = start; i < end; i++) {
-        yield await scheduler(() => a[i])
+        yield await scheduler.schedule(() => array[i])
     }
 }
