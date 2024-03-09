@@ -1,6 +1,14 @@
-type Redefined = 'every' | 'filter' | 'find' | 'findIndex' | 'flatMap' | 'forEach' | 'map' | 'reduce' | 'reduceRight' | 'slice' | 'some'
+type Redefined = 'concat' | 'every' | 'filter' | 'find' | 'findIndex' | 'forEach' | 'map' | 'reduce' | 'reduceRight' | 'slice' | 'some'
 
-export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
+type NotImplemented = 'flat' | 'flatMap'
+
+export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined | NotImplemented> {
+    /**
+     * Combines two or more arrays.
+     * This method returns a new array without modifying any existing arrays.
+     * @param items Additional arrays and/or items to add to the end of the array.
+     */
+    concat(...items: (T | ConcatArray<T>)[]): IArrayView<T>
     /**
      * Determines whether all the members of an array satisfy the specified test.
      * @param predicate A function that accepts up to three arguments. The every method calls
@@ -9,7 +17,7 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      * @param thisArg An object to which the this keyword can refer in the predicate function.
      * If thisArg is omitted, undefined is used as the this value.
      */
-    every<S extends T>(predicate: (value: T, index: number, view: IArrayView<T>) => value is S, thisArg?: any): this is S[]
+    every<S extends T>(predicate: (value: T, index: number, view: IArrayView<T>) => value is S, thisArg?: any): this is IArrayView<S>
     /**
      * Determines whether all the members of an array satisfy the specified test.
      * @param predicate A function that accepts up to three arguments. The every method calls
@@ -28,9 +36,9 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      * If thisArg is omitted, undefined is used as the this value.
      */
     everyAsync<S extends T>(
-        predicate: (value: T, index: number, view: IArrayView<T>) => Promise<unknown>,
+        predicate: (value: T, index: number, view: IArrayView<T>) => Promise<unknown> | unknown,
         thisArg?: any
-    ): this is Promise<S[]>
+    ): this is Promise<IArrayView<S>>
     /**
      * Determines whether all the members of an array satisfy the specified test.
      * @param predicate A function that accepts up to three arguments. The every method calls
@@ -39,17 +47,17 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      * @param thisArg An object to which the this keyword can refer in the predicate function.
      * If thisArg is omitted, undefined is used as the this value.
      */
-    everyAsync(predicate: (value: T, index: number, view: IArrayView<T>) => Promise<unknown>, thisArg?: any): Promise<boolean>
+    everyAsync(predicate: (value: T, index: number, view: IArrayView<T>) => Promise<unknown> | unknown, thisArg?: any): Promise<boolean>
     /**
      * Returns the elements of a view that meet the condition specified in a callback function.
      * @param predicate A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the view.
      * @param thisArg An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value.
      */
-    filter<S extends T>(predicate: (value: T, index: number, view: IArrayView<T>) => value is S, thisArg?: any): S[]
+    filter<S extends T>(predicate: (value: T, index: number, view: IArrayView<T>) => value is S, thisArg?: any): IArrayView<S>
     filterAsync<S extends T>(
         predicate: (value: T, index: number, view: IArrayView<T>) => Promise<unknown>,
         thisArg?: any
-    ): this is Promise<S[]>
+    ): this is Promise<IArrayView<S>>
     /**
      * Returns the value of the first element in the array where predicate is true, and undefined
      * otherwise.
@@ -78,37 +86,36 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      */
     forEach(callbackfn: (value: T, index: number, view: IArrayView<T>) => void, thisArg?: any): void
     /**
-     * Calls a defined callback function on each element of an array. Then, flattens the result into
-     * a new array.
-     * This is identical to a map followed by flat with depth 1.
-     *
-     * @param callback A function that accepts up to three arguments. The flatMap method calls the
-     * callback function one time for each element in the array.
-     * @param thisArg An object to which the this keyword can refer in the callback function. If
-     * thisArg is omitted, undefined is used as the this value.
+     * Performs the specified action for each element in an array.
+     * @param callbackfn  A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.
+     * @param thisArg  An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
      */
     forEachAsync(callbackfn: (value: T, index: number, view: IArrayView<T>) => Promise<void>, thisArg?: any): Promise<void>
-    /**
-     * Calls a defined callback function on each element of an array. Then, flattens the result into
-     * a new array.
-     * This is identical to a map followed by flat with depth 1.
-     *
-     * @param callback A function that accepts up to three arguments. The flatMap method calls the
-     * callback function one time for each element in the array.
-     * @param thisArg An object to which the this keyword can refer in the callback function. If
-     * thisArg is omitted, undefined is used as the this value.
-     */
-    flatMap<U, This = undefined>(
-        callback: (this: This, value: T, index: number, view: IArrayView<T>) => U | ReadonlyArray<U>,
-        thisArg?: This
-    ): U[]
+    // /**
+    //  * Calls a defined callback function on each element of an array. Then, flattens the result into
+    //  * a new array.
+    //  * This is identical to a map followed by flat with depth 1.
+    //  *
+    //  * @param callback A function that accepts up to three arguments. The flatMap method calls the
+    //  * callback function one time for each element in the array.
+    //  * @param thisArg An object to which the this keyword can refer in the callback function. If
+    //  * thisArg is omitted, undefined is used as the this value.
+    //  */
+    // flatMap<U, This = undefined>(
+    //     callback: (this: This, value: T, index: number, view: IArrayView<T>) => U | ReadonlyArray<U>,
+    //     thisArg?: This
+    // ): U[]
     /**
      * Calls a defined callback function on each element of a view, and returns an array that contains the results.
      * @param callbackfn A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the view.
      * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
      */
-    map<U>(callbackfn: (value: T, index: number, view: IArrayView<T>) => U, thisArg?: any): U[]
-    mapAsync<U>(callbackfn: (value: T, index: number, view: IArrayView<T>) => Promise<U>, thisArg?: any): Promise<U[]>
+    map<U>(callbackfn: (value: T, index: number, view: IArrayView<T>) => U, thisArg?: any): IArrayView<U>
+    mapAsync<U>(callbackfn: (value: T, index: number, view: IArrayView<T>) => Promise<U> | U, thisArg?: any): Promise<IArrayView<U>>
+    /**
+     *
+     */
+    range(start?: number, end?: number): IterableIterator<[number, T]>
     /**
      * Calls the specified callback function for all the elements in aa voew. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
      * @param callbackfn A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the view.
@@ -129,7 +136,7 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      */
     reduceAsync(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => T | Promise<T>): Promise<T>
     reduceAsync(
-        callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => T | Promise<T>,
+        callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => Promise<T> | T,
         initialValue: T
     ): Promise<T>
     /**
@@ -138,7 +145,7 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of a view value.
      */
     reduceAsync<U>(
-        callbackfn: (previousValue: U, currentValue: T, currentIndex: number, view: IArrayView<T>) => U | Promise<U>,
+        callbackfn: (previousValue: U, currentValue: T, currentIndex: number, view: IArrayView<T>) => Promise<U> | U,
         initialValue: U
     ): Promise<U>
     /**
@@ -167,7 +174,7 @@ export interface IArrayView<T> extends Omit<ReadonlyArray<T>, Redefined> {
      */
     reduceRightAsync(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => Promise<T>): Promise<T>
     reduceRightAsync(
-        callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => Promise<T>,
+        callbackfn: (previousValue: T, currentValue: T, currentIndex: number, view: IArrayView<T>) => Promise<T> | T,
         initialValue: T
     ): Promise<T>
     /**

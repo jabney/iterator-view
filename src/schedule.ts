@@ -1,5 +1,5 @@
-type PromiseMaybe<T> = T | Promise<T>
-type MaybeFn<T> = () => PromiseMaybe<T>
+type Fn<T> = () => T
+type MaybePromise<T> = () => Promise<T> | T
 type PromiseFn<T> = () => Promise<T>
 
 function timeout(ms: number): Promise<void> {
@@ -11,22 +11,30 @@ function immediate(): Promise<void> {
 }
 
 export class Schedule {
-    static readonly Timeout = async <T>(ms: number, fn: MaybeFn<T>): Promise<T> => {
+    constructor() {
+        if (new.target != null) throw new Error('class is static')
+    }
+
+    static readonly Timeout = async <T>(ms: number, fn: MaybePromise<T>): Promise<T> => {
         await timeout(ms)
         return await fn()
     }
 
-    static readonly Soon = async <T>(fn: MaybeFn<T>): Promise<T> => {
+    static readonly Soon = async <T>(fn: MaybePromise<T>): Promise<T> => {
         await timeout(0)
         return await fn()
     }
 
-    static readonly Immediate = async <T>(fn: MaybeFn<T>): Promise<T> => {
+    static readonly Immediate = async <T>(fn: MaybePromise<T>): Promise<T> => {
         await immediate()
         return await fn()
     }
 
-    static readonly When = async <T>(fn: MaybeFn<T>, when: PromiseFn<void>): Promise<T> => {
+    static readonly Sync = async <T>(fn: Fn<T>): Promise<T> => {
+        return fn()
+    }
+
+    static readonly When = async <T>(fn: MaybePromise<T>, when: PromiseFn<void>): Promise<T> => {
         await when()
         return await fn()
     }

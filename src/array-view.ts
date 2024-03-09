@@ -2,13 +2,18 @@ import { arrayIterator, arrayIteratorAsync } from './iterator'
 import { normalizeEnd, normalizeStart } from './normalize'
 import { createProxy } from './proxy'
 import { IArrayView } from './types'
+import { ArrayBuilder, KeyFn, arrayBuilder, groupify, groupifyAsync, mapify, mapifyAsync, partition, partitionAsync, range } from './util'
 
 class ArrayView<T> implements IArrayView<T> {
+    private subArray: ArrayBuilder<T>
+
     constructor(
         private readonly array: readonly T[],
         private readonly start: number,
         private readonly end: number
-    ) {}
+    ) {
+        this.subArray = arrayBuilder(this.array, this.start, this.end, this)
+    }
 
     get length(): number {
         return this.end - this.start
@@ -18,8 +23,8 @@ class ArrayView<T> implements IArrayView<T> {
         return this.array[this.start + normalizeStart(this.length, index)]
     }
 
-    concat(...items: (T | ConcatArray<T>)[]): T[] {
-        return this.toArray().concat(...items)
+    concat(...items: (T | ConcatArray<T>)[]): IArrayView<T> {
+        return arrayView(this.toArray().concat(...items))
     }
 
     find(predicate: (value: T, index: number, obj: IArrayView<T>) => unknown, thisArg?: any): T | undefined {
@@ -37,14 +42,6 @@ class ArrayView<T> implements IArrayView<T> {
             }
         }
         return -1
-    }
-
-    flat<A = any, D extends number = 1>(depth?: D): FlatArray<A, D> {
-        return this.toArray().flat(depth) as FlatArray<A, D>
-    }
-
-    flatMap<U>(callback: (value: T, index: number, view: IArrayView<T>) => U | ReadonlyArray<U>, thisArg?: any): U[] {
-        return this.toArray().flatMap((v, i) => callback.call(thisArg, v, i, this))
     }
 
     includes(searchElement: T, fromIndex?: number): boolean {
@@ -76,9 +73,42 @@ class ArrayView<T> implements IArrayView<T> {
     }
 
     *entries(): IterableIterator<[number, T]> {
-        for (let i = this.start; i < this.end; i++) {
-            yield [i - this.start, this.array[i]]
+        for (const i of range(0, this.length)) {
+            yield [i, this.array[this.start + i]]
         }
+    }
+
+    *range(start: number = 0, end: number = this.length): IterableIterator<[number, T]> {
+        start = normalizeStart(this.length, start)
+        end = normalizeEnd(this.length, end)
+
+        for (const i of range(start, end)) {
+            yield [i, this.array[this.start + i]]
+        }
+    }
+
+    mapify<K>(key: KeyFn<K, T>): Map<K, T> {
+        return mapify(this, key)
+    }
+
+    mapifyAsync<K>(key: KeyFn<Promise<K>, T>): Promise<Map<K, T>> {
+        return mapifyAsync(this, key)
+    }
+
+    groupify<K>(key: KeyFn<K, T>): Map<K, T[]> {
+        return groupify(this, key)
+    }
+
+    groupifyAsync<K>(key: KeyFn<Promise<K>, T>): Promise<Map<K, T[]>> {
+        return groupifyAsync(this, key)
+    }
+
+    partition<K>(key: KeyFn<K, T>): IterableIterator<T[]> {
+        return partition(this, key)
+    }
+
+    partitionAsync<K>(key: KeyFn<Promise<K>, T>): Promise<IterableIterator<T[]>> {
+        return partitionAsync(this, key)
     }
 
     every(predicate: (value: T, index: number, view: IArrayView<T>) => unknown, thisArg?: any): boolean {
@@ -90,7 +120,10 @@ class ArrayView<T> implements IArrayView<T> {
         return true
     }
 
-    async everyAsync(predicate: (value: T, index: number, view: IArrayView<T>) => Promise<unknown>, thisArg?: any): Promise<boolean> {
+    async everyAsync(
+        predicate: (value: T, index: number, view: IArrayView<T>) => Promise<unknown> | unknown,
+        thisArg?: any
+    ): Promise<boolean> {
         for (let i = this.start; i < this.end; i++) {
             const result = await predicate.call(thisArg, this.array[i], i - this.start, this)
             if (!result) {
@@ -100,37 +133,40 @@ class ArrayView<T> implements IArrayView<T> {
         return true
     }
 
-    map<U>(callbackfn: (value: T, index: number, view: IArrayView<T>) => U, thisArg?: any): U[] {
-        const list: U[] = []
-        for (let i = this.start; i < this.end; i++) {
-            list.push(callbackfn.call(thisArg, this.array[i], i - this.start, this))
-        }
-        return list
+    map<U>(callbackfn: (value: T, index: number, view: IArrayView<T>) => U, thisArg?: any): IArrayView<U> {
+        // const builder = arrayBuilder(this.array, this.start, this.end, this)
+        const list = this.subArray(callbackfn, thisArg)
+
+        // const list: U[] = []
+        // for (let i = this.start; i < this.end; i++) {
+        //     list.push(callbackfn.call(thisArg, this.array[i], i - this.start, this))
+        // }
+        return arrayView(list)
     }
 
-    async mapAsync<U>(callbackfn: (value: T, index: number, view: IArrayView<T>) => Promise<U>, thisArg?: any): Promise<U[]> {
+    async mapAsync<U>(callbackfn: (value: T, index: number, view: IArrayView<T>) => Promise<U>, thisArg?: any): Promise<IArrayView<U>> {
         const list: U[] = []
         for (let i = this.start; i < this.end; i++) {
             let value = await callbackfn.call(thisArg, this.array[i], i - this.start, this)
             list.push(value)
         }
-        return list
+        return arrayView(list)
     }
 
-    filter<S extends T>(predicate: (value: T, index: number, ArrayView: IArrayView<T>) => value is S, thisArg?: any): S[] {
+    filter<S extends T>(predicate: (value: T, index: number, ArrayView: IArrayView<T>) => value is S, thisArg?: any): IArrayView<S> {
         const list: S[] = []
         for (let i = this.start; i < this.end; i++) {
             if (predicate.call(thisArg, this.array[i], i - this.start, this)) {
                 list.push(this.array[i] as S)
             }
         }
-        return list
+        return arrayView(list)
     }
 
     async filterAsync<S extends T>(
         predicate: (value: T, index: number, view: IArrayView<T>) => Promise<unknown>,
         thisArg?: any
-    ): Promise<S[]> {
+    ): Promise<IArrayView<S>> {
         const list: S[] = []
         for (let i = this.start; i < this.end; i++) {
             const result = await predicate.call(thisArg, this.array[i], i - this.start, this)
@@ -138,7 +174,7 @@ class ArrayView<T> implements IArrayView<T> {
                 list.push(this.array[i] as S)
             }
         }
-        return list
+        return arrayView(list)
     }
 
     forEach(callbackfn: (value: T, index: number, view: IArrayView<T>) => void, thisArg?: any): void {
@@ -274,4 +310,11 @@ export function arrayView<T>(array: readonly T[], start?: number, end?: number):
     const _end = normalizeEnd(array.length, end ?? array.length)
     const view = new ArrayView(array, _start, _end) as unknown as IArrayView<T>
     return createProxy(view, array, _start, _end)
+}
+
+const list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+const view = arrayView(list)
+
+for (const [i, v] of view.range(-1)) {
+    console.log(i, v)
 }
