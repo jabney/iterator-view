@@ -1,8 +1,9 @@
-import { arrayIterator, arrayIteratorAsync } from './iterator'
+import { ArrayBuilder, arrayBuilder } from './array-builder'
+import { arrayIterator, arrayIteratorAsync } from './array-iterator'
 import { normalizeEnd, normalizeStart } from './normalize'
 import { createProxy } from './proxy'
 import { IArrayView } from './types'
-import { ArrayBuilder, KeyFn, arrayBuilder, groupify, groupifyAsync, mapify, mapifyAsync, partition, partitionAsync, range } from './util'
+import { KeyFn, groupify, groupifyAsync, mapify, mapifyAsync, partition, partitionAsync, range } from './util'
 
 class ArrayView<T> implements IArrayView<T> {
     private subArray: ArrayBuilder<T>
@@ -12,7 +13,7 @@ class ArrayView<T> implements IArrayView<T> {
         private readonly start: number,
         private readonly end: number
     ) {
-        this.subArray = arrayBuilder(this.array, this.start, this.end, this)
+        this.subArray = arrayBuilder(this.array, this.start, this.end)
     }
 
     get length(): number {
@@ -134,14 +135,7 @@ class ArrayView<T> implements IArrayView<T> {
     }
 
     map<U>(callbackfn: (value: T, index: number, view: IArrayView<T>) => U, thisArg?: any): IArrayView<U> {
-        // const builder = arrayBuilder(this.array, this.start, this.end, this)
-        const list = this.subArray(callbackfn, thisArg)
-
-        // const list: U[] = []
-        // for (let i = this.start; i < this.end; i++) {
-        //     list.push(callbackfn.call(thisArg, this.array[i], i - this.start, this))
-        // }
-        return arrayView(list)
+        return arrayView(this.subArray((v, i) => callbackfn.call(thisArg, v, i, this)))
     }
 
     async mapAsync<U>(callbackfn: (value: T, index: number, view: IArrayView<T>) => Promise<U>, thisArg?: any): Promise<IArrayView<U>> {

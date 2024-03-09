@@ -10,6 +10,28 @@ function immediate(): Promise<void> {
     return new Promise(resolve => setImmediate(resolve))
 }
 
+type ScheduleFn = (fn: MaybePromise<void>) => Promise<void>
+
+interface IScheduler {
+    schedule: (fn: MaybePromise<void>) => Promise<void>
+}
+
+class TimeoutScheduler implements IScheduler {
+    constructor(private ms = 0) {}
+
+    async schedule(fn: MaybePromise<void>) {
+        await timeout(this.ms)
+        await fn()
+    }
+}
+
+class ImmediateScheduler implements IScheduler {
+    async schedule(fn: MaybePromise<void>) {
+        await immediate()
+        await fn()
+    }
+}
+
 export class Schedule {
     constructor() {
         if (new.target != null) throw new Error('class is static')
