@@ -50,8 +50,8 @@ export abstract class Scheduler {
 }
 
 export class ControlSubject extends Subject<boolean> {
-    notify(run: boolean): void {
-        super.notify(run)
+    next(run: boolean): void {
+        super.next(run)
     }
 }
 

@@ -72,7 +72,7 @@ async function main(color: (str: { toString(): string }) => Color) {
         .map(x => x ** 2)
         .index()
 
-    subject.notify(true)
+    subject.next(true)
 
     for await (const i of view) {
         console.log(`${color(i)}`)
@@ -85,7 +85,7 @@ async function main2(color: (str: { toString(): string }) => Color) {
         .map(x => x ** 2)
         .index()
 
-    subject.notify(true)
+    subject.next(true)
 
     for await (const i of view) {
         console.log(`${color(i)}`)
@@ -98,7 +98,7 @@ async function main3(color: (str: { toString(): string }) => Color) {
         .map(x => x ** 2)
         .index()
 
-    subject.notify(true)
+    subject.next(true)
 
     for await (const i of view) {
         console.log(`${color(i)}`)
@@ -111,7 +111,7 @@ async function main4(color: (str: { toString(): string }) => Color) {
         .map(x => x ** 2)
         .index()
 
-    subject.notify(true)
+    subject.next(true)
 
     for await (const i of view) {
         console.log(`${color(i)}`)
@@ -120,7 +120,7 @@ async function main4(color: (str: { toString(): string }) => Color) {
 
 function doTimeout(run: boolean) {
     setTimeout(() => {
-        subject.notify(run)
+        subject.next(run)
         doTimeout(!run)
     }, 5000)
 }
