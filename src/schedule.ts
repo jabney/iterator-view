@@ -40,7 +40,7 @@ export abstract class Scheduler {
         return new WhenScheduler(when)
     }
 
-    static controlled(observable: Observable<boolean>, scheduler?: Scheduler): IScheduler {
+    static controlled(observable: Observable<boolean>, scheduler = Scheduler.immediate()): IScheduler {
         return new ControlledScheduler(observable, scheduler)
     }
 
@@ -100,7 +100,7 @@ class WhenScheduler extends Scheduler implements IScheduler {
 class ControlledScheduler extends Scheduler implements IScheduler {
     constructor(
         private readonly observable: Observable<boolean>,
-        private readonly scheduler: Scheduler = Scheduler.immediate()
+        private readonly scheduler: Scheduler
     ) {
         super()
     }
@@ -116,33 +116,3 @@ class ControlledScheduler extends Scheduler implements IScheduler {
         })
     }
 }
-
-// export class Schedule {
-//     constructor() {
-//         if (new.target != null) throw new Error('class is static')
-//     }
-
-//     static readonly Timeout = async <T>(ms: number, fn: MaybePromise<T>): Promise<T> => {
-//         await timeout(ms)
-//         return await fn()
-//     }
-
-//     static readonly Soon = async <T>(fn: MaybePromise<T>): Promise<T> => {
-//         await timeout(0)
-//         return await fn()
-//     }
-
-//     static readonly Immediate = async <T>(fn: MaybePromise<T>): Promise<T> => {
-//         await immediate()
-//         return await fn()
-//     }
-
-//     static readonly Sync = async <T>(fn: Fn<T>): Promise<T> => {
-//         return fn()
-//     }
-
-//     static readonly When = async <T>(fn: MaybePromise<T>, when: PromiseFn<void>): Promise<T> => {
-//         await when()
-//         return await fn()
-//     }
-// }

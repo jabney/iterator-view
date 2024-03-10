@@ -1,17 +1,5 @@
 import { Color } from './color'
-import {
-    Mapper,
-    Predicate,
-    Direction,
-    arrayRangeIterator,
-    count,
-    enumerate,
-    filterIterator,
-    mapIterator,
-    skipIterator,
-    takeIterator,
-    index,
-} from './iterator'
+import { Mapper, Predicate, Direction, arrayRangeIterator, count, enumerate, filterIterator, mapIterator, index } from './iterator'
 import { normalizeEnd, normalizeStart } from './normalize'
 import { ControlSubject, Scheduler } from './schedule'
 
@@ -35,7 +23,7 @@ class IteratorView<T> implements Iterable<T>, AsyncIterable<T> {
 
     constructor(
         protected readonly it: Iterable<T>,
-        protected readonly scheduler: Scheduler = Scheduler.immediate()
+        protected readonly scheduler = Scheduler.immediate()
     ) {}
 
     map<U>(mapper: Mapper<T, U>): IteratorView<U> {
@@ -52,18 +40,6 @@ class IteratorView<T> implements Iterable<T>, AsyncIterable<T> {
 
     index(): IteratorView<number> {
         return new IteratorView(index(this.it), this.scheduler)
-    }
-
-    skip(num: number): IteratorView<T> {
-        return new IteratorView(skipIterator(this.it, num))
-    }
-
-    take(num: number): IteratorView<T> {
-        return new IteratorView(takeIterator(this.it, num))
-    }
-
-    first(): T {
-        return this.iterator().next().value
     }
 
     render(): IteratorView<T> {
@@ -88,7 +64,7 @@ class IteratorView<T> implements Iterable<T>, AsyncIterable<T> {
 }
 
 const subject = new ControlSubject()
-const scheduler = Scheduler.controlled(subject, Scheduler.timeout(10))
+const scheduler = Scheduler.controlled(subject, Scheduler.timeout(100))
 
 async function main(color: (str: { toString(): string }) => Color) {
     const view = new IteratorView(count(Infinity), scheduler)
