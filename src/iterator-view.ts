@@ -1,6 +1,6 @@
-import { Color } from './color'
-import { Mapper, Predicate, Direction, arrayRangeIterator, count, enumerate, filterIterator, mapIterator, index } from './iterator'
-import { normalizeEnd, normalizeStart } from './normalize'
+import { Color } from './lib/color'
+import { Mapper, Predicate, Direction, arrayRangeIterator, count, enumerate, filterIterator, mapIterator, index } from './lib/iterator'
+import { normalizeEnd, normalizeStart } from './lib/normalize'
 import { ControlSubject, Scheduler } from './schedule'
 
 interface FromArrayOptions {

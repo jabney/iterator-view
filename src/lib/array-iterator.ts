@@ -1,4 +1,4 @@
-import { Scheduler } from './schedule'
+import { Scheduler } from '../schedule'
 
 export function* arrayIterator<T>(array: readonly T[], start: number, end: number): IterableIterator<T> {
     for (let i = start; i < end; i++) {
