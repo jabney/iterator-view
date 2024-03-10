@@ -4,7 +4,7 @@ export type Disposer = () => void
 
 export class Observable<T> {
     protected readonly observers: Set<Observer<T>>
-    protected value?: T = undefined
+    protected _value?: T = undefined
 
     constructor()
     constructor(observers: Observers<T>)
@@ -12,10 +12,14 @@ export class Observable<T> {
         this.observers = observers ?? new Set<Observer<T>>()
     }
 
+    get value() {
+        return this._value
+    }
+
     subscribe = (observer: Observer<T>): Disposer => {
         this.observers.add(observer)
-        if (this.value !== undefined) {
-            observer(this.value)
+        if (this._value !== undefined) {
+            observer(this._value)
         }
         return () => void this.observers.delete(observer)
     }
@@ -23,11 +27,11 @@ export class Observable<T> {
 
 export abstract class Subject<T> extends Observable<T> {
     notify(value: T): void {
-        this.value = value
+        this._value = value
         for (const observer of this.observers) observer(value)
     }
 
-    toObservable(): Observable<T> {
+    asObservable(): Observable<T> {
         return new Observable(this.observers)
     }
 }

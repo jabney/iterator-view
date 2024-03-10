@@ -1,13 +1,13 @@
 import { normalizeEnd, normalizeStart } from './normalize'
+import { IScheduler } from './schedule'
 
-export type ScanDir = 'fwd' | 'rev'
+export type Direction = 'fwd' | 'rev'
 
 export type ValueFn<T, U> = (value: T, index: number) => U
 
 export type KeyFn<Key, Value> = (value: Value) => Key
 export type Predicate<T> = (value: T) => unknown
 export type Mapper<T, U> = (value: T) => U
-export type Scheduler = () => Promise<void>
 
 export function mapify<V, K>(it: Iterable<V>, key: KeyFn<K, V>): Map<K, V> {
     const map = new Map<K, V>()
@@ -83,7 +83,14 @@ export function* enumerate<T>(it: Iterable<T>): IterableIterator<[number, T]> {
     }
 }
 
-const normalizeRange = (start: number, end: number, dir: ScanDir): [ScanDir, number, number] => {
+export function* index<T>(it: Iterable<T>): IterableIterator<number> {
+    let i = 0
+    for (const v of it) {
+        yield i++
+    }
+}
+
+const normalizeRange = (start: number, end: number, dir: Direction): [Direction, number, number] => {
     if (start <= end) {
         return dir === 'fwd' ? [dir, start, end] : [dir, start - 1, end - 1]
     }
@@ -95,7 +102,7 @@ const normalizeRange = (start: number, end: number, dir: ScanDir): [ScanDir, num
     }
 }
 
-export function* range(start: number, end: number, dir: ScanDir = 'fwd'): IterableIterator<number> {
+export function* range(start: number, end: number, dir: Direction = 'fwd'): IterableIterator<number> {
     const [$dir, min, max] = normalizeRange(start, end, dir)
 
     if ($dir == 'fwd') {
@@ -138,7 +145,7 @@ export function* count(num: number): IterableIterator<number> {
     }
 }
 
-export function* arrayRangeIterator<T>(array: readonly T[], start = 0, end = array.length, dir: ScanDir) {
+export function* arrayRangeIterator<T>(array: readonly T[], start = 0, end = array.length, dir: Direction) {
     start = normalizeStart(array.length, start)
     end = normalizeEnd(array.length, end)
     if (dir === 'fwd') {
@@ -170,6 +177,8 @@ export function* takeIterator<T>(it: Iterable<T>, num: number): IterableIterator
     }
 }
 
-export async function* asyncIterable<T>(it: Iterable<T>): AsyncIterableIterator<T> {
-    //
+export async function* asyncIterator<T>(it: Iterable<T>, scheduler: IScheduler): AsyncIterableIterator<T> {
+    for (const value of it) {
+        yield await scheduler.schedule(() => value)
+    }
 }

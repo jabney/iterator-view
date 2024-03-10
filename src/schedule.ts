@@ -1,8 +1,9 @@
 import { Observable, Subject } from './observable'
 
 type Fn<T> = () => T
-type MaybePromise<T> = () => Promise<T> | T
-type PromiseFn<T> = () => Promise<T>
+type PromiseFn<T> = () => Promise<T> | PromiseLike<T>
+type MaybePromise<T> = T | Promise<T> | PromiseLike<T>
+type ScheduleFn<T> = () => MaybePromise<T>
 
 export function timeout(ms: number): Promise<void> {
     return new Promise(resolve => void setTimeout(resolve, ms))
@@ -13,32 +14,38 @@ export function immediate(): Promise<void> {
 }
 
 export interface IScheduler {
-    schedule: <T>(fn: MaybePromise<T>) => Promise<T>
+    schedule: <T>(fn: ScheduleFn<T>) => Promise<T>
 }
 
-export class Scheduler {
-    constructor() {
-        if (new.target != null) throw new Error('class is static')
-    }
+export abstract class Scheduler {
+    abstract schedule<T>(fn: ScheduleFn<T>): Promise<T>
 
-    static timeout(ms: number) {
+    static timeout(ms: number): IScheduler {
         return new TimeoutScheduler(ms)
     }
 
-    static immediate() {
+    static soon(): IScheduler {
+        return new SoonScheduler()
+    }
+
+    static immediate(): IScheduler {
         return new ImmediateScheduler()
     }
 
-    static sync() {
+    static sync(): IScheduler {
         return new SyncScheduler()
     }
 
-    static when(when: PromiseFn<void>) {
+    static when(when: PromiseFn<void>): IScheduler {
         return new WhenScheduler(when)
     }
 
-    static controlled(observable: Observable<boolean>) {
-        return new ControlledScheduler(observable)
+    static controlled(observable: Observable<boolean>, scheduler?: Scheduler): IScheduler {
+        return new ControlledScheduler(observable, scheduler)
+    }
+
+    static default(): IScheduler {
+        return this.soon()
     }
 }
 
@@ -53,15 +60,22 @@ class TimeoutScheduler extends Scheduler implements IScheduler {
         super()
     }
 
-    async schedule<T>(fn: MaybePromise<T>) {
+    async schedule<T>(fn: ScheduleFn<T>) {
         await timeout(this.ms)
         return await fn()
     }
 }
 
 class ImmediateScheduler extends Scheduler implements IScheduler {
-    async schedule<T>(fn: MaybePromise<T>) {
+    async schedule<T>(fn: ScheduleFn<T>) {
         await immediate()
+        return await fn()
+    }
+}
+
+class SoonScheduler extends Scheduler implements IScheduler {
+    async schedule<T>(fn: ScheduleFn<T>) {
+        await timeout(0)
         return await fn()
     }
 }
@@ -77,24 +91,26 @@ class WhenScheduler extends Scheduler implements IScheduler {
         super()
     }
 
-    async schedule<T>(fn: MaybePromise<T>) {
+    async schedule<T>(fn: ScheduleFn<T>) {
         await this.when()
         return await fn()
     }
 }
 
 class ControlledScheduler extends Scheduler implements IScheduler {
-    constructor(private readonly observable: Observable<boolean>) {
+    constructor(
+        private readonly observable: Observable<boolean>,
+        private readonly scheduler: Scheduler = Scheduler.immediate()
+    ) {
         super()
     }
 
-    async schedule<T>(fn: MaybePromise<T>) {
+    async schedule<T>(fn: ScheduleFn<T>) {
         return new Promise<T>(resolve => {
             const disposer = this.observable.subscribe(async run => {
                 if (run) {
-                    const result = await fn()
+                    resolve(await this.scheduler.schedule(fn))
                     disposer()
-                    resolve(result)
                 }
             })
         })
