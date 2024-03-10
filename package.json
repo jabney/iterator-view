@@ -1,7 +1,7 @@
 {
-  "name": "array-view",
+  "name": "iterator-view",
   "version": "1.0.0",
-  "description": "Create a view over an array",
+  "description": "Create a view over an iterable",
   "main": "index.js",
   "devDependencies": {
     "@types/node": "20.11.19",
@@ -14,12 +14,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jabney/array-view.git"
+    "url": "git+https://github.com/jabney/iterator-view.git"
   },
   "author": "James Abney",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jabney/array-view/issues"
+    "url": "https://github.com/jabney/iterator-view/issues"
   },
-  "homepage": "https://github.com/jabney/array-view#readme"
+  "homepage": "https://github.com/jabney/iterator-view#readme"
 }
