@@ -1,6 +1,7 @@
 import { normalizeEnd, normalizeStart } from './lib/normalize'
-import { Subject, Unsubscribe, createObserver } from './lib/observable'
-import { IScheduler } from './lib/schedule'
+import { Observable, Subject, Unsubscribe, createObserver } from './lib/observable'
+import { IScheduler } from './schedule'
+import util from 'util'
 
 export type Direction = 'fwd' | 'rev'
 
@@ -10,7 +11,7 @@ export type KeyFn<Key, Value> = (value: Value) => Key
 export type Predicate<T> = (value: T) => unknown
 export type Mapper<T, U> = (value: T) => U
 
-// -------------------------------------------------
+//
 // Generate
 // -------------------------------------------------
 
@@ -41,7 +42,7 @@ export function* count(num: number): IterableIterator<number> {
     }
 }
 
-export function fromSubject<T>(subject: Subject<T>): AsyncIterableIterator<T> {
+export function fromObservable<T>(subject: Observable<T>): AsyncIterableIterator<T> {
     const queue: T[] = []
     const loiterMs = fpsMs(60)
     let disposer: Unsubscribe | null = null
@@ -75,7 +76,6 @@ export function fromSubject<T>(subject: Subject<T>): AsyncIterableIterator<T> {
         },
         async throw(e: any) {
             dispose()
-            subject.error(new Error(`<fromObservable> throw called: ${e}`))
             return { value: undefined, done: true }
         },
         [Symbol.asyncIterator]() {
@@ -104,11 +104,17 @@ export function* enumerate<T>(it: Iterable<T>): IterableIterator<[number, T]> {
     }
 }
 
+export function* transform<T, U>(it: Iterable<T>, transform: (value: T) => U): IterableIterator<U> {
+    for (const v of it) {
+        yield transform(v)
+    }
+}
+
 const asyncScheduler = (scheduler?: IScheduler) => {
     if (scheduler != null) {
         return <T>(value: T) => scheduler.schedule(() => value)
     }
-    return <T>(value: T) => Promise.resolve(value)
+    return <T>(value: T) => new Promise<T>(r => setImmediate(() => r(value)))
 }
 
 export async function* async<T>(it: Iterable<T>, scheduler?: IScheduler): AsyncIterableIterator<T> {
@@ -172,6 +178,17 @@ export function* arrayRangeIterator<T>(array: readonly T[], start = 0, end = arr
         yield* forwardIterator(array, start, end)
     } else {
         yield* reverseIterator(array, start, end)
+    }
+}
+
+//
+// Debug
+// -------------------------------------------------
+
+export function* inspect<T>(it: Iterable<T>, depth = 4) {
+    for (const [index, value] of enumerate(it)) {
+        const obj = { index, value }
+        yield util.inspect(obj, { depth, colors: true, compact: true })
     }
 }
 
@@ -253,9 +270,9 @@ const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 //     return <T>(value: T): Promise<T> => new Promise(resolve => void setTimeout(() => resolve(value), ms))
 // }
 
-// function immediate() {
-//     return <T>(value: T): Promise<T> => new Promise(resolve => setImmediate(() => resolve(value)))
-// }
+function immediate() {
+    return <T>(value: T): Promise<T> => new Promise(resolve => setImmediate(() => resolve(value)))
+}
 
 // // console.log(timeMs(1, 'sec').toLocaleString())
 // // console.log(timeMs(1, 'min').toLocaleString())

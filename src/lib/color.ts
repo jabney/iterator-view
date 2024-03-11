@@ -37,7 +37,6 @@ export class Color {
     static text(str: string) {
         return new Color(str)
     }
-
     static black(str: Stringable | null = null) {
         return new Color(str, 'black')
     }
@@ -96,25 +95,35 @@ export class Color {
         return this.underscore()
     }
 
+    static random(str: Stringable | null = null) {
+        return new Color(str, 'random', 'random')
+    }
+
+    private _key: ColorKey | null = null
+    private _mod: ColorMod | null = null
+
     constructor()
     constructor(text: Stringable | null)
-    constructor(text: Stringable | null, key: ColorKey | null)
-    constructor(text: Stringable | null, key: ColorKey | null, mod: ColorMod | null)
+    constructor(text: Stringable | null, key: (ColorKey | 'random') | null)
+    constructor(text: Stringable | null, key: (ColorKey | 'random') | null, mod: (ColorMod | 'random') | null)
     constructor(
         private readonly string: Stringable | null = null,
-        private readonly key: ColorKey | null = null,
-        private readonly mod: ColorMod | null = null
-    ) {}
+        key: (ColorKey | 'random') | null = null,
+        mod: (ColorMod | 'random') | null = null
+    ) {
+        this._key = key === 'random' ? this.randomKey() : key
+        this._mod = mod === 'random' ? this.randomMod() : mod
+    }
 
     toString() {
-        const c = this.key != null ? codes[this.key] ?? '' : ''
-        const m = this.mod != null ? codes[this.mod] ?? '' : ''
+        const c = this._key != null ? codes[this._key] ?? '' : ''
+        const m = this._mod != null ? codes[this._mod] ?? '' : ''
         const t = this.string ?? ''
         return `${m}${c}${t}${codes.reset}`
     }
 
     text(str: string) {
-        return new Color(str, this.key, this.mod)
+        return new Color(str, this._key, this._mod)
     }
 
     color(): Color
@@ -132,36 +141,60 @@ export class Color {
         return this.color()
     }
 
+    private randomKey(): ColorKey {
+        const colors: ColorKey[] = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray']
+        const index = Math.floor(colors.length * Math.random())
+        return colors[index]
+    }
+
+    private randomMod(): ColorMod {
+        const mods: ColorMod[] = ['bright', 'dim', 'underscore', 'reverse']
+        const index = Math.floor(mods.length * Math.random())
+        return mods[index]
+    }
+
+    get random(): Color {
+        return this.color(this.randomKey(), this.randomMod())
+    }
+
+    get key(): string {
+        return this._key ?? 'none'
+    }
+
+    get mod(): string {
+        return this._mod ?? 'none'
+    }
+
     //
     // Colors
     //
 
     get black() {
-        return new Color(this.string, 'black', this.mod)
+        return new Color(this.string, 'black', this._mod)
     }
     get red() {
-        return new Color(this.string, 'red', this.mod)
+        return new Color(this.string, 'red', this._mod)
     }
     get green() {
-        return new Color(this.string, 'green', this.mod)
+        return new Color(this.string, 'green', this._mod)
     }
     get yellow() {
-        return new Color(this.string, 'yellow', this.mod)
+        return new Color(this.string, 'yellow', this._mod)
     }
     get blue() {
-        return new Color(this.string, 'blue', this.mod)
+        return new Color(this.string, 'blue', this._mod)
     }
     get magenta() {
-        return new Color(this.string, 'magenta', this.mod)
+        return new Color(this.string, 'magenta', this._mod)
     }
     get cyan() {
-        return new Color(this.string, 'cyan', this.mod)
+        return new Color(this.string, 'cyan', this._mod)
     }
     get white() {
-        return new Color(this.string, 'white', this.mod)
+        return new Color(this.string, 'white', this._mod)
     }
     get gray() {
-        return new Color(this.string, 'gray', this.mod)
+        return new Color(this.string, 'gray', this._mod)
     }
 
     //
@@ -169,22 +202,22 @@ export class Color {
     //
 
     get bright() {
-        return new Color(this.string, this.key, 'bright')
+        return new Color(this.string, this._key, 'bright')
     }
     get dim() {
-        return new Color(this.string, this.key, 'dim')
+        return new Color(this.string, this._key, 'dim')
     }
     get underscore() {
-        return new Color(this.string, this.key, 'underscore')
+        return new Color(this.string, this._key, 'underscore')
     }
     get blink() {
-        return new Color(this.string, this.key, 'blink')
+        return new Color(this.string, this._key, 'blink')
     }
     get reverse() {
-        return new Color(this.string, this.key, 'reverse')
+        return new Color(this.string, this._key, 'reverse')
     }
     get hidden() {
-        return new Color(this.string, this.key, 'hidden')
+        return new Color(this.string, this._key, 'hidden')
     }
 
     //
