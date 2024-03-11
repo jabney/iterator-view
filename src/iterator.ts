@@ -110,6 +110,17 @@ export function* transform<T, U>(it: Iterable<T>, transform: (value: T) => U): I
     }
 }
 
+export function* reduce<T, U>(it: Iterable<T>, reducer: (prev: U, curr: T) => U): IterableIterator<U> {
+    let prev: T | U | null = null
+    for (const v of it) {
+        if (prev == null) {
+            prev = v as T | U
+        }
+        prev = reducer(prev as U, v)
+        yield prev
+    }
+}
+
 const asyncScheduler = (scheduler?: IScheduler) => {
     if (scheduler != null) {
         return <T>(value: T) => scheduler.schedule(() => value)

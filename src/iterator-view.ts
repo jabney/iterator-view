@@ -10,6 +10,7 @@ import {
     groupify,
     KeyFn,
     transform,
+    reduce,
 } from './iterator'
 import { normalizeEnd, normalizeStart } from './lib/normalize'
 import { Scheduler } from './schedule'
@@ -43,6 +44,10 @@ export class IteratorView<T> implements Iterable<T>, AsyncIterable<T> {
 
     filter(predicate: Predicate<T>): IteratorView<T> {
         return new IteratorView(filterIterator(this.it, predicate), this.scheduler)
+    }
+
+    reduce<U>(reducer: (prev: U, curr: T) => U) {
+        return new IteratorView(reduce(this.it, reducer), this.scheduler)
     }
 
     enumerate(): IteratorView<[number, T]> {

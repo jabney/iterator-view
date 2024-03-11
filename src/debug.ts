@@ -91,20 +91,25 @@ async function groupify() {
     //     console.log(v.key, v.mod, v.text)
     // }
 
-    const view2 = new IteratorView(count(100), scheduler)
-        .filter(x => x % 2 === 0)
-        .map(x => x + 1)
-        .map(x => ' ' + x.toString() + ' ')
-        .transform(text => ({ color: c.random(text), text }))
-        .map(({ color, text }) => ({
-            key: color.key,
-            mod: color.mod,
-            text,
-        }))
+    // const view2 = new IteratorView(count(100), scheduler)
+    //     .filter(x => x % 2 === 0)
+    //     .map(x => x + 1)
+    //     .map(x => ' ' + x.toString() + ' ')
+    //     .transform(text => ({ color: c.random(text), text }))
+    //     .map(({ color, text }) => ({
+    //         key: color.key,
+    //         mod: color.mod,
+    //         text,
+    //     }))
 
-    // const key = (value: number) => value % 10
-    const groups = view2.groupify((obj: any) => obj.mod)
-    console.log(groups)
+    // // const key = (value: number) => value % 10
+    // const groups = view2.groupify((obj: any) => obj.mod)
+    // console.log(groups)
+
+    const view3 = new IteratorView(count(100), scheduler).reduce((a, b) => <number>a + b)
+    for await (const v of view3) {
+        console.log(v)
+    }
 }
 
 // colors()
