@@ -2,7 +2,7 @@ import {
     Mapper,
     Predicate,
     Direction,
-    arrayRangeIterator,
+    arrayRange,
     enumerate,
     filterIterator,
     mapIterator,
@@ -58,7 +58,8 @@ export class ArrayView<T> implements Iterable<T>, AsyncIterable<T> {
     }
 
     map<U>(mapper: Mapper<T, U>): IteratorView<U> {
-        return new IteratorView<U>(mapIterator(this.array, mapper), this.scheduler)
+        const it = mapIterator(this.iterator(), mapper)
+        return new IteratorView<U>(it, this.scheduler)
     }
 
     filter(predicate: Predicate<T>): IteratorView<T> {
@@ -67,7 +68,8 @@ export class ArrayView<T> implements Iterable<T>, AsyncIterable<T> {
     }
 
     reduce<U>(reducer: Reducer<T, U>): IteratorView<U> {
-        return new IteratorView(reduce(this.array, reducer), this.scheduler)
+        const it = reduce(this.iterator(), reducer)
+        return new IteratorView(it, this.scheduler)
     }
 
     enumerate(): IteratorView<[number, T]> {
@@ -77,7 +79,7 @@ export class ArrayView<T> implements Iterable<T>, AsyncIterable<T> {
     range(start?: number, end?: number, direction?: Direction): IteratorView<T> {
         start = this.start + normalizeStart(this.length, start ?? 0)
         end = this.start + normalizeEnd(this.length, end ?? this.length)
-        return new IteratorView(arrayRangeIterator(this.array, start, end, direction ?? 'fwd'))
+        return new IteratorView(arrayRange(this.array, start, end, direction ?? 'fwd'))
     }
 
     reverse() {
@@ -97,12 +99,12 @@ export class ArrayView<T> implements Iterable<T>, AsyncIterable<T> {
         return [...this.iterator()]
     }
 
-    iterator(): Iterable<T> {
-        return arrayRangeIterator(this.array, this.start, this.end, this.direction)
+    iterator(): IterableIterator<T> {
+        return arrayRange(this.array, this.start, this.end, this.direction)
     }
 
     asyncIterator(): AsyncIterableIterator<T> {
-        return async(arrayRangeIterator(this.array, this.start, this.end, this.direction))
+        return async(arrayRange(this.array, this.start, this.end, this.direction))
     }
 
     *[Symbol.iterator](): IterableIterator<T> {
@@ -113,7 +115,7 @@ export class ArrayView<T> implements Iterable<T>, AsyncIterable<T> {
         for await (const v of this.asyncIterator()) yield await this.scheduler.schedule(() => v)
     }
 
-    groupify<Key>(key: KeyFn<Key, T>) {
+    groupify<Key>(key: KeyFn<Key, T>): Map<Key, T[]> {
         return groupify(this.iterator(), key)
     }
 }

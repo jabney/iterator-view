@@ -102,19 +102,24 @@ async function colors() {
 async function groupify() {
     const c = Color
     const scheduler = Scheduler.timeout(10)
-    const view = ArrayView.create([...count(100)], null, scheduler)
+    const arrayView = ArrayView.create([...count(100)], null, scheduler)
+    const view = arrayView
         .filter(x => x % 2 === 0)
         .map(x => x + 1)
-        .map(x => ' ' + x.toString() + ' ')
-        .map(text => ({ color: c.random(text), text }))
-        .map(({ color, text }) => ({
-            key: color.text(color.key).str,
-            mod: color.text(color.mod).str,
-            text: color.text(text).str,
-        }))
+        .map(text => ({ color: c.random(), text: `${text}` }))
+    // .map(({ color, text }) => ({ key: color.key, mod: color.mod, text: text }))
+    // .map(({ color, text }) => ({
+    //     key: color.text(color.key).str,
+    //     mod: color.text(color.mod).str,
+    //     text: color.text(text).str,
+    // }))
 
-    for await (const v of view) {
-        console.log(v.key, v.mod, v.text)
+    // const groups = view.groupify((obj: any) => obj.key)
+    // console.log(groups)
+
+    for await (const value of view) {
+        const { color, text } = value
+        console.log(color.text(`[${color.key}:${color.mod}]:`).str, `${color.text(text)}`)
     }
 
     // const view2 = new IteratorView(count(100), scheduler)
@@ -128,15 +133,11 @@ async function groupify() {
     //         text,
     //     }))
 
-    // const key = (value: number) => value % 10
-    const groups = view.groupify((obj: any) => obj.mod)
-    console.log(groups)
-
     // const view3 = new IteratorView(count(100), scheduler).reduce((a, b) => <number>a + b)
     // for await (const v of view3) {
     //     console.log(v)
     // }
 }
 
-colors()
-// groupify()
+// colors()
+groupify()

@@ -2,7 +2,7 @@ import {
     Mapper,
     Predicate,
     Direction,
-    arrayRangeIterator,
+    arrayRange,
     enumerate,
     filterIterator,
     mapIterator,
@@ -31,7 +31,7 @@ export class IteratorView<T> implements Iterable<T>, AsyncIterable<T> {
         const start = normalizeStart(array.length, options?.start ?? 0)
         const end = normalizeEnd(array.length, options?.end ?? array.length)
         const direction = options?.direction ?? 'fwd'
-        return new IteratorView(arrayRangeIterator(array, start, end, direction))
+        return new IteratorView(arrayRange(array, start, end, direction))
     }
 
     constructor(
@@ -71,7 +71,7 @@ export class IteratorView<T> implements Iterable<T>, AsyncIterable<T> {
         return [...this.it]
     }
 
-    *iterator(): Iterator<T> {
+    *iterator(): IterableIterator<T> {
         for (const v of this.it) yield v
     }
 

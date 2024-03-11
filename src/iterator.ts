@@ -187,7 +187,7 @@ export function* reverseIterator<T>(array: readonly T[], start: number, end: num
     }
 }
 
-export function* arrayRangeIterator<T>(array: readonly T[], start = 0, end = array.length, dir: Direction) {
+export function* arrayRange<T>(array: readonly T[], start = 0, end = array.length, dir: Direction) {
     if (dir === 'fwd') {
         yield* forwardIterator(array, start, end)
     } else {
