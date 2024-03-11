@@ -11,6 +11,7 @@ import {
     KeyFn,
     transform,
     reduce,
+    Reducer,
 } from './iterator'
 import { normalizeEnd, normalizeStart } from './lib/normalize'
 import { Scheduler } from './schedule'
@@ -46,7 +47,7 @@ export class IteratorView<T> implements Iterable<T>, AsyncIterable<T> {
         return new IteratorView(filterIterator(this.it, predicate), this.scheduler)
     }
 
-    reduce<U>(reducer: (prev: U, curr: T) => U) {
+    reduce<U>(reducer: Reducer<T, U>) {
         return new IteratorView(reduce(this.it, reducer), this.scheduler)
     }
 

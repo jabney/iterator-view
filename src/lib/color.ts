@@ -95,8 +95,8 @@ export class Color {
         return this.underscore()
     }
 
-    static random(str: Stringable | null = null) {
-        return new Color(str, 'random', 'random')
+    static random(str: Stringable | null = null, mod?: ColorMod | null) {
+        return new Color(str, 'random', mod ?? null)
     }
 
     private _key: ColorKey | null = null
@@ -142,7 +142,7 @@ export class Color {
     }
 
     private randomKey(): ColorKey {
-        const colors: ColorKey[] = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray']
+        const colors: ColorKey[] = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white']
         const index = Math.floor(colors.length * Math.random())
         return colors[index]
     }
@@ -154,7 +154,7 @@ export class Color {
     }
 
     get random(): Color {
-        return this.color(this.randomKey(), this.randomMod())
+        return this.color(this.randomKey(), this._mod)
     }
 
     get key(): string {

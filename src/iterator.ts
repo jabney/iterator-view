@@ -1,4 +1,4 @@
-import { normalizeEnd, normalizeStart } from './lib/normalize'
+import { normalizeBounds, normalizeEnd, normalizeStart } from './lib/normalize'
 import { Observable, Subject, Unsubscribe, createObserver } from './lib/observable'
 import { IScheduler } from './schedule'
 import util from 'util'
@@ -10,6 +10,7 @@ export type ValueFn<T, U> = (value: T, index: number) => U
 export type KeyFn<Key, Value> = (value: Value) => Key
 export type Predicate<T> = (value: T) => unknown
 export type Mapper<T, U> = (value: T) => U
+export type Reducer<T, U> = (prev: T | U, curr: T) => U
 
 //
 // Generate
@@ -110,7 +111,7 @@ export function* transform<T, U>(it: Iterable<T>, transform: (value: T) => U): I
     }
 }
 
-export function* reduce<T, U>(it: Iterable<T>, reducer: (prev: U, curr: T) => U): IterableIterator<U> {
+export function* reduce<T, U>(it: Iterable<T>, reducer: Reducer<T, U>): IterableIterator<U> {
     let prev: T | U | null = null
     for (const v of it) {
         if (prev == null) {
@@ -166,25 +167,27 @@ export function partition<V, K>(it: Iterable<V>, key: KeyFn<K, V>): IterableIter
 // Array
 // -------------------------------------------------
 
-export function* forwardIterator<T>(array: readonly T[], start: number, end: number): IterableIterator<[T, number]> {
+export function* forwardIterator<T>(array: readonly T[], start: number, end: number): IterableIterator<T> {
     if (end < start) return yield* reverseIterator(array, end + 1, start + 1)
 
-    for (let i = start; i < end; i++) {
-        yield [array[i], i - start]
+    const [$start, $end] = normalizeBounds(array.length, start ?? 0, end ?? 0)
+
+    for (let i = $start; i < $end; i++) {
+        yield array[i]
     }
 }
 
-export function* reverseIterator<T>(array: readonly T[], start: number, end: number): IterableIterator<[T, number]> {
+export function* reverseIterator<T>(array: readonly T[], start: number, end: number): IterableIterator<T> {
     if (end < start) return yield* forwardIterator(array, end + 1, start + 1)
 
-    for (let i = end - 1; i >= start; i--) {
-        yield [array[i], end - i - 1]
+    const [$start, $end] = normalizeBounds(array.length, start ?? 0, end ?? 0)
+
+    for (let i = $end - 1; i >= $start; i--) {
+        yield array[i]
     }
 }
 
 export function* arrayRangeIterator<T>(array: readonly T[], start = 0, end = array.length, dir: Direction) {
-    start = normalizeStart(array.length, start)
-    end = normalizeEnd(array.length, end)
     if (dir === 'fwd') {
         yield* forwardIterator(array, start, end)
     } else {

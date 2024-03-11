@@ -23,3 +23,7 @@ export const normalizeEnd = (length: number, end: number): number => {
     }
     return end
 }
+
+export const normalizeBounds = (length: number, start: number, end: number): [number, number] => {
+    return [normalizeStart(length, start), normalizeEnd(length, end)]
+}
