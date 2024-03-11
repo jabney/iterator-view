@@ -1,4 +1,4 @@
-import { Observable, Subject } from './lib/observable'
+import { Observable, Subject } from './observable'
 
 type Fn<T> = () => T
 type PromiseFn<T> = () => Promise<T> | PromiseLike<T>

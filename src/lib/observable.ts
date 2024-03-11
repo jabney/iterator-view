@@ -6,15 +6,15 @@ type ErrorFn = (e: any) => void
 
 export interface IObserver<T> {
     readonly next: NextFn<T>
-    readonly complete: CompleteFn
-    readonly error: ErrorFn
+    readonly complete?: CompleteFn
+    readonly error?: ErrorFn
 }
 
-class Observer<T> implements IObserver<T> {
+export class Observer<T> implements IObserver<T> {
     constructor(
         readonly next: NextFn<T>,
-        readonly complete: CompleteFn = () => {},
-        readonly error: ErrorFn = () => {}
+        readonly complete?: CompleteFn,
+        readonly error?: ErrorFn
     ) {}
 }
 
@@ -28,12 +28,17 @@ export interface IObservable<T> {
     readonly isComplete: boolean
     readonly hasError: boolean
     readonly exception: Error | null
-    subscribe(observer: ObserverFn<T>): Unsubscribe
+    subscribe(observer: ObserverType<T>): Unsubscribe
+}
+
+function createError(error: any) {
+    const msg = error?.stack ?? error?.message ?? error?.toString?.()
+    return new Error(msg ?? 'unknown error')
 }
 
 class ObservableError extends Error {
     constructor(readonly error: any) {
-        const e = error instanceof Error ? error : new Error(error?.stack ?? error?.message ?? error?.toString?.() ?? 'unknown error')
+        const e = error instanceof Error ? error : createError(error)
         super(e.message)
     }
 }
@@ -51,9 +56,13 @@ const getOptions = createOptions<IOptions>({
     notifyNew: true,
 })
 
-const noop = () => void 0
+const unsubscribe = <T>(observers: Observers<T>) => {
+    return (observer: IObserver<T>) => () => {
+        observers.delete(observer)
+    }
+}
 
-const createObserver = <T>(o: ObserverType<T>) => {
+export const createObserver = <T>(o: ObserverType<T>) => {
     if (typeof o === 'function') {
         return new Observer(o)
     }
@@ -63,6 +72,7 @@ const createObserver = <T>(o: ObserverType<T>) => {
 export class Observable<T> implements IObservable<T> {
     protected readonly observers: Set<IObserver<T>>
     protected readonly options: IOptions
+    private readonly unsub: (observer: IObserver<T>) => Unsubscribe
 
     private _value: T | undefined = undefined
     private _complete = false
@@ -74,6 +84,7 @@ export class Observable<T> implements IObservable<T> {
     constructor(options?: Options, observers?: Observers<T> | null) {
         this.options = getOptions(options)
         this.observers = observers ?? new Set<IObserver<T>>()
+        this.unsub = unsubscribe(this.observers)
     }
 
     get value(): T | undefined {
@@ -85,7 +96,7 @@ export class Observable<T> implements IObservable<T> {
     }
 
     get isComplete(): boolean {
-        return this._complete
+        return this._complete || this._exception != null
     }
 
     protected set isComplete(v: boolean) {
@@ -106,26 +117,51 @@ export class Observable<T> implements IObservable<T> {
 
     subscribe = (observer: ObserverType<T>): Unsubscribe => {
         const o = createObserver(observer)
+        const disposer = this.unsub(o)
+
+        if (this._value !== undefined && this.options.notifyNew) {
+            o.next(this._value)
+        }
 
         if (this.isComplete) {
-            o.complete()
-            return noop
+            o.complete?.()
+            return disposer
         }
 
         if (this.hasError) {
-            o.error(this._exception)
-            return noop
+            o.error?.(this._exception)
+            return disposer
         }
 
         this.observers.add(o)
-        if (this._value !== undefined) {
-            o.next(this._value)
-        }
-        return () => void this.observers.delete(o)
+
+        return disposer
     }
 }
 
-export abstract class Subject<T> extends Observable<T> implements IObserver<T> {
+export class Subject<T> extends Observable<T> implements IObserver<T> {
+    static from<T>(it: Iterable<T>): Subject<T> {
+        const subject = new Subject<T>()
+        subject.init(it)
+        return subject
+    }
+
+    static fromAsync<T>(it: AsyncIterable<T>): Subject<T> {
+        const subject = new Subject<T>()
+        subject.initAsync(it)
+        return subject
+    }
+
+    private init(it: Iterable<T>) {
+        for (const v of it) this.next(v)
+        this.complete()
+    }
+
+    private async initAsync(it: AsyncIterable<T>) {
+        for await (const v of it) this.next(v)
+        this.complete()
+    }
+
     next(value: T): void {
         this.value = value
         for (const o of this.observers) {
@@ -136,14 +172,14 @@ export abstract class Subject<T> extends Observable<T> implements IObserver<T> {
     complete = () => {
         this.isComplete = true
         for (const o of this.observers) {
-            o.complete()
+            o.complete?.()
         }
     }
 
     error(e: any) {
         this.exception = new ObservableError(e)
         for (const o of this.observers) {
-            o.error(this.exception)
+            o.error?.(this.exception)
         }
     }
 

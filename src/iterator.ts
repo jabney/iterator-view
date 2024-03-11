@@ -1,5 +1,6 @@
-import { normalizeEnd, normalizeStart } from './normalize'
-// import { Disposer, IObservable } from './observable'
+import { normalizeEnd, normalizeStart } from './lib/normalize'
+import { Subject, Unsubscribe, createObserver } from './lib/observable'
+import { IScheduler } from './lib/schedule'
 
 export type Direction = 'fwd' | 'rev'
 
@@ -40,36 +41,49 @@ export function* count(num: number): IterableIterator<number> {
     }
 }
 
-// export function fromObservable<T>(observable: IObservable<T>): AsyncIterableIterator<T> {
-//     const queue: T[] | null = null
-//     let disposer: Disposer | null = null
-//     // let promise: Promise<T>
+export function fromSubject<T>(subject: Subject<T>): AsyncIterableIterator<T> {
+    const queue: T[] = []
+    const loiterMs = fpsMs(60)
+    let disposer: Unsubscribe | null = null
 
-//     disposer = observable.subscribe(x => {
-//         // yield x
-//     })
+    const observer = createObserver<T>({
+        next: value => void queue.push(value),
+    })
 
-//     const dispose = () => void (disposer?.(), (disposer = null))
+    disposer = subject.subscribe(observer)
+    const dispose = () => void (disposer?.(), (disposer = null))
 
-//     return {
-//         async next() {
-//             // while (queue == null) await timeout()
-//             // const value = queue.shift()
-//             return Promise.resolve({ value: value! })
-//         },
-//         return(value: T) {
-//             dispose()
-//             return Promise.resolve({ value, done: true })
-//         },
-//         throw(e: any) {
-//             dispose()
-//             return Promise.resolve({ value: undefined, done: true })
-//         },
-//         [Symbol.asyncIterator]() {
-//             return this
-//         },
-//     }
-// }
+    const loiter = async (queue: T[], ms: number) => {
+        while (queue.length === 0 && !subject.isComplete) await wait(ms)
+    }
+
+    const result: AsyncIterableIterator<T> = {
+        async next() {
+            if (subject.isComplete || subject.hasError) dispose()
+
+            await Promise.race([loiter(queue, loiterMs)])
+            const value = queue.shift()
+
+            if (value != null) {
+                return { value, done: false }
+            }
+            return { value: undefined, done: true }
+        },
+        async return(value?: T) {
+            dispose()
+            return { value, done: true }
+        },
+        async throw(e: any) {
+            dispose()
+            subject.error(new Error(`<fromObservable> throw called: ${e}`))
+            return { value: undefined, done: true }
+        },
+        [Symbol.asyncIterator]() {
+            return this
+        },
+    }
+    return result
+}
 
 //
 // Transform
@@ -90,16 +104,18 @@ export function* enumerate<T>(it: Iterable<T>): IterableIterator<[number, T]> {
     }
 }
 
-export function* promisify<T>(it: Iterable<T>, schedule: number | boolean = true): IterableIterator<Promise<T>> {
-    const scheduleFn = scheduler(schedule)
-    for (const value of it) {
-        yield scheduleFn(value)
+const asyncScheduler = (scheduler?: IScheduler) => {
+    if (scheduler != null) {
+        return <T>(value: T) => scheduler.schedule(() => value)
     }
+    return <T>(value: T) => Promise.resolve(value)
 }
 
-export async function* async<T>(it: Iterable<T>): AsyncIterableIterator<T> {
+export async function* async<T>(it: Iterable<T>, scheduler?: IScheduler): AsyncIterableIterator<T> {
+    const schedule = asyncScheduler(scheduler)
+
     for (const value of it) {
-        yield await value
+        yield await schedule(value)
     }
 }
 
@@ -208,21 +224,50 @@ const normalizeRange = (start: number, end: number, dir: Direction): [Direction,
     }
 }
 
-const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-
-function scheduler(schedule: number | boolean) {
-    if (schedule === false) {
-        return <T>(value: T) => Promise.resolve(value)
-    } else {
-        const fn = typeof schedule === 'number' ? timeout(schedule) : immediate()
-        return <T>(value: T) => fn(value)
+const timeMs = (time: number, unit: 'ms' | 'sec' | 'min' | 'hr' | 'day' | 'week' | 'month' | 'year'): number => {
+    switch (unit) {
+        case 'ms':
+            return Math.round(time)
+        case 'sec':
+            return timeMs(1000 * time, 'ms')
+        case 'min':
+            return timeMs(60 * time, 'sec')
+        case 'hr':
+            return timeMs(60 * time, 'min')
+        case 'day':
+            return timeMs(24 * time, 'hr')
+        case 'week':
+            return timeMs(7 * time, 'day')
+        case 'month':
+            return timeMs(time / 12, 'year')
+        case 'year':
+            return timeMs(365.25 * time, 'day')
     }
 }
 
-function timeout(ms: number) {
-    return <T>(value: T): Promise<T> => new Promise(resolve => void setTimeout(() => resolve(value), ms))
-}
+const fpsMs = (fps: number) => 1000 / fps
 
-function immediate() {
-    return <T>(value: T): Promise<T> => new Promise(resolve => setImmediate(() => resolve(value)))
-}
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+// function timeout(ms: number) {
+//     return <T>(value: T): Promise<T> => new Promise(resolve => void setTimeout(() => resolve(value), ms))
+// }
+
+// function immediate() {
+//     return <T>(value: T): Promise<T> => new Promise(resolve => setImmediate(() => resolve(value)))
+// }
+
+// // console.log(timeMs(1, 'sec').toLocaleString())
+// // console.log(timeMs(1, 'min').toLocaleString())
+// // console.log(timeMs(1, 'hr').toLocaleString())
+// // console.log(timeMs(1, 'day').toLocaleString())
+// // console.log(timeMs(1, 'week').toLocaleString())
+
+// async function main() {
+//     const subject = Subject.fromAsync(async(count(100), Scheduler.immediate()))
+
+//     for await (const v of fromSubject(subject)) {
+//         console.log(v)
+//     }
+// }
+// main()
