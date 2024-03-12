@@ -31,7 +31,7 @@ const codes = {
 type Mods = 'bright' | 'dim' | 'underscore' | 'blink' | 'reverse' | 'hidden'
 type ColorKey = Exclude<keyof typeof codes, Mods | 'reset'>
 type ColorMod = Extract<keyof typeof codes, Mods>
-type Stringable = { toString(): string }
+export type Stringable = { toString(): string }
 
 export class Color {
     static text(str: string) {
@@ -107,7 +107,7 @@ export class Color {
     constructor(text: Stringable | null, key: (ColorKey | 'random') | null)
     constructor(text: Stringable | null, key: (ColorKey | 'random') | null, mod: (ColorMod | 'random') | null)
     constructor(
-        private readonly string: Stringable | null = null,
+        readonly string: Stringable | null = null,
         key: (ColorKey | 'random') | null = null,
         mod: (ColorMod | 'random') | null = null
     ) {
