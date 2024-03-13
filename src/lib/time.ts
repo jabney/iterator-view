@@ -21,13 +21,13 @@ export const timeMs = (time: number, unit: TimeUnit): number => {
     }
 }
 
-export const time = (unit: TimeUnit) => (t: number) => timeMs(t, unit)
+export const timeUnit = (unit: TimeUnit) => (t: number) => timeMs(t, unit)
 
-export const fpsMs = (fps: number) => 1000 / fps
+export const fpsMs = (rate: number) => 1000 / rate
 
-export const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+export const wait = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
-export const when = async (ms: number, action: () => void | Promise<void>) => {
+export const when = async <T = void>(ms: number, action: () => T | Promise<T>) => {
     await wait(ms)
-    await action()
+    return await action()
 }

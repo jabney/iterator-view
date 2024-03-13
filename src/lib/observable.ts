@@ -80,11 +80,12 @@ export class Observable<T> implements IObservable<T> {
 
     constructor()
     constructor(options: Options)
-    constructor(options: Options, observers: Observers<T>)
-    constructor(options?: Options, observers?: Observers<T> | null) {
+    constructor(options: Options, observers: Observers<T>, value: T | undefined)
+    constructor(options?: Options, observers?: Observers<T> | null, value?: T) {
         this.options = getOptions(options)
         this.observers = observers ?? new Set<IObserver<T>>()
         this.unsub = unsubscribe(this.observers)
+        this._value = value
     }
 
     get value(): T | undefined {
@@ -184,6 +185,6 @@ export class Subject<T> extends Observable<T> implements IObserver<T> {
     }
 
     asObservable(): Observable<T> {
-        return new Observable(this.options, this.observers)
+        return new Observable(this.options, this.observers, this.value)
     }
 }

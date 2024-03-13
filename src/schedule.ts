@@ -32,6 +32,10 @@ export abstract class Scheduler {
         return new ImmediateScheduler()
     }
 
+    static random(minMs: number, maxMs: number): IScheduler {
+        return new RandomScheduler(minMs, maxMs)
+    }
+
     static sync(): IScheduler {
         return new SyncScheduler()
     }
@@ -76,6 +80,21 @@ class ImmediateScheduler extends Scheduler implements IScheduler {
 class SoonScheduler extends Scheduler implements IScheduler {
     async schedule<T>(fn: ScheduleFn<T>) {
         await timeout(0)
+        return await fn()
+    }
+}
+
+class RandomScheduler extends Scheduler implements IScheduler {
+    constructor(
+        private readonly min: number,
+        private readonly ma: number
+    ) {
+        super()
+    }
+
+    async schedule<T>(fn: ScheduleFn<T>) {
+        const ms = this.min + (this.ma - this.min) * Math.random()
+        await timeout(ms)
         return await fn()
     }
 }
