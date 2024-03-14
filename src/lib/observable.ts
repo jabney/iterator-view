@@ -56,43 +56,35 @@ const getOptions = createOptions<IOptions>({
     notifyNew: true,
 })
 
-const unsubscribe = <T>(observers: Observers<T>) => {
-    return (observer: IObserver<T>) => () => {
-        observers.delete(observer)
-    }
-}
-
-export const createObserver = <T>(o: ObserverType<T>) => {
+export function createObserver<T>(o: ObserverType<T>) {
     if (typeof o === 'function') {
         return new Observer(o)
     }
     return new Observer(o.next, o.complete, o.error)
 }
 
-export class Observable<T> implements IObservable<T> {
+const unsubscribe = <T>(observers: Observers<T>): SubscribeFn<T> => {
+    return observer => () => observers.delete(observer)
+}
+
+type SubscribeFn<T> = (observer: IObserver<T>) => Unsubscribe
+
+abstract class ObservableBase<T> implements IObservable<T> {
     protected readonly observers: Set<IObserver<T>>
-    protected readonly options: IOptions
-    private readonly unsub: (observer: IObserver<T>) => Unsubscribe
 
-    private _value: T | undefined = undefined
-    private _complete = false
-    private _exception: Error | null = null
+    protected _value: T | undefined = undefined
+    protected _complete = false
+    protected _exception: Error | null = null
 
-    constructor()
-    constructor(options: Options)
-    constructor(options: Options, observers: Observers<T>, value: T | undefined)
-    constructor(options?: Options, observers?: Observers<T> | null, value?: T) {
-        this.options = getOptions(options)
-        this.observers = observers ?? new Set<IObserver<T>>()
-        this.unsub = unsubscribe(this.observers)
-        this._value = value
+    constructor(observers: Observers<T>) {
+        this.observers = observers
     }
 
     get value(): T | undefined {
         return this._value
     }
 
-    protected set value(v: T) {
+    protected set value(v: T | undefined) {
         this._value = v
     }
 
@@ -116,11 +108,29 @@ export class Observable<T> implements IObservable<T> {
         this._exception = e
     }
 
-    subscribe = (observer: ObserverType<T>): Unsubscribe => {
-        const o = createObserver(observer)
-        const disposer = this.unsub(o)
+    abstract subscribe(observer: ObserverType<T>): Unsubscribe
 
-        if (this._value !== undefined && this.options.notifyNew) {
+    protected createObserver<T>(o: ObserverType<T>) {
+        return createObserver(o)
+    }
+}
+
+export class Observable<T> extends ObservableBase<T> {
+    // protected readonly options: IOptions
+
+    constructor()
+    constructor(observers: Observers<T>, value?: T)
+    constructor(observers?: Observers<T> | null, value?: T) {
+        super(new Set(observers))
+        // this.options = getOptions(options)
+        this.value = value
+    }
+
+    protected addSubscriber(observer: ObserverType<T>): Unsubscribe {
+        const o = this.createObserver(observer)
+        const disposer = () => void this.observers.delete(o)
+
+        if (this._value !== undefined) {
             o.next(this._value)
         }
 
@@ -138,13 +148,35 @@ export class Observable<T> implements IObservable<T> {
 
         return disposer
     }
+
+    subscribe(observer: ObserverType<T>): Unsubscribe {
+        return this.addSubscriber(observer)
+    }
 }
 
-export class Subject<T> extends Observable<T> implements IObserver<T> {
+class ProxyObservable<T> extends ObservableBase<T> {
+    constructor(observers: Observers<T>)
+    constructor(observers: Observers<T>, value?: T) {
+        super(observers)
+        // this.options = getOptions(options)
+        this.value = value
+    }
+
+    subscribe(observer: ObserverType<T>): Unsubscribe {
+        const o = this.createObserver(observer)
+        return () => void this.observers.delete(o)
+    }
+}
+
+export class Subject<T> extends ObservableBase<T> {
     static from<T>(it: Iterable<T>): Subject<T> {
         const subject = new Subject<T>()
         subject.init(it)
         return subject
+    }
+
+    constructor() {
+        super(new Set<Observer<T>>())
     }
 
     static fromAsync<T>(it: AsyncIterable<T>): Subject<T> {
@@ -170,21 +202,26 @@ export class Subject<T> extends Observable<T> implements IObserver<T> {
         }
     }
 
-    complete = () => {
+    readonly complete = (): void => {
         this.isComplete = true
         for (const o of this.observers) {
             o.complete?.()
         }
     }
 
-    error(e: any) {
+    readonly error = (e: any): void => {
         this.exception = new ObservableError(e)
         for (const o of this.observers) {
             o.error?.(this.exception)
         }
     }
 
-    asObservable(): Observable<T> {
-        return new Observable(this.options, this.observers, this.value)
+    subscribe(observer: ObserverType<T>) {
+        const o = this.createObserver(observer)
+        return () => void this.observers.delete(o)
+    }
+
+    asObservable(): IObservable<T> {
+        return new ProxyObservable(this.observers)
     }
 }

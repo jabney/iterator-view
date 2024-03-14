@@ -28,12 +28,12 @@ const codes = {
     bgGray: '\x1b[100m',
 }
 
-type Mods = 'bright' | 'dim' | 'underscore' | 'blink' | 'reverse' | 'hidden'
-type ColorKey = Exclude<keyof typeof codes, Mods | 'reset'>
-type ColorMod = Extract<keyof typeof codes, Mods>
+type ModType = 'bright' | 'dim' | 'underscore' | 'blink' | 'reverse' | 'hidden'
+export type ColorKey = Exclude<keyof typeof codes, ModType | 'reset'>
+export type ColorMod = Extract<keyof typeof codes, ModType>
 export type Stringable = { toString(): string }
 
-export class Color {
+export class Color implements Stringable {
     static text(str: string) {
         return new Color(str)
     }
@@ -81,6 +81,10 @@ export class Color {
     }
     static hidden(str: Stringable | null = null) {
         return new Color(str, null, 'hidden')
+    }
+
+    static color(key: ColorKey, mod: ColorMod | null = null) {
+        return new Color(null, key, mod)
     }
 
     static get br() {

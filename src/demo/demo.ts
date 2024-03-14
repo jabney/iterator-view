@@ -1,34 +1,24 @@
-import { count, enumerate } from '../iterator'
+import { count } from '../iterator'
 import { IteratorView } from '../iterator-view'
-import { clamp } from '../lib/clamp'
-import { Color, Stringable } from '../lib/color'
-import { Subject } from '../lib/observable'
-import { fpsMs, timeUnit, timeMs, wait, when } from '../lib/time'
-import { IScheduler, Scheduler } from '../schedule'
-import { cursor, scroller, text as t, unfold, write as w } from './demo-utils'
-import { IPoint, Point, IRect, Rect, IUnfoldItem, AsyncFn } from './types'
-import { EventEmitter } from 'node:events'
+import { Color } from '../lib/color'
+import { fpsMs, timeUnit, wait, when } from '../lib/time'
+import { Scheduler } from '../schedule'
+import { Panel, TextPanel } from './Panel'
+import { Controller } from './controller'
+import { scroller, text as t, unfold, write as w } from './demo-utils'
+import { System } from './system'
+import { IPoint, IRect, Rect, IUnfoldItem, AsyncFn, Point } from './types'
 
 const out = process.stdout
 
-const sec = timeUnit('sec')
+const fromSeconds = timeUnit('sec')
+const whenSeconds = <T>(sec: number, action: () => T | Promise<T>) => when(sec, action)
+const waitSeconds = (sec: number) => wait(fromSeconds(sec))
 const fps60 = fpsMs(60)
 
-const Pad: Readonly<Point> = { x: 6, y: 3 }
+const Pad: Readonly<IPoint> = { x: 6, y: 3 }
 
-type WindowSize = { cols: number; lines: number }
-
-const getWindowSize = (): WindowSize => {
-    const [cols, lines] = process.stdout.getWindowSize()
-    return { cols, lines }
-}
-
-const windowSize$ = (() => {
-    const subject = new Subject<{ cols: number; lines: number }>()
-    subject.next(getWindowSize())
-    process.stdout.on('resize', () => void subject.next(getWindowSize()))
-    return subject.asObservable()
-})()
+const system = new System()
 
 const writeTitle = (colors: Color[], rect: IRect) => {
     const title = colors[0]
@@ -58,7 +48,7 @@ const writeTitle = (colors: Color[], rect: IRect) => {
     w.blank()
 }
 
-const writeHeading = (heading: Color, rect: IRect) => {
+const writeHeading = (heading: Color, rect: IRect, underline = true) => {
     const c = heading
 
     // top margin
@@ -68,7 +58,7 @@ const writeHeading = (heading: Color, rect: IRect) => {
     w.inset(rect.pos.x, c.text(`${heading.str}`))
 
     // Underline
-    w.inset(rect.pos.x, c.text(t.repeat(c.str.length, '-')))
+    if (underline) w.inset(rect.pos.x, c.text(t.repeat(c.str.length, '-')))
 }
 
 async function runScript(script: (() => Promise<void>)[]) {
@@ -95,53 +85,19 @@ async function intro() {
     const title2 = t.inset(t2offset, t2text)
 
     const script: (() => Promise<void>)[] = [
-        async () => void cursor.hide(),
-        async () => console.clear(),
+        async () => void system.cursor.hide(),
+        async () => void console.clear(),
 
         // async () => w.writeln(c.text(`${t2offset}`)),
         async () => writeTitle(title, rectTitle),
-        async () => when(sec(5), () => console.clear()),
-        async () => when(sec(1), () => scroll(c.text(title2).bright, 2)),
-        async () => wait(sec(1)),
+        async () => whenSeconds(5, () => console.clear()),
+        async () => whenSeconds(1, () => scroll(c.text(title2).bright, 2)),
+        async () => waitSeconds(1),
 
-        async () => void cursor.show(),
+        async () => void system.cursor.show(),
     ]
 
     await runScript(script)
-}
-
-interface IController<T = unknown> {
-    halt: boolean
-    pause: boolean
-    data: T
-}
-
-class Controller<T extends { [key: string]: unknown } = {}> implements IController<T> {
-    private readonly state: T | null
-
-    constructor()
-    constructor(
-        public halt = false,
-        public pause = false,
-        private _data: T | null = null
-    ) {
-        this.state = JSON.parse(JSON.stringify(_data))
-    }
-
-    get data(): T {
-        return this._data ?? ({} as T)
-    }
-
-    set(key: keyof T, value: T[typeof key]): this {
-        this.data[key] = value
-        return this
-    }
-
-    reset() {
-        this.halt = false
-        this.pause = false
-        this._data = this.state
-    }
 }
 
 async function Demo_LazyTimeout(ctrl = new Controller()) {
@@ -188,14 +144,14 @@ async function Demo_LazyTimeout(ctrl = new Controller()) {
     const script: AsyncFn[] = [
         async () => void console.clear(),
         async () => writeHeading(a.title.bright, rectTitle),
-        async () => wait(sec(2)),
+        async () => waitSeconds(2),
         async () => unfold(a.lines),
         async () => w.blank(),
         async () => void stream1(100),
-        async () => wait(sec(3)),
+        async () => waitSeconds(3),
         async () => void stream2(500, 800),
-        async () => when(sec(4), () => void (ctrl.halt = true)),
-        async () => wait(sec(1)),
+        async () => whenSeconds(4, () => void (ctrl.halt = true)),
+        async () => waitSeconds(1),
         async () => void console.clear(),
         //
         async () => writeHeading(b.title.bright, rectTitle),
@@ -204,7 +160,11 @@ async function Demo_LazyTimeout(ctrl = new Controller()) {
         async () => void (ctrl.halt = false),
         async () => void stream1(0),
         async () => void stream2(50, 80),
-        async () => when(sec(2), () => void (ctrl.halt = true)),
+        async () => whenSeconds(2, () => void (ctrl.halt = true)),
+        async () => writeHeading(c.text(`That was faster.`), rectTitle),
+        async () => waitSeconds(2),
+
+        async () => void 0,
         async () => void 0,
     ]
 
@@ -255,14 +215,14 @@ async function Demo_Immediate(ctrl = new Controller()) {
     const script: AsyncFn[] = [
         async () => void console.clear(),
         async () => writeHeading(a.title.bright, rectTitle),
-        async () => wait(sec(2)),
+        async () => waitSeconds(2),
         async () => unfold(a.lines),
         async () => w.blank(),
         async () => void stream1(100),
-        async () => wait(sec(3)),
+        async () => waitSeconds(3),
         async () => void stream2(500, 800),
-        async () => when(sec(4), () => void (ctrl.halt = true)),
-        async () => wait(sec(1)),
+        async () => whenSeconds(4, () => void (ctrl.halt = true)),
+        async () => waitSeconds(1),
         async () => void console.clear(),
         //
         async () => writeHeading(b.title.bright, rectTitle),
@@ -271,39 +231,40 @@ async function Demo_Immediate(ctrl = new Controller()) {
         async () => void (ctrl.halt = false),
         async () => void stream1(0),
         async () => void stream2(50, 80),
-        async () => when(sec(2), () => void (ctrl.halt = true)),
+        async () => whenSeconds(2, () => void (ctrl.halt = true)),
         async () => void 0,
     ]
 
     await runScript(script)
 }
 
-// const myEE = new EventEmitter();
-// myEE.on('foo', () => console.log('a'));
-// myEE.prependListener('foo', () => console.log('b'));
-// myEE.emit('foo');
-// process.on('SIGABRT', (x: any) => console.log('jimmy:', x))
-// process.on('SIGBREAK', (x: any) => console.log('jimmy:', x))
-// process.on('SIGQUIT', (x: any) => console.log('jimmy:', x))
-
-process.on('SIGINT', () => {
-    cursor.show()
-    process.exit(0)
-})
+async function PanelTest() {
+    const host = new Panel(new Rect(48, 12, new Point(10, 5)))
+    const text = Color.magenta('This is a text panel')
+    const width = text.str.length
+    const height = 1
+    const textPanel = new TextPanel(Color.magenta('This is a text panel'), new Rect(width, height, new Point()))
+    host.addChild(textPanel)
+    host.render()
+    await waitSeconds(5)
+}
 
 export async function demo() {
+    system.cursor.hide()
+
     const script = [
-        async () => void cursor.hide(),
+        async () => void console.clear(),
         //
-
         // async () => await intro(),
-        async () => await Demo_LazyTimeout(),
-
         //
-        async () => void cursor.show(),
+        async () => await PanelTest(),
+        //
+        // async () => await Demo_LazyTimeout(),
+        //
     ]
 
-    runScript(script)
+    await runScript(script)
+    system.cursor.show()
 }
 
 demo()

@@ -8,11 +8,6 @@ import { IPoint, IUnfoldItem, Point } from './types'
 
 const out = process.stdout
 
-export const cursor = Object.freeze({
-    hide: () => out.write('\x1B[?25l'),
-    show: () => out.write('\x1B[?25h'),
-})
-
 export const sec = timeUnit('sec')
 
 export const text = {
