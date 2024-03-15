@@ -83,7 +83,7 @@ export class Color implements Stringable {
         return new Color(str, null, 'hidden')
     }
 
-    static color(key: ColorKey, mod: ColorMod | null = null) {
+    static color(key: ColorKey | null, mod: ColorMod | null = null) {
         return new Color(null, key, mod)
     }
 
@@ -161,12 +161,12 @@ export class Color implements Stringable {
         return this.color(this.randomKey(), this._mod)
     }
 
-    get key(): string {
-        return this._key ?? 'none'
+    get key(): ColorKey | null {
+        return this._key
     }
 
-    get mod(): string {
-        return this._mod ?? 'none'
+    get mod(): ColorMod | null {
+        return this._mod
     }
 
     //
