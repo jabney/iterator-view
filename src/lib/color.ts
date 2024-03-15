@@ -28,15 +28,25 @@ const codes = {
     bgGray: '\x1b[100m',
 }
 
-type ModType = 'bright' | 'dim' | 'underscore' | 'blink' | 'reverse' | 'hidden'
-export type ColorKey = Exclude<keyof typeof codes, ModType | 'reset'>
-export type ColorMod = Extract<keyof typeof codes, ModType>
+export type FgColor = 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white' | 'gray'
+export type BgColor = 'bgBlack' | 'bgRed' | 'bgGreen' | 'bgYellow' | 'bgBlue' | 'bgMagenta' | 'bgCyan' | 'bgWhite' | 'bgGray'
+export type ColorMod = 'bright' | 'dim' | 'underscore' | 'blink' | 'reverse' | 'hidden'
 export type Stringable = { toString(): string }
 
 export class Color implements Stringable {
-    static text(str: string) {
+    static text(str: Stringable) {
         return new Color(str)
     }
+
+    static color(): Color
+    static color(fgKey: FgColor): Color
+    static color(fgKey: FgColor, bgKey: BgColor): Color
+    static color(fgKey: FgColor, bgKey: BgColor, mod: ColorMod): Color
+    static color(fgKey: FgColor | null, bgKey: BgColor | null, mod: ColorMod | null): Color
+    static color(fgKey: FgColor | null = null, bgKey: BgColor | null = null, mod: ColorMod | null = null) {
+        return new Color(null, fgKey, bgKey, mod)
+    }
+
     static black(str: Stringable | null = null) {
         return new Color(str, 'black')
     }
@@ -64,27 +74,52 @@ export class Color implements Stringable {
     static gray(str: Stringable | null = null) {
         return new Color(str, 'gray')
     }
-    static bright(str: Stringable | null = null) {
-        return new Color(str, null, 'bright')
+
+    static bgBlack(str: Stringable | null = null) {
+        return new Color(str, null, 'bgBlack')
     }
-    static dim(str: Stringable | null = null) {
-        return new Color(str, null, 'dim')
+    static bgRed(str: Stringable | null = null) {
+        return new Color(str, null, 'bgRed')
     }
-    static underscore(str: Stringable | null = null) {
-        return new Color(str, null, 'underscore')
+    static bgGreen(str: Stringable | null = null) {
+        return new Color(str, null, 'bgGreen')
     }
-    static blink(str: Stringable | null = null) {
-        return new Color(str, null, 'blink')
+    static bgYellow(str: Stringable | null = null) {
+        return new Color(str, null, 'bgYellow')
     }
-    static reverse(str: Stringable | null = null) {
-        return new Color(str, null, 'reverse')
+    static bgBlue(str: Stringable | null = null) {
+        return new Color(str, null, 'bgBlue')
     }
-    static hidden(str: Stringable | null = null) {
-        return new Color(str, null, 'hidden')
+    static bgMagenta(str: Stringable | null = null) {
+        return new Color(str, null, 'bgMagenta')
+    }
+    static bgCyan(str: Stringable | null = null) {
+        return new Color(str, null, 'bgCyan')
+    }
+    static bgWhite(str: Stringable | null = null) {
+        return new Color(str, null, 'bgWhite')
+    }
+    static bgGray(str: Stringable | null = null) {
+        return new Color(str, null, 'bgGray')
     }
 
-    static color(key: ColorKey | null, mod: ColorMod | null = null) {
-        return new Color(null, key, mod)
+    static bright(str: Stringable | null = null) {
+        return new Color(str, null, null, 'bright')
+    }
+    static dim(str: Stringable | null = null) {
+        return new Color(str, null, null, 'dim')
+    }
+    static underscore(str: Stringable | null = null) {
+        return new Color(str, null, null, 'underscore')
+    }
+    static blink(str: Stringable | null = null) {
+        return new Color(str, null, null, 'blink')
+    }
+    static reverse(str: Stringable | null = null) {
+        return new Color(str, null, null, 'reverse')
+    }
+    static hidden(str: Stringable | null = null) {
+        return new Color(str, null, null, 'hidden')
     }
 
     static get br() {
@@ -99,42 +134,46 @@ export class Color implements Stringable {
         return this.underscore()
     }
 
-    static random(str: Stringable | null = null, mod?: ColorMod | null) {
-        return new Color(str, 'random', mod ?? null)
-    }
-
-    private _key: ColorKey | null = null
+    private _fgKey: FgColor | null = null
+    private _bgKey: BgColor | null = null
     private _mod: ColorMod | null = null
 
     constructor()
-    constructor(text: Stringable | null)
-    constructor(text: Stringable | null, key: (ColorKey | 'random') | null)
-    constructor(text: Stringable | null, key: (ColorKey | 'random') | null, mod: (ColorMod | 'random') | null)
+    constructor(string: Stringable)
+    constructor(string: Stringable, fgKey: FgColor)
+    constructor(string: Stringable, fgKey: FgColor, bgKey: BgColor)
+    constructor(string: Stringable, fgKey: FgColor, bgKey: BgColor, mod: ColorMod)
+    constructor(string?: Stringable | null, fgKey?: FgColor | null, bgKey?: BgColor | null, mod?: ColorMod | null)
     constructor(
-        readonly string: Stringable | null = null,
-        key: (ColorKey | 'random') | null = null,
-        mod: (ColorMod | 'random') | null = null
+        readonly _text: Stringable | null = null,
+        fgKey: FgColor | null = null,
+        bgKey: BgColor | null = null,
+        mod: ColorMod | null = null
     ) {
-        this._key = key === 'random' ? this.randomKey() : key
-        this._mod = mod === 'random' ? this.randomMod() : mod
+        this._fgKey = fgKey
+        this._bgKey = bgKey
+        this._mod = mod
     }
 
     toString() {
-        const c = this._key != null ? codes[this._key] ?? '' : ''
+        const fg = this._fgKey != null ? codes[this._fgKey] ?? '' : ''
+        const bg = this._bgKey != null ? codes[this._bgKey] ?? '' : ''
         const m = this._mod != null ? codes[this._mod] ?? '' : ''
-        const t = this.string ?? ''
-        return `${m}${c}${t}${codes.reset}`
+        const t = this._text ?? ''
+        return `${m}${fg}${t}${codes.reset}`
     }
 
-    text(str: string) {
-        return new Color(str, this._key, this._mod)
+    text(str: Stringable | null = null) {
+        return new Color(str, this._fgKey, this._bgKey, this._mod)
     }
 
     color(): Color
-    color(key: ColorKey | null): Color
-    color(key: ColorKey | null, mod: ColorMod | null): Color
-    color(key: ColorKey | null = null, mod: ColorMod | null = null) {
-        return new Color(this.string, key, mod)
+    color(fgKey: FgColor): Color
+    color(fgKey: FgColor, bgKey: BgColor): Color
+    color(fgKey: FgColor, bgKey: BgColor, mod: ColorMod): Color
+    color(fgKey?: FgColor | null, bgKey?: BgColor | null, mod?: ColorMod | null): Color
+    color(fgKey: FgColor | null = null, bgKey: BgColor | null = null, mod: ColorMod | null = null) {
+        return new Color(this._text, fgKey, bgKey, mod)
     }
 
     get str(): string {
@@ -145,24 +184,26 @@ export class Color implements Stringable {
         return this.color()
     }
 
-    private randomKey(): ColorKey {
-        const colors: ColorKey[] = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white']
-        const index = Math.floor(colors.length * Math.random())
-        return colors[index]
+    randomFg(exclude: FgColor[] = ['black', 'white', 'gray']): Color {
+        const colors: FgColor[] = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray']
+        const result = colors.filter(x => !exclude.includes(x as FgColor))
+        const index = Math.floor(result.length * Math.random())
+        return new Color(this._text, result[index], this._bgKey, this._mod)
     }
 
-    private randomMod(): ColorMod {
-        const mods: ColorMod[] = ['bright', 'dim', 'underscore', 'reverse']
-        const index = Math.floor(mods.length * Math.random())
-        return mods[index]
+    randomBg(exclude: BgColor[] = []): Color {
+        const colors: BgColor[] = ['bgBlack', 'bgRed', 'bgGreen', 'bgYellow', 'bgBlue', 'bgMagenta', 'bgCyan', 'bgWhite', 'bgGray']
+        const result = colors.filter(x => !exclude.includes(x as BgColor))
+        const index = Math.floor(result.length * Math.random())
+        return new Color(this._text, this._fgKey, result[index], this._mod)
     }
 
-    get random(): Color {
-        return this.color(this.randomKey(), this._mod)
+    get fgKey(): FgColor | null {
+        return this._fgKey
     }
 
-    get key(): ColorKey | null {
-        return this._key
+    get bgKey(): BgColor | null {
+        return this._bgKey
     }
 
     get mod(): ColorMod | null {
@@ -174,31 +215,59 @@ export class Color implements Stringable {
     //
 
     get black() {
-        return new Color(this.string, 'black', this._mod)
+        return new Color(this._text, 'black', null, this._mod)
     }
     get red() {
-        return new Color(this.string, 'red', this._mod)
+        return new Color(this._text, 'red', null, this._mod)
     }
     get green() {
-        return new Color(this.string, 'green', this._mod)
+        return new Color(this._text, 'green', null, this._mod)
     }
     get yellow() {
-        return new Color(this.string, 'yellow', this._mod)
+        return new Color(this._text, 'yellow', null, this._mod)
     }
     get blue() {
-        return new Color(this.string, 'blue', this._mod)
+        return new Color(this._text, 'blue', null, this._mod)
     }
     get magenta() {
-        return new Color(this.string, 'magenta', this._mod)
+        return new Color(this._text, 'magenta', null, this._mod)
     }
     get cyan() {
-        return new Color(this.string, 'cyan', this._mod)
+        return new Color(this._text, 'cyan', null, this._mod)
     }
     get white() {
-        return new Color(this.string, 'white', this._mod)
+        return new Color(this._text, 'white', null, this._mod)
     }
     get gray() {
-        return new Color(this.string, 'gray', this._mod)
+        return new Color(this._text, 'gray', null, this._mod)
+    }
+
+    get bgBlack() {
+        return new Color(this._text, null, 'bgBlack', this._mod)
+    }
+    get bgRed() {
+        return new Color(this._text, null, 'bgRed', this._mod)
+    }
+    get bgGreen() {
+        return new Color(this._text, null, 'bgGreen', this._mod)
+    }
+    get bgYellow() {
+        return new Color(this._text, null, 'bgYellow', this._mod)
+    }
+    get bgBlue() {
+        return new Color(this._text, null, 'bgBlue', this._mod)
+    }
+    get bgMagenta() {
+        return new Color(this._text, null, 'bgMagenta', this._mod)
+    }
+    get bgCyan() {
+        return new Color(this._text, null, 'bgCyan', this._mod)
+    }
+    get bgWhite() {
+        return new Color(this._text, null, 'bgWhite', this._mod)
+    }
+    get bgGray() {
+        return new Color(this._text, null, 'bgGray', this._mod)
     }
 
     //
@@ -206,22 +275,22 @@ export class Color implements Stringable {
     //
 
     get bright() {
-        return new Color(this.string, this._key, 'bright')
+        return new Color(this._text, this._fgKey, null, 'bright')
     }
     get dim() {
-        return new Color(this.string, this._key, 'dim')
+        return new Color(this._text, this._fgKey, null, 'dim')
     }
     get underscore() {
-        return new Color(this.string, this._key, 'underscore')
+        return new Color(this._text, this._fgKey, null, 'underscore')
     }
     get blink() {
-        return new Color(this.string, this._key, 'blink')
+        return new Color(this._text, this._fgKey, null, 'blink')
     }
     get reverse() {
-        return new Color(this.string, this._key, 'reverse')
+        return new Color(this._text, this._fgKey, null, 'reverse')
     }
     get hidden() {
-        return new Color(this.string, this._key, 'hidden')
+        return new Color(this._text, this._fgKey, null, 'hidden')
     }
 
     //
@@ -232,11 +301,19 @@ export class Color implements Stringable {
         return this.bright
     }
 
-    get dk() {
-        return this.dim
-    }
-
     get ul() {
         return this.underscore
+    }
+
+    get rev() {
+        return this.reverse
+    }
+
+    get hide() {
+        return this.reverse
+    }
+
+    get show() {
+        return this.text(this._text).color(this._fgKey, this._bgKey)
     }
 }
