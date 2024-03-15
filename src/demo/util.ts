@@ -16,3 +16,13 @@ export function clipRect(outer: IRect, inner: IRect): IRect {
     const height = clamp(hMin, hMax, inner.pos.y + inner.height)
     return { width, height, pos: { x: inner.pos.x, y: inner.pos.y } }
 }
+
+// type FillType = [x: number, y: number, c: Color]
+
+// export function* fill(color: Color, rect: IRect): IterableIterator<FillType> {
+//     for (const row of count(rect.height)) {
+//         const x = rect.pos.x
+//         const y = rect.pos.y + row
+//         yield [x, y, color.text(' '.repeat(rect.width))]
+//     }
+// }

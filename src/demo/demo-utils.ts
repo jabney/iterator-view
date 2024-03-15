@@ -1,10 +1,6 @@
-import { count, enumerate } from '../iterator'
-import { IteratorView } from '../iterator-view'
-import { clamp } from '../lib/clamp'
-import { Color, Stringable } from '../lib/color'
-import { fpsMs, timeUnit, timeMs, wait, when } from '../lib/time'
-import { IScheduler, Scheduler } from '../schedule'
-import { IPoint, IUnfoldItem, Point } from './types'
+import { Color } from '../lib/color'
+import { fpsMs, timeUnit, waitMs } from '../lib/time'
+import { IPoint, IUnfoldItem } from './types'
 
 const out = process.stdout
 
@@ -32,18 +28,18 @@ export interface IUntil {
 }
 
 export const until = async (ctrl: IUntil, pollMs: number) => {
-    while (ctrl.pause) await wait(pollMs)
+    while (ctrl.pause) await waitMs(pollMs)
 }
 
 export const scroller = (point: IPoint, fps: number) => async (color: Color, delay: number) => {
     write.blank(point.y)
     out.write(color.str)
-    await wait(sec(delay))
+    await waitMs(sec(delay))
 
     let lines = point.y
     while ((lines -= 1) >= 0) {
         // console.log(' ', lines)
-        await wait(fpsMs(fps))
+        await waitMs(fpsMs(fps))
         console.clear()
         write.blank(lines)
         out.write(color.str)
@@ -54,6 +50,6 @@ export const scroller = (point: IPoint, fps: number) => async (color: Color, del
 export const unfold = async (items: IUnfoldItem[]) => {
     for (const { color, seconds = 0, point = { x: 0, y: 0 } } of items) {
         write.inset(point.x, color)
-        await wait(sec(seconds))
+        await waitMs(sec(seconds))
     }
 }

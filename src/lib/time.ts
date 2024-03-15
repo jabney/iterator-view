@@ -25,9 +25,9 @@ export const timeUnit = (unit: TimeUnit) => (t: number) => timeMs(t, unit)
 
 export const fpsMs = (rate: number) => 1000 / rate
 
-export const wait = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
+export const waitMs = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
-export const when = async <T = void>(ms: number, action: () => T | Promise<T>) => {
-    await wait(ms)
+export const whenMs = async <T = void>(ms: number, action: () => T | Promise<T>) => {
+    await waitMs(ms)
     return await action()
 }

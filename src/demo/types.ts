@@ -30,8 +30,8 @@ export class Point implements IPoint, ToMutable<IPoint> {
     }
 
     constructor(
-        readonly x = 0,
-        readonly y = 0
+        readonly x: number = 0,
+        readonly y: number = 0
     ) {}
 
     toMutable(): Mutable<IPoint> {
