@@ -146,3 +146,41 @@ const hide = '\x1B[?25l'
 // show cursor ^[? 25 h
 const show = '\x1B[?25h'
 ```
+
+## Box Drawing
+
+[Box-drawing Characters](https://en.wikipedia.org/wiki/Box-drawing_character)
+
+> Official Unicode Consortium code chart (PDF)
+
+        0	1	2	3	4	5	6	7	8	9	A	B	C	D	E	F
+    U+250x	─	━	│	┃	┄	┅	┆	┇	┈	┉	┊	┋	┌	┍	┎	┏
+    U+251x	┐	┑	┒	┓	└	┕	┖	┗	┘	┙	┚	┛	├	┝	┞	┟
+    U+252x	┠	┡	┢	┣	┤	┥	┦	┧	┨	┩	┪	┫	┬	┭	┮	┯
+    U+253x	┰	┱	┲	┳	┴	┵	┶	┷	┸	┹	┺	┻	┼	┽	┾	┿
+    U+254x	╀	╁	╂	╃	╄	╅	╆	╇	╈	╉	╊	╋	╌	╍	╎	╏
+    U+255x	═	║	╒	╓	╔	╕	╖	╗	╘	╙	╚	╛	╜	╝	╞	╟
+    U+256x	╠	╡	╢	╣	╤	╥	╦	╧	╨	╩	╪	╫	╬	╭	╮	╯
+    U+257x	╰	╱	╲	╳	╴	╵	╶	╷	╸	╹	╺	╻	╼	╽	╾	╿
+
+> Notes
+> 1.^ As of Unicode version 15.1
+
+---
+
+> Examples
+>
+> Sample diagrams made out of the standard box-drawing characters, using a monospaced font:
+
+    ┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕
+    │ ││  ║ ║║  ║ ║║  │ ││
+    ├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡
+    └─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛
+    ┌───────────────────┐
+    │  ╔═══╗ Some Text  │▒
+    │  ╚═╦═╝ in the box │▒
+    ╞═╤══╩══╤═══════════╡▒
+    │ ├──┬──┤           │▒
+    │ └──┴──┘           │▒
+    └───────────────────┘▒
+    ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
