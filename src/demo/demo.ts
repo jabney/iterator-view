@@ -266,7 +266,8 @@ async function PanelTest() {
     // const width = text.str.length
     // const height = 2
     // const textPanel = new TextPanel(text, new Rect(width, height))
-    // panel.addChild(textPanel)
+    // host.add(textPanel)
+
     host.render()
     await waitSeconds(7)
 }

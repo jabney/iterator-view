@@ -10,6 +10,25 @@ export type Nil = null | undefined
 
 export type Nullable<T> = T | Nil
 
+export type WindowSize = { cols: number; lines: number }
+
+export interface ICursor {
+    readonly hide: () => void
+    readonly show: () => void
+    readonly cursorTo: (x: number, y: number) => void
+    readonly moveCursor: (dx: number, dy: number) => void
+}
+
+export interface ISystem {
+    readonly cursor: ICursor
+}
+
+export interface IPanel {
+    readonly rect: IRect
+    readonly insets: IInsets
+    render(bounds: IRect, bg: Nullable<Color>): void
+}
+
 export interface IPoint {
     readonly x: number
     readonly y: number

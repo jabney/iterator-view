@@ -1,28 +1,49 @@
 import EventEmitter from 'events'
-import { IObservable, Subject } from '../lib/observable'
-import { Disposer } from './types'
+import { Disposer, ICursor, ISystem, WindowSize } from './types'
+import { range } from '../iterator'
+import { SystemPanel } from './sys-panel'
 
-export type WindowSize = { cols: number; lines: number }
-
-export interface ICursor {
-    readonly hide: () => void
-    readonly show: () => void
-    readonly cursorTo: (x: number, y: number) => void
-    readonly moveCursor: (dx: number, dy: number) => void
+interface ResizeEvent {
+    type: 'resize'
+    data: WindowSize
 }
 
-export interface ISystem {
-    readonly windowSize: WindowSize
-    readonly resize$: IObservable<WindowSize>
-    readonly cursor: ICursor
+interface SystemEvent {
+    type: 'system'
+    data: any
 }
 
-export type Event = 'jimmy' | 'also-jimmy'
+type Event = ResizeEvent | SystemEvent
+
+/**
+ * Maps events to a union of their types.
+ *
+ * Interpretation
+ *   - [K in keyof Event]: Event[K] crates a type where the proprties are unionized.
+ *   - ['type'] pulls the type union off of the mapped type
+ */
+type EventType = { [K in keyof Event]: Event[K] }['type']
+
+/**
+ * Maps events to their data type for a given EventType
+ *
+ * Interpretaion:
+ *   - [T in Event as T['type']] creates a union of events which can be discriminated based on type
+ *   - :T['data'] maps these to the 'data' key union
+ *   - [K] selects the one that matches T['type']
+ */
+type EventData<K extends EventType> = { [T in Event as T['type']]: T['data'] }[K]
+
+const id = (() => {
+    const counter = range(1, Infinity)
+    return {
+        get next(): number {
+            return counter.next().value
+        },
+    }
+})()
 
 class System implements ISystem {
-    private _windowSize: WindowSize
-    private readonly resizeSubject$: Subject<WindowSize>
-    private readonly timerSubject$: Subject<number>
     private readonly emitter = new EventEmitter()
     private readonly out = process.stdout
 
@@ -30,49 +51,53 @@ class System implements ISystem {
     readonly write = (str: string) => this.out.write(str)
     readonly writeln = (str?: string) => this.out.write((str ?? '') + '\n')
 
-    constructor() {
-        this._windowSize = this.getWindowSize()
-
-        this.resizeSubject$ = this.createResizeSubject()
-        this.timerSubject$ = this.createTimerSubject()
+    constructor(private readonly panel: SystemPanel) {
+        panel.setSystem(this)
 
         this.init()
     }
+
     //
     // Track cursor x,y
 
-    //
-    // Keyboard input
-    private monitorInput(onOff: boolean) {
-        process.stdin.on('data', char => {
-            console.log(char.toString())
-        })
-    }
-
     private init() {
         process.on('SIGINT', this.sigint)
+        process.on('exit', this.exit)
+        process.stdout.on('resize', this.resize)
+        this.readInput()
+
+        this.panel.onResize(this.getWindowSize())
+
         return this.dispose
     }
 
     private readonly dispose = () => {
         process.off('SIGINT', this.sigint)
+        process.off('exit', this.exit)
+        process.stdout.off('exit', this.exit)
     }
 
-    addEventListener(event: Event, fn: () => void): Disposer {
+    nextId(): number {
+        return id.next
+    }
+
+    private addEventListener<T extends EventType>(event: T, fn: (data: EventData<T>) => void): Disposer {
         this.emitter.addListener(event, fn)
         return () => this.emitter.removeListener(event, fn)
     }
 
-    get windowSize() {
-        return this._windowSize
-    }
-
-    get resize$(): IObservable<WindowSize> {
-        return this.resizeSubject$.asObservable()
-    }
-
-    get timer$(): IObservable<number> {
-        return this.timerSubject$.asObservable()
+    private async readInput() {
+        // const stdin = process.stdin
+        // stdin.setRawMode(true)
+        // while (true) {
+        //     const data = stdin.read()
+        //     if (data != null) {
+        //         const [char] = data.toString()
+        //         console.log('read input:', data)
+        //         if (char === 'e' || char === '\x03') break
+        //     }
+        //     await waitMs(100)
+        // }
     }
 
     get cursor(): ICursor {
@@ -85,31 +110,21 @@ class System implements ISystem {
         return () => {}
     }
 
-    private async *asyncIterator() {
-        //
-    }
-
-    private createResizeSubject() {
-        const subject = new Subject<{ cols: number; lines: number }>()
-        subject.next(this.getWindowSize())
-        process.stdout.on('resize', () => void subject.next(this.getWindowSize()))
-        return subject
-    }
-
-    private createTimerSubject() {
-        const subject = new Subject<number>()
-
-        process.stdout.on('resize', () => void subject.next(0))
-        return subject
-    }
-
     private getWindowSize(): WindowSize {
         const [cols, lines] = process.stdout.getWindowSize()
         return { cols, lines }
     }
 
-    private readonly sigint = () => {
+    private readonly resize = () => {
+        this.panel.onResize(this.getWindowSize())
+    }
+
+    private readonly exit = () => {
         this.showCursor()
+    }
+
+    private readonly sigint = () => {
+        this.exit()
         process.exit(0)
     }
 
@@ -127,4 +142,4 @@ class System implements ISystem {
         })
 }
 
-export const sys = new System()
+export const sys = new System(new SystemPanel())

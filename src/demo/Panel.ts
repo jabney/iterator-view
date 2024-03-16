@@ -1,24 +1,7 @@
-import { count } from '../iterator'
 import { Color } from '../lib/color'
 import { sys } from './system'
-import { IInsets, IRect, Insets, Nil, Nullable, Rect } from './types'
-import { insetRect, clipRect, fill, fallbackBg } from './util'
-
-interface IPanel {
-    readonly rect: IRect
-    readonly insets: IInsets
-    render(bounds: IRect, bg: Nullable<Color>): void
-}
-
-const id = (() => {
-    const counter = count(Infinity)
-
-    return {
-        get next(): number {
-            return counter.next().value
-        },
-    }
-})()
+import { IInsets, IPanel, IRect, Insets, Nullable } from './types'
+import { insetRect, fill, fallbackBg } from './util'
 
 abstract class BasePanel implements IPanel {
     private readonly id: number
@@ -26,14 +9,14 @@ abstract class BasePanel implements IPanel {
     constructor(
         private _rect: IRect,
         private _insets: IInsets,
-        private _bg: Color | Nil = null
+        private _bg: Color
     ) {
-        this.id = id.next
+        this.id = sys.nextId()
     }
 
     protected abstract get name(): string
 
-    protected get bg(): Color | Nil {
+    protected get bg(): Color | null {
         return this._bg
     }
 
@@ -53,16 +36,18 @@ abstract class BasePanel implements IPanel {
         return `${this.name}: ${this.id}`
     }
 
-    render(bounds?: Nullable<IRect>, bg?: Nullable<Color>): void {
-        const rect = insetRect(this.insets, bounds)
+    resize() {
+        // console.log('base panel resize')
     }
+
+    abstract render(bounds?: Nullable<IRect>, bg?: Nullable<Color>): void
 }
 
 export class Panel extends BasePanel {
     protected readonly children: IPanel[] = []
 
     constructor(rect: IRect, insets: IInsets, bgColor?: Color) {
-        super(rect, insets, bgColor)
+        super(rect, insets, bgColor ?? new Color())
     }
 
     add(child: IPanel) {
@@ -70,12 +55,13 @@ export class Panel extends BasePanel {
     }
 
     render(bounds?: Nullable<IRect>, bg?: Nullable<Color>): void {
+        const rect = bounds ?? this.rect
         const bgc = fallbackBg(this.bg, bg)
-        const rect = insetRect(this.insets, bounds ?? this.rect)
+        const insRect = insetRect(this.insets, rect)
         fill(bgc, rect)
 
         for (const p of this.children) {
-            p.render(rect, bgc)
+            p.render(insRect, bgc)
         }
     }
 
@@ -95,7 +81,7 @@ export class TextPanel extends BasePanel {
         insets = new Insets(),
         bg?: Nullable<Color>
     ) {
-        super(rect, insets, bg?.bg)
+        super(rect, insets, bg?.bg ?? text.bg ?? new Color())
     }
 
     protected get name() {
