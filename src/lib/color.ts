@@ -161,7 +161,7 @@ export class Color implements Stringable {
         const bg = this._bgKey != null ? codes[this._bgKey] ?? '' : ''
         const m = this._mod != null ? codes[this._mod] ?? '' : ''
         const t = this._text ?? ''
-        return `${m}${fg}${t}${codes.reset}`
+        return `${bg}${fg}${m}${t}${codes.reset}`
     }
 
     text(str: Stringable | null = null) {
@@ -193,6 +193,10 @@ export class Color implements Stringable {
 
     bgOf(c: Color) {
         return new Color(null, null, c.bgKey, null)
+    }
+
+    get hasBg() {
+        return this._bgKey != null
     }
 
     get str(): string {

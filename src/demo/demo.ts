@@ -1,20 +1,24 @@
 import { count } from '../iterator'
 import { IteratorView } from '../iterator-view'
 import { Color } from '../lib/color'
-import { fpsMs, timeUnit, wait, when } from '../lib/time'
+import { fpsMs, timeUnit, waitMs, whenMs } from '../lib/time'
 import { Scheduler } from '../schedule'
 import { Panel, TextPanel } from './Panel'
 import { Controller } from './controller'
 import { scroller, text as t, unfold, write as w } from './demo-utils'
 import { System } from './system'
-import { IPoint, IRect, Rect, IUnfoldItem, AsyncFn, Point } from './types'
+import { IPoint, IRect, Rect, IUnfoldItem, AsyncFn, Point, Insets } from './types'
 
 const out = process.stdout
 
 const fromSeconds = timeUnit('sec')
-const whenSeconds = <T>(sec: number, action: () => T | Promise<T>) => when(sec, action)
-const waitSeconds = (sec: number) => wait(fromSeconds(sec))
+const whenSeconds = <T>(sec: number, action: () => T | Promise<T>) => whenMs(fromSeconds(sec), action)
+const waitSeconds = (sec: number) => waitMs(fromSeconds(sec))
 const fps60 = fpsMs(60)
+
+const fallbackBg = (c: Color | string, fb: Color) => {
+    return typeof c === 'string' ? fb.bg.text(c) : c
+}
 
 const Pad: Readonly<IPoint> = { x: 6, y: 3 }
 
@@ -48,17 +52,19 @@ const writeTitle = (colors: Color[], rect: IRect) => {
     w.blank()
 }
 
-const writeHeading = (heading: Color, rect: IRect, underline = true) => {
-    const c = heading
+const writeHeading = (heading: Color, rect: IRect, underline?: Color | string) => {
+    const h = heading
 
     // top margin
     w.blank(rect.pos.y)
 
     // Heading
-    w.inset(rect.pos.x, c.text(`${heading.str}`))
+    w.inset(rect.pos.x, h.text(`${heading.str}`))
 
-    // Underline
-    if (underline) w.inset(rect.pos.x, c.text(t.repeat(c.str.length, '-')))
+    if (underline != null) {
+        const ul = fallbackBg(underline, h)
+        w.inset(rect.pos.x, ul.text(t.repeat(h.raw!.length, ul.raw ?? '-')))
+    }
 }
 
 async function runScript(script: (() => Promise<void>)[]) {
@@ -239,13 +245,18 @@ async function Demo_Immediate(ctrl = new Controller()) {
 }
 
 async function PanelTest() {
-    const host = new Panel(new Rect(48, 12, new Point(10, 5)))
-    const text = Color.magenta('This is a text panel')
+    const panel = new Panel(
+        //
+        new Rect(48, 12, new Point(0, 0)),
+        new Insets(1, 2),
+        Color.bgWhite()
+    )
+    const text = Color.magenta('This is a text panel').bgBlue
     const width = text.str.length
-    const height = 1
-    const textPanel = new TextPanel(Color.magenta('This is a text panel'), new Rect(width, height, new Point()))
-    host.addChild(textPanel)
-    host.render()
+    const height = 2
+    const textPanel = new TextPanel(text, new Rect(width, height, new Point()))
+    panel.addChild(textPanel)
+    panel.render()
     await waitSeconds(5)
 }
 
@@ -261,6 +272,7 @@ export async function demo() {
         //
         // async () => await Demo_LazyTimeout(),
         //
+        // async () => void console.clear(),
     ]
 
     await runScript(script)

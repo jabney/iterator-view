@@ -7,6 +7,10 @@ export type Disposer = () => void
 
 export type Stringable = { toString(): string }
 
+export type Nil = null | undefined
+
+export type Nullable<T> = T | Nil
+
 export interface IPoint {
     readonly x: number
     readonly y: number

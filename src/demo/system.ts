@@ -38,6 +38,16 @@ export class System implements ISystem {
 
         this.init()
     }
+    //
+    // Track cursor x,y
+
+    //
+    // Keyboard input
+    private monitorInput(onOff: boolean) {
+        process.stdin.on('data', char => {
+            console.log(char.toString())
+        })
+    }
 
     private init() {
         process.on('SIGINT', this.sigint)
@@ -67,6 +77,16 @@ export class System implements ISystem {
 
     get cursor(): ICursor {
         return { hide: this.hideCursor, show: this.showCursor, cursorTo: this.cursorTo, moveCursor: this.moveCursor }
+    }
+
+    createTimer(fps: number) {
+        let delta = 0
+        const [s, ns] = process.hrtime()
+        return () => {}
+    }
+
+    private async *asyncIterator() {
+        //
     }
 
     private createResizeSubject() {
