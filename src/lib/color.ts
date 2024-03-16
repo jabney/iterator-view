@@ -168,6 +168,11 @@ export class Color implements Stringable {
         return new Color(str, this._fgKey, this._bgKey, this._mod)
     }
 
+    asText(str: Stringable | null = null) {
+        const c = new Color(str, this._fgKey, this._bgKey, this._mod)
+        return c.toString()
+    }
+
     color(): Color
     color(fgKey: FgColor): Color
     color(fgKey: FgColor, bgKey: BgColor): Color

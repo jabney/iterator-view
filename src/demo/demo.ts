@@ -6,7 +6,7 @@ import { Scheduler } from '../schedule'
 import { Panel, TextPanel } from './Panel'
 import { Controller } from './controller'
 import { scroller, text as t, unfold, write as w } from './demo-utils'
-import { System } from './system'
+import { sys } from './system'
 import { IPoint, IRect, Rect, IUnfoldItem, AsyncFn, Point, Insets } from './types'
 
 const out = process.stdout
@@ -22,14 +22,12 @@ const fallbackBg = (c: Color | string, fb: Color) => {
 
 const Pad: Readonly<IPoint> = { x: 6, y: 3 }
 
-const system = new System()
-
 const writeTitle = (colors: Color[], rect: IRect) => {
     const title = colors[0]
     const c = title
 
     const width = rect.width
-    const pos = rect.pos
+    const pos = new Point(rect.x, rect.y)
     const border = { vert: '*', horz: '-' }
 
     // top margin
@@ -54,16 +52,17 @@ const writeTitle = (colors: Color[], rect: IRect) => {
 
 const writeHeading = (heading: Color, rect: IRect, underline?: Color | string) => {
     const h = heading
+    const pos = new Point(rect.x, rect.y)
 
     // top margin
-    w.blank(rect.pos.y)
+    w.blank(pos.y)
 
     // Heading
-    w.inset(rect.pos.x, h.text(`${heading.str}`))
+    w.inset(pos.x, h.text(`${heading.str}`))
 
     if (underline != null) {
         const ul = fallbackBg(underline, h)
-        w.inset(rect.pos.x, ul.text(t.repeat(h.raw!.length, ul.raw ?? '-')))
+        w.inset(pos.x, ul.text(t.repeat(h.raw!.length, ul.raw ?? '-')))
     }
 }
 
@@ -73,7 +72,7 @@ async function runScript(script: (() => Promise<void>)[]) {
     }
 }
 
-const rectTitle = new Rect(60, 0, { x: Pad.x, y: Pad.y })
+const rectTitle = new Rect(60, 0, Pad.x, Pad.y)
 
 async function intro() {
     const c = Color.green()
@@ -91,7 +90,7 @@ async function intro() {
     const title2 = t.inset(t2offset, t2text)
 
     const script: (() => Promise<void>)[] = [
-        async () => void system.cursor.hide(),
+        async () => void sys.cursor.hide(),
         async () => void console.clear(),
 
         // async () => w.writeln(c.text(`${t2offset}`)),
@@ -100,7 +99,7 @@ async function intro() {
         async () => whenSeconds(1, () => scroll(c.text(title2).bright, 2)),
         async () => waitSeconds(1),
 
-        async () => void system.cursor.show(),
+        async () => void sys.cursor.show(),
     ]
 
     await runScript(script)
@@ -129,21 +128,22 @@ async function Demo_LazyTimeout(ctrl = new Controller()) {
             w.inset(Pad.x, c.text(`[Event ${i}]`))
         }
     }
+    const pos = new Point(rectTitle.x, rectTitle.y)
 
     const a = {
         title: c.text('Demo: Very Lazy Iteration'),
         lines: [
-            { color: c.text(`- A basic iterator, processing 1 value every 100ms`), seconds: 3, point: rectTitle.pos },
-            { color: c.text(`- Then another iterator stream, mixed in spontaneously`), seconds: 3, point: rectTitle.pos },
+            { color: c.text(`- A basic iterator, processing 1 value every 100ms`), seconds: 3, point: pos },
+            { color: c.text(`- Then another iterator stream, mixed in spontaneously`), seconds: 3, point: pos },
         ] as IUnfoldItem[],
     }
 
     const b = {
         title: c.text('Demo: Very Lazy Iteration'),
         lines: [
-            { color: c.text(`- A basic iterator, processing 1 value every 100ms`), seconds: 0, point: rectTitle.pos },
-            { color: c.text(`- Then another iterator stream, mixed in spontaneously`), seconds: 2, point: rectTitle.pos },
-            { color: c.text(`- Now let's try 0ms`), seconds: 3, point: rectTitle.pos },
+            { color: c.text(`- A basic iterator, processing 1 value every 100ms`), seconds: 0, point: pos },
+            { color: c.text(`- Then another iterator stream, mixed in spontaneously`), seconds: 2, point: pos },
+            { color: c.text(`- Now let's try 0ms`), seconds: 3, point: pos },
         ] as IUnfoldItem[],
     }
 
@@ -200,21 +200,22 @@ async function Demo_Immediate(ctrl = new Controller()) {
             w.inset(Pad.x, c.text(`[Event ${i}]`))
         }
     }
+    const pos = new Point(rectTitle.x, rectTitle.y)
 
     const a = {
         title: c.text('Demo: Very Lazy Iteration'),
         lines: [
-            { color: c.text(`- A basic iterator, processing 1 value every 100ms`), seconds: 3, point: rectTitle.pos },
-            { color: c.text(`- Then another iterator stream, mixed in spontaneously`), seconds: 3, point: rectTitle.pos },
+            { color: c.text(`- A basic iterator, processing 1 value every 100ms`), seconds: 3, point: pos },
+            { color: c.text(`- Then another iterator stream, mixed in spontaneously`), seconds: 3, point: pos },
         ] as IUnfoldItem[],
     }
 
     const b = {
         title: c.text('Demo: Very Lazy Iteration'),
         lines: [
-            { color: c.text(`- A basic iterator, processing 1 value every 100ms`), seconds: 0, point: rectTitle.pos },
-            { color: c.text(`- Then another iterator stream, mixed in spontaneously`), seconds: 2, point: rectTitle.pos },
-            { color: c.text(`- Now let's try 0ms`), seconds: 3, point: rectTitle.pos },
+            { color: c.text(`- A basic iterator, processing 1 value every 100ms`), seconds: 0, point: pos },
+            { color: c.text(`- Then another iterator stream, mixed in spontaneously`), seconds: 2, point: pos },
+            { color: c.text(`- Now let's try 0ms`), seconds: 3, point: pos },
         ] as IUnfoldItem[],
     }
 
@@ -245,23 +246,33 @@ async function Demo_Immediate(ctrl = new Controller()) {
 }
 
 async function PanelTest() {
-    const panel = new Panel(
+    const host = new Panel(
         //
-        new Rect(48, 12, new Point(0, 0)),
-        new Insets(1, 2),
+        new Rect(60, 24),
+        Insets.from(new Point(2, 1), new Point(2, 1)),
         Color.bgWhite()
     )
-    const text = Color.magenta('This is a text panel').bgBlue
-    const width = text.str.length
-    const height = 2
-    const textPanel = new TextPanel(text, new Rect(width, height, new Point()))
-    panel.addChild(textPanel)
-    panel.render()
-    await waitSeconds(5)
+
+    const child = new Panel(
+        //
+        new Rect(30, 12),
+        Insets.from(new Point(2, 1), new Point(2, 1)),
+        Color.bgCyan()
+    )
+
+    host.add(child)
+
+    // const text = Color.magenta('This is a text panel').bgBlue
+    // const width = text.str.length
+    // const height = 2
+    // const textPanel = new TextPanel(text, new Rect(width, height))
+    // panel.addChild(textPanel)
+    host.render()
+    await waitSeconds(7)
 }
 
 export async function demo() {
-    system.cursor.hide()
+    sys.cursor.hide()
 
     const script = [
         async () => void console.clear(),
@@ -273,10 +284,10 @@ export async function demo() {
         // async () => await Demo_LazyTimeout(),
         //
         // async () => void console.clear(),
+        async () => void sys.writeln('\n'),
     ]
 
     await runScript(script)
-    system.cursor.show()
 }
 
 demo()

@@ -1,5 +1,5 @@
 import EventEmitter from 'events'
-import { IObservable, Observable, Subject } from '../lib/observable'
+import { IObservable, Subject } from '../lib/observable'
 import { Disposer } from './types'
 
 export type WindowSize = { cols: number; lines: number }
@@ -19,7 +19,7 @@ export interface ISystem {
 
 export type Event = 'jimmy' | 'also-jimmy'
 
-export class System implements ISystem {
+class System implements ISystem {
     private _windowSize: WindowSize
     private readonly resizeSubject$: Subject<WindowSize>
     private readonly timerSubject$: Subject<number>
@@ -28,7 +28,7 @@ export class System implements ISystem {
 
     readonly error = (str: string) => process.stderr.write(str + '\n')
     readonly write = (str: string) => this.out.write(str)
-    readonly writeln = (str: string) => this.out.write(str + '\n')
+    readonly writeln = (str?: string) => this.out.write((str ?? '') + '\n')
 
     constructor() {
         this._windowSize = this.getWindowSize()
@@ -126,3 +126,5 @@ export class System implements ISystem {
             this.out.moveCursor(dx, dy, () => resolve())
         })
 }
+
+export const sys = new System()

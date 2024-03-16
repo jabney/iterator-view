@@ -1,4 +1,3 @@
-import { Interface } from 'readline'
 import { Color } from '../lib/color'
 
 export type AsyncFn<T = void> = () => Promise<T>
@@ -29,10 +28,6 @@ export interface ToMutable<T> {
 }
 
 export class Point implements IPoint, ToMutable<IPoint> {
-    static from(p: IPoint) {
-        return new Point(p.x, p.y)
-    }
-
     constructor(
         readonly x: number = 0,
         readonly y: number = 0
@@ -51,8 +46,8 @@ export interface IInsets {
 }
 
 export class Insets implements IInsets, ToMutable<IInsets> {
-    static from(ins: IInsets) {
-        return new Insets(ins.top, ins.left, ins.bottom, ins.right)
+    static from(tr: IPoint, bl: IPoint) {
+        return new Insets(tr.y, tr.x, bl.y, bl.x)
     }
 
     constructor(
@@ -68,29 +63,26 @@ export class Insets implements IInsets, ToMutable<IInsets> {
 }
 
 export interface IRect {
-    readonly pos: IPoint
     readonly width: number
     readonly height: number
+    readonly x: number
+    readonly y: number
 }
 
 export class Rect implements IRect, ToMutable<IRect> {
-    static from(r: IRect) {
-        return new Rect(r.width, r.height, Point.from(r.pos))
-    }
-
     constructor(
         readonly width = 0,
         readonly height = 0,
-        readonly pos: IPoint = { x: 0, y: 0 }
-    ) {
-        pos = Point.from(pos)
-    }
+        readonly x = 0,
+        readonly y = 0
+    ) {}
 
     toMutable(): Mutable<IRect> {
         return {
             width: this.width,
             height: this.height,
-            pos: { x: this.pos.x, y: this.pos.y },
+            x: this.x,
+            y: this.y,
         }
     }
 }

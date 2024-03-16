@@ -1,28 +1,54 @@
+import { count } from '../iterator'
 import { clamp } from '../lib/clamp'
-import { IInsets, IRect } from './types'
+import { Color } from '../lib/color'
+import { sys } from './system'
+import { IInsets, IRect, Nil, Nullable, Rect } from './types'
 
-export function insetRect(insets: IInsets, rect: IRect): IRect {
+export function insetRect(insets: IInsets, rect?: Nullable<IRect>): IRect {
+    const r = rect ?? new Rect()
     const { top, left, bottom, right } = insets
-    const width = rect.width - left - right
-    const height = rect.height - top - bottom
-    const pos = { x: rect.pos.x + left, y: rect.pos.y + top }
-    return { width, height, pos }
+
+    const width = r.width - left - right
+    const height = r.height - top - bottom
+
+    const x = r.x + left
+    const y = r.y + top
+
+    return { width, height, x, y }
 }
 
 export function clipRect(outer: IRect, inner: IRect): IRect {
-    const [wMin, wMax] = [outer.pos.x, outer.pos.x + outer.width]
-    const width = clamp(wMin, wMax, inner.pos.x + inner.width)
-    const [hMin, hMax] = [outer.pos.y, outer.pos.y + outer.height]
-    const height = clamp(hMin, hMax, inner.pos.y + inner.height)
-    return { width, height, pos: { x: inner.pos.x, y: inner.pos.y } }
+    const [wMin, wMax] = [outer.x, outer.x + outer.width]
+    const width = clamp(wMin, wMax, inner.x + inner.width)
+
+    const [hMin, hMax] = [outer.y, outer.y + outer.height]
+    const height = clamp(hMin, hMax, inner.y + inner.height)
+
+    return { width, height, x: inner.x, y: inner.y }
 }
 
-// type FillType = [x: number, y: number, c: Color]
+export function* rowIterator(rect: IRect) {
+    const x = rect.x
+    const y = rect.y
 
-// export function* fill(color: Color, rect: IRect): IterableIterator<FillType> {
-//     for (const row of count(rect.height)) {
-//         const x = rect.pos.x
-//         const y = rect.pos.y + row
-//         yield [x, y, color.text(' '.repeat(rect.width))]
-//     }
-// }
+    for (const row of count(rect.height)) {
+        yield { x: x, y: y + row }
+    }
+}
+
+export function fill(color: Color, rect: IRect) {
+    for (const row of count(rect.height)) {
+        const x = rect.x
+        const y = rect.y + row
+        const text = color.asText(' '.repeat(rect.width))
+        sys.cursor.cursorTo(x, y)
+        sys.writeln(text)
+    }
+}
+
+export function fallbackBg(...args: (Color | Nil)[]): Color {
+    for (const c of args.filter((x): x is Color => x != null)) {
+        if (c.hasBg) return c.bg
+    }
+    return new Color()
+}
