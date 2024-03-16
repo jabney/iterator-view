@@ -13,8 +13,8 @@ export type Nullable<T> = T | Nil
 export type WindowSize = { cols: number; lines: number }
 
 export interface ICursor {
-    readonly hide: () => void
-    readonly show: () => void
+    // readonly hide: () => void
+    // readonly show: () => void
     readonly cursorTo: (x: number, y: number) => void
     readonly moveCursor: (dx: number, dy: number) => void
 }
@@ -24,9 +24,10 @@ export interface ISystem {
 }
 
 export interface IPanel {
-    readonly rect: IRect
+    // readonly rect: IRect
     readonly insets: IInsets
-    render(bounds: IRect, bg: Nullable<Color>): void
+    resize(bounds: IRect): void
+    render(bounds: IRect, bg?: Nullable<Color>): void
 }
 
 export interface IPoint {
@@ -34,11 +35,11 @@ export interface IPoint {
     readonly y: number
 }
 
-type Immutable<T> = {
+export type Immutable<T> = {
     readonly [key in keyof T]: T[key]
 }
 
-type Mutable<T> = {
+export type Mutable<T> = {
     -readonly [key in keyof T]: T[key]
 }
 
@@ -95,6 +96,10 @@ export class Rect implements IRect, ToMutable<IRect> {
         readonly x = 0,
         readonly y = 0
     ) {}
+
+    empty() {
+        return this.width === 0 || this.height === 0
+    }
 
     toMutable(): Mutable<IRect> {
         return {

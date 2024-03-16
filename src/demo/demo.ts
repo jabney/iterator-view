@@ -5,16 +5,11 @@ import { fpsMs, timeUnit, waitMs, whenMs } from '../lib/time'
 import { Scheduler } from '../schedule'
 import { Panel, TextPanel } from './Panel'
 import { Controller } from './controller'
-import { scroller, text as t, unfold, write as w } from './demo-utils'
+import { runScript, scroller, text as t, unfold, write as w, waitSeconds, whenSeconds } from './demo-utils'
 import { sys } from './system'
 import { IPoint, IRect, Rect, IUnfoldItem, AsyncFn, Point, Insets } from './types'
 
 const out = process.stdout
-
-const fromSeconds = timeUnit('sec')
-const whenSeconds = <T>(sec: number, action: () => T | Promise<T>) => whenMs(fromSeconds(sec), action)
-const waitSeconds = (sec: number) => waitMs(fromSeconds(sec))
-const fps60 = fpsMs(60)
 
 const fallbackBg = (c: Color | string, fb: Color) => {
     return typeof c === 'string' ? fb.bg.text(c) : c
@@ -66,12 +61,6 @@ const writeHeading = (heading: Color, rect: IRect, underline?: Color | string) =
     }
 }
 
-async function runScript(script: (() => Promise<void>)[]) {
-    for (const i of count(script.length)) {
-        await script[i]()
-    }
-}
-
 const rectTitle = new Rect(60, 0, Pad.x, Pad.y)
 
 async function intro() {
@@ -90,7 +79,6 @@ async function intro() {
     const title2 = t.inset(t2offset, t2text)
 
     const script: (() => Promise<void>)[] = [
-        async () => void sys.cursor.hide(),
         async () => void console.clear(),
 
         // async () => w.writeln(c.text(`${t2offset}`)),
@@ -98,8 +86,6 @@ async function intro() {
         async () => whenSeconds(5, () => console.clear()),
         async () => whenSeconds(1, () => scroll(c.text(title2).bright, 2)),
         async () => waitSeconds(1),
-
-        async () => void sys.cursor.show(),
     ]
 
     await runScript(script)
@@ -246,37 +232,37 @@ async function Demo_Immediate(ctrl = new Controller()) {
 }
 
 async function PanelTest() {
-    const host = new Panel(
+    const main = new Panel(
         //
-        new Rect(60, 24),
         Insets.from(new Point(2, 1), new Point(2, 1)),
         Color.bgWhite()
     )
 
     const child = new Panel(
         //
-        new Rect(30, 12),
         Insets.from(new Point(2, 1), new Point(2, 1)),
         Color.bgCyan()
     )
 
-    host.add(child)
+    main.add(child)
 
+    sys.setMainPanel(main)
+    sys.start()
     // const text = Color.magenta('This is a text panel').bgBlue
     // const width = text.str.length
     // const height = 2
     // const textPanel = new TextPanel(text, new Rect(width, height))
     // host.add(textPanel)
 
-    host.render()
+    // main.render()
     await waitSeconds(7)
 }
 
 export async function demo() {
-    sys.cursor.hide()
+    // sys.cursor.hide()
 
     const script = [
-        async () => void console.clear(),
+        // async () => void console.clear(),
         //
         // async () => await intro(),
         //
@@ -285,7 +271,7 @@ export async function demo() {
         // async () => await Demo_LazyTimeout(),
         //
         // async () => void console.clear(),
-        async () => void sys.writeln('\n'),
+        // async () => void sys.writeln('\n'),
     ]
 
     await runScript(script)

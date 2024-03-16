@@ -1,5 +1,5 @@
 import EventEmitter from 'events'
-import { Disposer, ICursor, ISystem, WindowSize } from './types'
+import { Disposer, ICursor, IPanel, ISystem, WindowSize } from './types'
 import { range } from '../iterator'
 import { SystemPanel } from './sys-panel'
 
@@ -51,9 +51,8 @@ class System implements ISystem {
     readonly write = (str: string) => this.out.write(str)
     readonly writeln = (str?: string) => this.out.write((str ?? '') + '\n')
 
-    constructor(private readonly panel: SystemPanel) {
-        panel.setSystem(this)
-
+    constructor(private readonly sysPanel: SystemPanel) {
+        sysPanel.setSystem(this)
         this.init()
     }
 
@@ -64,21 +63,27 @@ class System implements ISystem {
         process.on('SIGINT', this.sigint)
         process.on('exit', this.exit)
         process.stdout.on('resize', this.resize)
-        this.readInput()
 
-        this.panel.onResize(this.getWindowSize())
-
-        return this.dispose
+        this.sysPanel.onResize(this.getWindowSize())
     }
 
-    private readonly dispose = () => {
+    private dispose() {
         process.off('SIGINT', this.sigint)
         process.off('exit', this.exit)
-        process.stdout.off('exit', this.exit)
+        process.stdout.off('resize', this.resize)
     }
 
     nextId(): number {
         return id.next
+    }
+
+    setMainPanel(panel: IPanel): void {
+        this.sysPanel.setMainPanel(panel)
+    }
+
+    start() {
+        this.hideCursor()
+        this.sysPanel.start()
     }
 
     private addEventListener<T extends EventType>(event: T, fn: (data: EventData<T>) => void): Disposer {
@@ -86,22 +91,13 @@ class System implements ISystem {
         return () => this.emitter.removeListener(event, fn)
     }
 
-    private async readInput() {
-        // const stdin = process.stdin
-        // stdin.setRawMode(true)
-        // while (true) {
-        //     const data = stdin.read()
-        //     if (data != null) {
-        //         const [char] = data.toString()
-        //         console.log('read input:', data)
-        //         if (char === 'e' || char === '\x03') break
-        //     }
-        //     await waitMs(100)
-        // }
-    }
-
     get cursor(): ICursor {
-        return { hide: this.hideCursor, show: this.showCursor, cursorTo: this.cursorTo, moveCursor: this.moveCursor }
+        return {
+            // hide: this.hideCursor,
+            // show: this.showCursor,
+            cursorTo: this.cursorTo,
+            moveCursor: this.moveCursor,
+        }
     }
 
     createTimer(fps: number) {
@@ -116,10 +112,11 @@ class System implements ISystem {
     }
 
     private readonly resize = () => {
-        this.panel.onResize(this.getWindowSize())
+        this.sysPanel.onResize(this.getWindowSize())
     }
 
     private readonly exit = () => {
+        this.sysPanel.exit()
         this.showCursor()
     }
 

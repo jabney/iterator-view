@@ -1,5 +1,6 @@
+import { count } from '../iterator'
 import { Color } from '../lib/color'
-import { fpsMs, timeUnit, waitMs } from '../lib/time'
+import { fpsMs, timeUnit, waitMs, whenMs } from '../lib/time'
 import { IPoint, IUnfoldItem } from './types'
 
 const out = process.stdout
@@ -53,3 +54,14 @@ export const unfold = async (items: IUnfoldItem[]) => {
         await waitMs(sec(seconds))
     }
 }
+
+export async function runScript(script: (() => Promise<void>)[]) {
+    for (const i of count(script.length)) {
+        await script[i]()
+    }
+}
+
+export const fromSeconds = timeUnit('sec')
+export const whenSeconds = <T>(sec: number, action: () => T | Promise<T>) => whenMs(fromSeconds(sec), action)
+export const waitSeconds = (sec: number) => waitMs(fromSeconds(sec))
+export const fps60 = fpsMs(60)
