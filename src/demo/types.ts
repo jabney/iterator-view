@@ -28,6 +28,7 @@ export interface IPanel {
     readonly insets: IInsets
     resize(bounds: IRect): void
     render(bounds: IRect, bg?: Nullable<Color>): void
+    destroy(): void
 }
 
 export interface IPoint {

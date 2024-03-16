@@ -67,7 +67,7 @@ class System implements ISystem {
         this.sysPanel.onResize(this.getWindowSize())
     }
 
-    private dispose() {
+    private destroy() {
         process.off('SIGINT', this.sigint)
         process.off('exit', this.exit)
         process.stdout.off('resize', this.resize)
@@ -79,6 +79,7 @@ class System implements ISystem {
 
     setMainPanel(panel: IPanel): void {
         this.sysPanel.setMainPanel(panel)
+        this.sysPanel.setInterrupt(() => this.sigint)
     }
 
     start() {
@@ -116,6 +117,7 @@ class System implements ISystem {
     }
 
     private readonly exit = () => {
+        this.destroy()
         this.sysPanel.exit()
         this.showCursor()
     }

@@ -42,7 +42,7 @@ export function fill(color: Color, rect: IRect) {
         const y = rect.y + row
         const text = color.asText(' '.repeat(rect.width))
         sys.cursor.cursorTo(x, y)
-        sys.writeln(text)
+        sys.write(text)
     }
 }
 

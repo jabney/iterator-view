@@ -31,6 +31,8 @@ abstract class BasePanel implements IPanel {
     abstract resize(bounds: IRect): void
 
     abstract render(bounds: IRect, bg?: Nullable<Color>): void
+
+    abstract destroy(): void
 }
 
 export class Panel extends BasePanel {
@@ -38,6 +40,10 @@ export class Panel extends BasePanel {
 
     constructor(insets: IInsets, bgColor?: Color) {
         super(insets, bgColor ?? new Color())
+    }
+
+    protected get name() {
+        return Panel.name
     }
 
     add(child: IPanel) {
@@ -62,8 +68,11 @@ export class Panel extends BasePanel {
         }
     }
 
-    protected get name() {
-        return Panel.name
+    destroy() {
+        for (const p of this.children) {
+            p.destroy()
+        }
+        while (this.children.pop());
     }
 }
 
@@ -97,9 +106,7 @@ export class TextPanel extends BasePanel {
         sys.write(text.str)
     }
 
-    // protected fallbackBg(fallback: Nullable<Color>): Color {
-    //     return fallbackBg(this.bg, this.text.bg, fallback)
-    // }
+    destroy() {}
 }
 
 // export class Marquee extends TextPanel {}

@@ -27,6 +27,8 @@ export const fpsMs = (rate: number) => 1000 / rate
 
 export const waitMs = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
+export const waitFps = (fps: number) => waitMs(fpsMs(fps))
+
 export const whenMs = async <T = void>(ms: number, action: () => T | Promise<T>) => {
     await waitMs(ms)
     return await action()
