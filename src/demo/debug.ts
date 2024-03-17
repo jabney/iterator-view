@@ -58,7 +58,7 @@ async function debug() {
         //
         async () => await PanelTest(),
         //
-        async () => await waitSeconds(5),
+        async () => await waitSeconds(10),
     ]
 
     await runScript(script)

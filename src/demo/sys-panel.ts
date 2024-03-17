@@ -1,6 +1,6 @@
 import { clamp } from '../lib/clamp'
 import { waitFps } from '../lib/time'
-import { IPanel, ISystem, Insets, Rect, WindowSize } from './types'
+import { Disposer, IPanel, ISystem, Insets, Rect, WindowSize } from './types'
 
 const createPanel = () => ({
     rect: new Rect(),
@@ -50,8 +50,8 @@ export class SystemPanel {
     }
 
     private destroy() {
-        process.stdout.off('resize', this.resize)
         this.destroyed = true
+        process.stdout.off('resize', this.resize)
         this.panel.destroy()
     }
 

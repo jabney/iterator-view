@@ -14,7 +14,7 @@ export type Nullable<T> = T | Nil
 export type WindowSize = { cols: number; lines: number }
 
 export interface ISystem {
-    //
+    addTimerListener(fn: (data: number) => void): Disposer
 }
 
 export interface IPanel {
