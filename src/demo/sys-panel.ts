@@ -11,8 +11,7 @@ const createPanel = () => ({
 })
 
 const ctrl = {
-    // control+c
-    eot: '\x03',
+    eot: '\x03', // control+c
 }
 
 const aspect = 0.3
@@ -25,7 +24,7 @@ export class SystemPanel {
     private rect: Rect = new Rect()
     private panel: IPanel = createPanel()
     private interrupt = (): void => void 0
-    private haltInput = false
+    private destroyed = false
 
     private bounds = {
         w: { min: wMin, max: wMax },
@@ -34,6 +33,26 @@ export class SystemPanel {
 
     constructor() {
         this.id = 0
+    }
+
+    start() {
+        this.resize(this.getWindowSize())
+
+        if (!this.initialized) {
+            throw new Error('<SystemPanel> not initialized')
+        }
+
+        process.stdout.on('resize', this.resize)
+        this.readInput()
+
+        console.clear()
+        this.render()
+    }
+
+    private destroy() {
+        process.stdout.off('resize', this.resize)
+        this.destroyed = true
+        this.panel.destroy()
     }
 
     get initialized() {
@@ -48,10 +67,6 @@ export class SystemPanel {
         return `${this.name}: ${this.id}`
     }
 
-    private get running() {
-        return this.haltInput === false
-    }
-
     setSystem(sys: ISystem) {
         this.sys = sys
     }
@@ -64,48 +79,37 @@ export class SystemPanel {
         this.interrupt = fn
     }
 
-    start() {
-        if (this.initialized) {
-            console.clear()
-            this.readInput()
-            this.render()
-        } else {
-            throw new Error('<SystemPanel> not initialized')
-        }
-    }
-
     exit() {
-        this.haltInput = true
         this.destroy()
         console.clear()
     }
 
-    onResize = (size: WindowSize): void => {
+    private resize(size: WindowSize): void {
         const width = clamp(this.bounds.w.min, this.bounds.w.max, size.cols)
         const height = clamp(this.bounds.h.min, this.bounds.h.max, size.lines)
         this.rect = new Rect(width, height)
 
         console.clear()
         this.render()
-        // console.log(size)
     }
 
     onInput = (key: string) => {
-        console.debug('sys panel keyboard input:', key.toString())
+        // console.debug('sys panel keyboard input:', key.toString())
     }
 
-    private destroy() {
-        this.panel.destroy()
+    private getWindowSize(): WindowSize {
+        const [cols, lines] = process.stdout.getWindowSize()
+        return { cols, lines }
     }
 
     private async readInput() {
         const rawMode = process.stdin.isRaw
         process.stdin.setRawMode(true)
 
-        while (this.running && this.handleInput()) {
-            await waitFps(15)
+        while (this.handleInput()) {
+            if (this.destroyed) break
+            await waitFps(30)
         }
-        this.haltInput = false
         process.stdin.setRawMode(rawMode)
     }
 

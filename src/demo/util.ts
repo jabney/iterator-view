@@ -41,7 +41,7 @@ export function fill(color: Color, rect: IRect) {
         const x = rect.x
         const y = rect.y + row
         const text = color.asText(' '.repeat(rect.width))
-        sys.cursor.cursorTo(x, y)
+        sys.cursorTo(x, y)
         sys.write(text)
     }
 }

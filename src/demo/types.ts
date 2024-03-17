@@ -1,4 +1,5 @@
 import { Color } from '../lib/color'
+import { pixelAspect } from './constants'
 
 export type AsyncFn<T = void> = () => Promise<T>
 
@@ -12,21 +13,13 @@ export type Nullable<T> = T | Nil
 
 export type WindowSize = { cols: number; lines: number }
 
-export interface ICursor {
-    // readonly hide: () => void
-    // readonly show: () => void
-    readonly cursorTo: (x: number, y: number) => void
-    readonly moveCursor: (dx: number, dy: number) => void
-}
-
 export interface ISystem {
-    readonly cursor: ICursor
+    //
 }
 
 export interface IPanel {
-    // readonly rect: IRect
     readonly insets: IInsets
-    resize(bounds: IRect): void
+    // resize(bounds: IRect, bg: Color): void
     render(bounds: IRect, bg?: Nullable<Color>): void
     destroy(): void
 }
@@ -44,19 +37,19 @@ export type Mutable<T> = {
     -readonly [key in keyof T]: T[key]
 }
 
-export interface ToMutable<T> {
+interface ToMutable<T> {
     toMutable(): Mutable<T>
 }
 
-export class Point implements IPoint, ToMutable<IPoint> {
+export class Point implements IPoint {
     constructor(
         readonly x: number = 0,
         readonly y: number = 0
     ) {}
 
-    toMutable(): Mutable<IPoint> {
-        return { x: this.x, y: this.y }
-    }
+    // toMutable(): Mutable<IPoint> {
+    //     return { x: this.x, y: this.y }
+    // }
 }
 
 export interface IInsets {
@@ -66,21 +59,27 @@ export interface IInsets {
     readonly right: number
 }
 
-export class Insets implements IInsets, ToMutable<IInsets> {
-    static from(tr: IPoint, bl: IPoint) {
-        return new Insets(tr.y, tr.x, bl.y, bl.x)
+export class Insets implements IInsets {
+    static from(tr: IPoint, bl: IPoint, aspect?: Nullable<boolean>) {
+        return new Insets(tr.y, tr.x, bl.y, bl.x, aspect)
     }
 
     constructor(
         readonly top = 0,
         readonly left = 0,
         readonly bottom = 0,
-        readonly right = 0
-    ) {}
-
-    toMutable(): Mutable<IInsets> {
-        return { top: this.top, left: this.left, bottom: this.bottom, right: this.right }
+        readonly right = 0,
+        readonly aspect: Nullable<boolean> = false
+    ) {
+        if (aspect) {
+            left *= pixelAspect
+            right *= pixelAspect
+        }
     }
+
+    // toMutable(): Mutable<IInsets> {
+    //     return { top: this.top, left: this.left, bottom: this.bottom, right: this.right }
+    // }
 }
 
 export interface IRect {
@@ -90,7 +89,7 @@ export interface IRect {
     readonly y: number
 }
 
-export class Rect implements IRect, ToMutable<IRect> {
+export class Rect implements IRect {
     constructor(
         readonly width = 0,
         readonly height = 0,
@@ -102,14 +101,14 @@ export class Rect implements IRect, ToMutable<IRect> {
         return this.width === 0 || this.height === 0
     }
 
-    toMutable(): Mutable<IRect> {
-        return {
-            width: this.width,
-            height: this.height,
-            x: this.x,
-            y: this.y,
-        }
-    }
+    // toMutable(): Mutable<IRect> {
+    //     return {
+    //         width: this.width,
+    //         height: this.height,
+    //         x: this.x,
+    //         y: this.y,
+    //     }
+    // }
 }
 
 class ValueError extends Error {

@@ -1,5 +1,5 @@
 import EventEmitter from 'events'
-import { Disposer, ICursor, IPanel, ISystem, WindowSize } from './types'
+import { Disposer, IPanel, ISystem, WindowSize } from './types'
 import { range } from '../iterator'
 import { SystemPanel } from './sys-panel'
 
@@ -47,9 +47,9 @@ class System implements ISystem {
     private readonly emitter = new EventEmitter()
     private readonly out = process.stdout
 
-    readonly error = (str: string) => process.stderr.write(str + '\n')
-    readonly write = (str: string) => this.out.write(str)
-    readonly writeln = (str?: string) => this.out.write((str ?? '') + '\n')
+    readonly error = (str: string) => void process.stderr.write(str + '\n')
+    readonly write = (str: string) => void this.out.write(str)
+    readonly writeln = (str?: string) => void this.out.write((str ?? '') + '\n')
 
     constructor(private readonly sysPanel: SystemPanel) {
         sysPanel.setSystem(this)
@@ -60,17 +60,13 @@ class System implements ISystem {
     // Track cursor x,y
 
     private init() {
-        process.on('SIGINT', this.sigint)
-        process.on('exit', this.exit)
-        process.stdout.on('resize', this.resize)
-
-        this.sysPanel.onResize(this.getWindowSize())
+        // process.on('SIGINT', this.sigint)
+        // process.on('exit', this.exit)
     }
 
     private destroy() {
-        process.off('SIGINT', this.sigint)
-        process.off('exit', this.exit)
-        process.stdout.off('resize', this.resize)
+        // process.off('SIGINT', this.sigint)
+        // process.off('exit', this.exit)
     }
 
     nextId(): number {
@@ -79,7 +75,7 @@ class System implements ISystem {
 
     setMainPanel(panel: IPanel): void {
         this.sysPanel.setMainPanel(panel)
-        this.sysPanel.setInterrupt(() => this.sigint)
+        this.sysPanel.setInterrupt(this.sigint)
     }
 
     start() {
@@ -87,18 +83,8 @@ class System implements ISystem {
         this.sysPanel.start()
     }
 
-    private addEventListener<T extends EventType>(event: T, fn: (data: EventData<T>) => void): Disposer {
-        this.emitter.addListener(event, fn)
-        return () => this.emitter.removeListener(event, fn)
-    }
-
-    get cursor(): ICursor {
-        return {
-            // hide: this.hideCursor,
-            // show: this.showCursor,
-            cursorTo: this.cursorTo,
-            moveCursor: this.moveCursor,
-        }
+    end() {
+        this.exit()
     }
 
     createTimer(fps: number) {
@@ -107,38 +93,41 @@ class System implements ISystem {
         return () => {}
     }
 
-    private getWindowSize(): WindowSize {
-        const [cols, lines] = process.stdout.getWindowSize()
-        return { cols, lines }
+    readonly cursorTo = (x: number, y: number): void => {
+        return void this.out.cursorTo(x, y)
     }
 
-    private readonly resize = () => {
-        this.sysPanel.onResize(this.getWindowSize())
-    }
-
-    private readonly exit = () => {
-        this.destroy()
-        this.sysPanel.exit()
-        this.showCursor()
-    }
-
-    private readonly sigint = () => {
-        this.exit()
-        process.exit(0)
+    readonly moveCursor = (dx: number, dy: number) => {
+        return void this.out.moveCursor(dx, dy)
     }
 
     private readonly hideCursor = () => void process.stdout.write('\x1B[?25l')
     private readonly showCursor = () => void process.stdout.write('\x1B[?25h')
 
-    private readonly cursorTo = (x: number, y: number) =>
-        new Promise<void>(resolve => {
-            this.out.cursorTo(x, y, () => resolve())
-        })
+    // private readonly resize = () => {
+    //     this.sysPanel.onResize(this.getWindowSize())
+    // }
 
-    private readonly moveCursor = (dx: number, dy: number) =>
-        new Promise<void>(resolve => {
-            this.out.moveCursor(dx, dy, () => resolve())
-        })
+    private getWindowSize(): WindowSize {
+        const [cols, lines] = process.stdout.getWindowSize()
+        return { cols, lines }
+    }
+
+    private readonly exit = () => {
+        this.sysPanel.exit()
+        this.destroy()
+        this.showCursor()
+        process.exit(0)
+    }
+
+    private readonly sigint = () => {
+        this.exit()
+    }
+
+    private addEventListener<T extends EventType>(event: T, fn: (data: EventData<T>) => void): Disposer {
+        this.emitter.addListener(event, fn)
+        return () => this.emitter.removeListener(event, fn)
+    }
 }
 
 export const sys = new System(new SystemPanel())

@@ -7,9 +7,8 @@ abstract class BasePanel implements IPanel {
     private readonly id: number
 
     constructor(
-        // private _rect: IRect,
         private _insets: IInsets,
-        private _bg: Color
+        private _bg: Color | null = null
     ) {
         this.id = sys.nextId()
     }
@@ -28,7 +27,7 @@ abstract class BasePanel implements IPanel {
         return `${this.name}: ${this.id}`
     }
 
-    abstract resize(bounds: IRect): void
+    // abstract resize(bounds: IRect, bg: Color): void
 
     abstract render(bounds: IRect, bg?: Nullable<Color>): void
 
@@ -50,15 +49,14 @@ export class Panel extends BasePanel {
         this.children.push(child)
     }
 
-    resize(bounds: IRect) {
-        this.render(bounds)
-        for (const p of this.children) {
-            p.render(insetRect(this.insets, bounds))
-        }
-    }
+    // resize(bounds: IRect, bg?: Nullable<Color>) {
+    //     this.render(bounds, bg)
+    //     for (const p of this.children) {
+    //         p.render(insetRect(this.insets, bounds))
+    //     }
+    // }
 
     render(bounds: IRect, bg?: Nullable<Color>): void {
-        // const rect = bounds ?? this.rect
         const bgc = fallbackBg(this.bg, bg)
         const rect = insetRect(this.insets, bounds)
         fill(bgc, rect)
@@ -81,29 +79,29 @@ export interface ITextElement extends IPanel {
 }
 
 export class TextPanel extends BasePanel {
-    constructor(
-        protected readonly text: Color,
-        insets = new Insets(),
-        bg?: Nullable<Color>
-    ) {
-        super(insets, bg?.bg ?? text.bg ?? new Color())
+    protected readonly text: Color[]
+
+    constructor(text: Color | Color[], insets = new Insets(), bg?: Nullable<Color>) {
+        super(insets, bg?.bg)
+        this.text = Array.isArray(text) ? text : [text]
     }
 
     protected get name() {
         return TextPanel.name
     }
 
-    resize(bounds: IRect) {
-        this.render(bounds)
-    }
+    // resize(bounds: IRect, bg?: Nullable<Color>) {
+    //     this.render(bounds, bg)
+    // }
 
     render(bounds: IRect, bg?: Nullable<Color>) {
-        const bgc = fallbackBg(this.bg, this.text.bg, bg)
-        // this.fill(bg)
-        const text = bgc.text(this.text)
+        const bgc = fallbackBg(this.bg, bg)
         const rect = insetRect(this.insets, bounds)
-        sys.cursor.cursorTo(rect.x, rect.y)
-        sys.write(text.str)
+        fill(bgc, rect)
+
+        const [text] = this.text
+        sys.cursorTo(rect.x, rect.y)
+        sys.write(text.bgFrom(bgc).str)
     }
 
     destroy() {}

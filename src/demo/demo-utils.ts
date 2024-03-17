@@ -61,6 +61,12 @@ export async function runScript(script: (() => Promise<void>)[]) {
     }
 }
 
+export async function runScenes(script: (() => Promise<void>)[]) {
+    for (const i of count(script.length)) {
+        await script[i](/* inject stuff here */)
+    }
+}
+
 export const fromSeconds = timeUnit('sec')
 export const whenSeconds = <T>(sec: number, action: () => T | Promise<T>) => whenMs(fromSeconds(sec), action)
 export const waitSeconds = (sec: number) => waitMs(fromSeconds(sec))

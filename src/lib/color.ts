@@ -196,8 +196,18 @@ export class Color implements Stringable {
         return new Color(this._text, this._fgKey, result[index], this._mod)
     }
 
+    /**
+     * Returns a background-only color from the given color.
+     */
     bgOf(c: Color) {
         return new Color(null, null, c.bgKey, null)
+    }
+
+    /**
+     * Applies the background from the given color.
+     */
+    bgFrom(c: Color) {
+        return new Color(this._text, this.fgKey, c.bgKey, this.mod)
     }
 
     get hasBg() {

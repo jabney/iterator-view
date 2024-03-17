@@ -1,7 +1,7 @@
 import { count } from '../iterator'
 import { Color } from '../lib/color'
-import { Panel } from './Panel'
-import { runScript, waitSeconds } from './demo-utils'
+import { Panel, TextPanel } from './Panel'
+import { runScenes, runScript, waitSeconds } from './demo-utils'
 import { sys } from './system'
 import { Insets, Rect } from './types'
 import { fill, insetRect } from './util'
@@ -37,34 +37,32 @@ async function RectTest() {
 }
 
 async function PanelTest() {
-    const main = new Panel(
-        //
-        new Insets(),
-        Color.bgWhite()
-    )
+    const main = new Panel(new Insets(), Color.bgWhite())
 
-    const child = new Panel(
-        //
-        new Insets(1, 2, 1, 2),
-        Color.bgCyan()
-    )
+    const bg = Color.bgBlue()
 
-    main.add(child)
+    const inner = new Panel(new Insets(1, 2, 1, 2), bg)
+    main.add(inner)
+
+    const tc = Color.yellow('This is a TextPanel').bright
+    const text = new TextPanel(tc, new Insets(1, 1, 1, 1, true))
+    inner.add(text)
 
     sys.setMainPanel(main)
     sys.start()
 }
 
-export async function run() {
+async function debug() {
     const script = [
         // async () => await RectTest(),
         //
         async () => await PanelTest(),
         //
-        async () => await waitSeconds(20),
+        async () => await waitSeconds(5),
     ]
 
     await runScript(script)
+    sys.end()
 }
 
-run()
+debug()
