@@ -45,7 +45,7 @@ async function PanelTest() {
     main.add(inner)
 
     const tc = Color.yellow('This is a TextPanel').bright
-    const text = new TextPanel(tc, new Insets(1, 1, 1, 1, true))
+    const text = new TextPanel(tc, new Insets(1, 2, 1, 2))
     inner.add(text)
 
     sys.setMainPanel(main)

@@ -61,21 +61,15 @@ export interface IInsets {
 
 export class Insets implements IInsets {
     static from(tr: IPoint, bl: IPoint, aspect?: Nullable<boolean>) {
-        return new Insets(tr.y, tr.x, bl.y, bl.x, aspect)
+        return new Insets(tr.y, tr.x, bl.y, bl.x)
     }
 
     constructor(
         readonly top = 0,
         readonly left = 0,
         readonly bottom = 0,
-        readonly right = 0,
-        readonly aspect: Nullable<boolean> = false
-    ) {
-        if (aspect) {
-            left *= pixelAspect
-            right *= pixelAspect
-        }
-    }
+        readonly right = 0
+    ) {}
 
     // toMutable(): Mutable<IInsets> {
     //     return { top: this.top, left: this.left, bottom: this.bottom, right: this.right }
