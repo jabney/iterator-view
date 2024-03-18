@@ -167,7 +167,7 @@ async function Demo_Immediate(ctrl = new Controller()) {
     const c = Color
 
     const stream1 = async (timeout: number) => {
-        const view = new IteratorView(count(Infinity), Scheduler.timeout(timeout))
+        const view = new IteratorView(count(Infinity), Scheduler.immediate())
             .filter(x => x % 10 === 0)
             .map(x => x ** 2)
             .enumerate()
@@ -188,90 +188,46 @@ async function Demo_Immediate(ctrl = new Controller()) {
     }
     const pos = new Point(rectTitle.x, rectTitle.y)
 
-    const a = {
-        title: c.text('Demo: Very Lazy Iteration'),
-        lines: [
-            { color: c.text(`- A basic iterator, processing 1 value every 100ms`), seconds: 3, point: pos },
-            { color: c.text(`- Then another iterator stream, mixed in spontaneously`), seconds: 3, point: pos },
-        ] as IUnfoldItem[],
-    }
-
-    const b = {
-        title: c.text('Demo: Very Lazy Iteration'),
-        lines: [
-            { color: c.text(`- A basic iterator, processing 1 value every 100ms`), seconds: 0, point: pos },
-            { color: c.text(`- Then another iterator stream, mixed in spontaneously`), seconds: 2, point: pos },
-            { color: c.text(`- Now let's try 0ms`), seconds: 3, point: pos },
-        ] as IUnfoldItem[],
-    }
+    const title1 = c.text(`Now let's see immediate scheduling`)
+    const title2 = c.text(`That was with the secondary events at 0 ms`)
 
     const script: AsyncFn[] = [
         async () => void console.clear(),
-        async () => writeHeading(a.title.bright, rectTitle),
+        async () => writeHeading(title1.bright, rectTitle),
         async () => waitSeconds(2),
-        async () => unfold(a.lines),
+        // async () => unfold(data.lines),
         async () => w.blank(),
         async () => void stream1(100),
-        async () => waitSeconds(3),
-        async () => void stream2(500, 800),
-        async () => whenSeconds(4, () => void (ctrl.halt = true)),
-        async () => waitSeconds(1),
+        // async () => waitSeconds(3),
+        async () => void stream2(0, 0),
+        async () => whenSeconds(3, () => void (ctrl.halt = true)),
+        async () => waitSeconds(2),
+        async () => void console.clear(),
+        async () => writeHeading(title2.bright, rectTitle),
+        async () => waitSeconds(4),
+
         async () => void console.clear(),
         //
-        async () => writeHeading(b.title.bright, rectTitle),
-        async () => unfold(b.lines),
-        async () => w.blank(),
-        async () => void (ctrl.halt = false),
-        async () => void stream1(0),
-        async () => void stream2(50, 80),
-        async () => whenSeconds(2, () => void (ctrl.halt = true)),
-        async () => void 0,
+        // async () => writeHeading(b.title.bright, rectTitle),
     ]
 
     await runScript(script)
 }
 
-async function PanelTest() {
-    const main = new Panel(
-        //
-        Insets.from(new Point(2, 1), new Point(2, 1)),
-        Color.bgWhite()
-    )
-
-    const child = new Panel(
-        //
-        Insets.from(new Point(2, 1), new Point(2, 1)),
-        Color.bgCyan()
-    )
-
-    main.add(child)
-
-    sys.setMainPanel(main)
-    sys.start()
-    // const text = Color.magenta('This is a text panel').bgBlue
-    // const width = text.str.length
-    // const height = 2
-    // const textPanel = new TextPanel(text, new Rect(width, height))
-    // host.add(textPanel)
-
-    // main.render()
-    await waitSeconds(7)
-}
-
 export async function demo() {
-    // sys.cursor.hide()
-
     const script = [
-        // async () => void console.clear(),
+        async () => sys.hideCursor(),
+        async () => void console.clear(),
         //
-        // async () => await intro(),
+        async () => await intro(),
         //
-        async () => await PanelTest(),
+        async () => await Demo_LazyTimeout(),
         //
-        // async () => await Demo_LazyTimeout(),
+        async () => await Demo_Immediate(),
         //
-        // async () => void console.clear(),
-        // async () => void sys.writeln('\n'),
+        async () => void console.clear(),
+        async () => void sys.writeln('\n'),
+        async () => void sys.showCursor(),
     ]
 
     await runScript(script)

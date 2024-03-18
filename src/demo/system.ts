@@ -78,11 +78,11 @@ class System implements ISystem {
         return void this.out.moveCursor(dx, dy)
     }
 
-    private readonly hideCursor = () => {
+    readonly hideCursor = () => {
         return void process.stdout.write('\x1B[?25l')
     }
 
-    private readonly showCursor = () => {
+    readonly showCursor = () => {
         return void process.stdout.write('\x1B[?25h')
     }
 
