@@ -57,9 +57,6 @@ class System implements ISystem {
         this.init()
     }
 
-    //
-    // Track cursor x,y
-
     private init() {
         process.on('SIGINT', this.sigint)
         process.on('exit', this.exit)
@@ -125,7 +122,6 @@ class System implements ISystem {
 
         while (true) {
             if (this.timerHasListeners) {
-                console.log('timer is running:', this.timerIsRunning)
                 const end = process.hrtime.bigint()
                 await waitFps(fps)
                 const elapsed = end - start

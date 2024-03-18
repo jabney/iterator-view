@@ -52,3 +52,7 @@ export function fallbackBg(...args: (Color | Nil)[]): Color {
     }
     return new Color()
 }
+
+export function applyColor(color: Color, text: string[]) {
+    return text.map(x => color.text(x))
+}

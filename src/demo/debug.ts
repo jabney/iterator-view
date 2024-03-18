@@ -4,7 +4,7 @@ import { Panel, TextPanel } from './Panel'
 import { runScenes, runScript, waitSeconds } from './demo-utils'
 import { sys } from './system'
 import { Insets, Rect } from './types'
-import { fill, insetRect } from './util'
+import { applyColor, fill, insetRect } from './util'
 
 const out = process.stdout
 
@@ -44,8 +44,9 @@ async function PanelTest() {
     const inner = new Panel(new Insets(1, 2, 1, 2), bg)
     main.add(inner)
 
-    const tc = Color.yellow('This is a TextPanel').bright
-    const text = new TextPanel(tc, new Insets(1, 2, 1, 2))
+    const lines = ['This is a TextPanel', 'This is subtext']
+    const colors = applyColor(Color.white(), lines)
+    const text = new TextPanel(colors, new Insets(1, 2, 1, 2), null, { h: 'center', v: 'middle' })
     inner.add(text)
 
     sys.setMainPanel(main)
@@ -58,7 +59,7 @@ async function debug() {
         //
         async () => await PanelTest(),
         //
-        async () => await waitSeconds(10),
+        async () => await waitSeconds(20),
     ]
 
     await runScript(script)
