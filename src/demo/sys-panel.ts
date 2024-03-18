@@ -1,6 +1,5 @@
 import { clamp } from '../lib/clamp'
-import { waitFps } from '../lib/time'
-import { Disposer, IPanel, ISystem, Insets, Rect, WindowSize } from './types'
+import { IPanel, ISystem, Insets, Rect, WindowSize } from './types'
 
 const createPanel = () => ({
     rect: new Rect(),
@@ -90,7 +89,7 @@ export class SystemPanel {
         return { cols, lines }
     }
 
-    render(): void {
+    private render(): void {
         this.panel.render(this.rect)
     }
 }

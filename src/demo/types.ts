@@ -1,5 +1,4 @@
 import { Color } from '../lib/color'
-import { pixelAspect } from './constants'
 
 export type AsyncFn<T = void> = () => Promise<T>
 
