@@ -4,56 +4,12 @@ import { EventData, EventType } from './event'
 import { range } from '../../iterator'
 import { SystemPanel } from './system-panel'
 import { waitFps } from '../../lib/time'
+import { InputManager } from './input-manager'
 
 export interface ISystem {
     addInputListener(fn: (char: string) => void): Disposer
 }
 
-const code = {
-    enter: '\x0d',
-    space: '\x20',
-    up: '\x1b\x5b\x41',
-    down: '\x1b\x5b\x42',
-    right: '\x1b\x5b\x43',
-    left: '\x1b\x5b\x44',
-}
-
-const ctrl = {
-    null: '\x00', // Null character
-    a01: '\x01', // Start of Heading
-    a02: '\x02', // Start of Text
-    eot: '\x03', // End of Text (ctrl+c)
-    a04: '\x04', // End of Transmission
-    a05: '\x05', // Enquiry
-    a06: '\x06', // Acknowledge
-    bel: '\x07', // Bell, Alert
-    a08: '\x08', // Backspace
-    tab: '\x09', // Horizontal Tab
-    lf: '\x0A', // Line Feed
-    a0B: '\x0B', // Vertical Tabulation
-    a0C: '\x0C', // Form Feed
-    cr: '\x0D', // Carriage Return
-    a0E: '\x0E', // Shift Out
-    a0F: '\x0F', // Shift In
-    a10: '\x10', // Data Link Escape
-    a11: '\x11', // Device Control One (XON)
-    a12: '\x12', // Device Control Two
-    a13: '\x13', // Device Control Three (XOFF)
-    a14: '\x14', // Device Control Four
-    a15: '\x15', // Negative Acknowledge
-    a16: '\x16', // Synchronous Idle
-    a17: '\x17', // End of Transmission Block
-    a18: '\x18', // Cancel
-    a19: '\x19', // End of medium
-    a1A: '\x1A', // Substitute
-    esc: '\x1B', // Escape
-    a1C: '\x1C', // File Separator
-    a1D: '\x1D', // Group Separator
-    a1E: '\x1E', // Record Separator
-    a1F: '\x1F', // Unit Separator
-    space: '\x20', // Space
-    del: '\x7F', // Delete
-}
 const id = (() => {
     const counter = range(1, Infinity)
     return {
@@ -199,60 +155,3 @@ class System implements ISystem {
 }
 
 export const sys = new System(new SystemPanel())
-
-/**
- *
- */
-function InputManager(interrupt: () => void) {
-    const emitter = new EventEmitter()
-    const name = 'input'
-    let running = false
-
-    async function start() {
-        const rawMode = process.stdin.isRaw
-        process.stdin.setRawMode(true)
-        running = true
-        while (readInput()) {
-            if (!running) break
-            await waitFps(30)
-        }
-        process.stdin.setRawMode(rawMode)
-    }
-
-    function readInput(): boolean {
-        const data: Buffer = process.stdin.read()
-        if (data != null) {
-            const str = data.toString()
-            if (str === ctrl.eot) {
-                interrupt()
-                return false
-            }
-            emitter.emit(name, str)
-        }
-        return true
-    }
-
-    return {
-        addListener(fn: (char: string) => void): Disposer {
-            emitter.addListener(name, fn)
-
-            if (!running) start()
-
-            return () => {
-                emitter.removeListener(name, fn)
-                if (emitter.listenerCount(name) === 0) {
-                    running = false
-                }
-            }
-        },
-
-        stop() {
-            running = false
-        },
-
-        destroy() {
-            this.stop()
-            emitter.removeAllListeners(name)
-        },
-    }
-}

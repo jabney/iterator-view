@@ -185,77 +185,78 @@ const show = '\x1B[?25h'
     └───────────────────┘▒
     ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
 
-```
-Code	HEX         HTML Number	    Name
-0       00          &#00;           Null character
-1       01          &#01;           Start of Heading
-2       02          &#02;           Start of Text
-3       03          &#03;           End of Text
-4       04          &#04;           End of Transmission
-5       05          &#05;           Enquiry
-6       06          &#06;           Acknowledge
-7       07          &#07;           Bell, Alert
-8       08          &#08;           Backspace
-9       09          &#09;           Horizontal Tab
-10      0A          &#10;           Line Feed
-11      0B          &#11;           Vertical Tabulation
-12      0C          &#12;           Form Feed
-13      0D          &#13;           Carriage Return
-14      0E          &#14;           Shift Out
-15      0F          &#15;           Shift In
-16      10          &#16;           Data Link Escape
-17      11          &#17;           Device Control One (XON)
-18      12          &#18;           Device Control Two
-19      13          &#19;           Device Control Three (XOFF)
-20      14          &#20;           Device Control Four
-21      15          &#21;           Negative Acknowledge
-22      16          &#22;           Synchronous Idle
-23      17          &#23;           End of Transmission Block
-24      18          &#24;           Cancel
-25      19          &#25;           End of medium
-26      1A          &#26;           Substitute
-27      1B          &#27;           Escape
-28      1C          &#28;           File Separator
-29      1D          &#29;           Group Separator
-30      1E          &#30;           Record Separator
-31      1F          &#31;           Unit Separator
-32      20          &#32;           Space
-127     7F          &#127;          Delete
-```
 
-```js
-a00: '\x00', // Null character
-a01: '\x01', // Start of Heading
-a02: '\x02', // Start of Text
-a03: '\x03', // End of Text
-a04: '\x04', // End of Transmission
-a05: '\x05', // Enquiry
-a06: '\x06', // Acknowledge
-a07: '\x07', // Bell, Alert
-a08: '\x08', // Backspace
-a09: '\x09', // Horizontal Tab
-a0A: '\x0A', // Line Feed
-a0B: '\x0B', // Vertical Tabulation
-a0C: '\x0C', // Form Feed
-a0D: '\x0D', // Carriage Return
-a0E: '\x0E', // Shift Out
-a0F: '\x0F', // Shift In
-a10: '\x10', // Data Link Escape
-a11: '\x11', // Device Control One (XON)
-a12: '\x12', // Device Control Two
-a13: '\x13', // Device Control Three (XOFF)
-a14: '\x14', // Device Control Four
-a15: '\x15', // Negative Acknowledge
-a16: '\x16', // Synchronous Idle
-a17: '\x17', // End of Transmission Block
-a18: '\x18', // Cancel
-a19: '\x19', // End of medium
-a1A: '\x1A', // Substitute
-a1B: '\x1B', // Escape
-a1C: '\x1C', // File Separator
-a1D: '\x1D', // Group Separator
-a1E: '\x1E', // Record Separator
-a1F: '\x1F', // Unit Separator
-a20: '\x20', // Space
-a7F: '\x7F', // Delete
-```
+    Code	HEX         HTML Number	    Name
+    0       00          &#00;           Null character
+    1       01          &#01;           Start of Heading
+    2       02          &#02;           Start of Text
+    3       03          &#03;           End of Text
+    4       04          &#04;           End of Transmission
+    5       05          &#05;           Enquiry
+    6       06          &#06;           Acknowledge
+    7       07          &#07;           Bell, Alert
+    8       08          &#08;           Backspace
+    9       09          &#09;           Horizontal Tab
+    10      0A          &#10;           Line Feed
+    11      0B          &#11;           Vertical Tabulation
+    12      0C          &#12;           Form Feed
+    13      0D          &#13;           Carriage Return
+    14      0E          &#14;           Shift Out
+    15      0F          &#15;           Shift In
+    16      10          &#16;           Data Link Escape
+    17      11          &#17;           Device Control One (XON)
+    18      12          &#18;           Device Control Two
+    19      13          &#19;           Device Control Three (XOFF)
+    20      14          &#20;           Device Control Four
+    21      15          &#21;           Negative Acknowledge
+    22      16          &#22;           Synchronous Idle
+    23      17          &#23;           End of Transmission Block
+    24      18          &#24;           Cancel
+    25      19          &#25;           End of medium
+    26      1A          &#26;           Substitute
+    27      1B          &#27;           Escape
+    28      1C          &#28;           File Separator
+    29      1D          &#29;           Group Separator
+    30      1E          &#30;           Record Separator
+    31      1F          &#31;           Unit Separator
+    32      20          &#32;           Space
+    127     7F          &#127;          Delete
+
+---
+
+    Caret Notation      Hex Code    Abbreviation	Name	                    Description
+    --------------      --------    ------------    ----                        -----------
+    ^@                  00          NULL            Null	                    Used to perform media-fill and allow gaps.
+    ^A                  01          STX             Start of Header	            Used as first character of head of data broadcast/message.
+    ^B                  02          SOT             Start of Text	            Heads text and used to mark end of heading.
+    ^C                  03          ETX             End of Text                 Marks end of text (Break)
+    ^D                  04          EOT             End of Transmission         Used to mark end of transmission of one or more texts.
+    ^E                  05          ENQ             Enquiry	                    Requests for reply from remote terminal.
+    ^F                  06          ACK             Acknowledge	                Sent by receiver as approving response to sender. (Response to ENQ)
+    ^G                  07          BEL             Bell	                    A control character to call for attention.
+    ^H                  08          BS              BackSpace	                Shifts cursor one character position behind.
+    ^I                  09          HT              Horizontal Tabulation	    Shifts cursor to next determined character position on the same line.
+    ^J                  0A          LF              Line Feed	                Shifts cursor to equivalent character position of next line.
+    ^K                  0B          VT              Vertical Tabulation	        Shifts cursor at next line.
+    ^L                  0C          FF              Form Feed                   It commands printer to discard current page and to proceed to print at the next one.
+    ^M                  0D          CR              Carriage Return	            Primitively used to move cursor to very first column while staying on the same line/row.
+    ^N                  0E          SO              Shift Out	                Switches to substitute character set.
+    ^O                  0F          SI              Shift In	                Reverts to general character set after Shift Out.
+    ^P                  10          DLE             Data Link Escape	        It is used particularly to deliver additional data transmission control functions.
+    ^Q                  11          DC1             Device Control 1 (XON)	    A device control character, dedicated to turning on or starting essential device.
+    ^R                  12          DC2             Device Control 2	        A device control character, dedicated to turning on or starting essential device.
+    ^S                  13          DC3             Device Control 3 (XOFF)	    A device control character, dedicated to turning off or stopping an essential device.
+    ^T                  14          DC4             Device Control 4	        A device control character, dedicated to turning off al device.
+    ^U                  15          NAK             Negative acknowledge	    A control character sent by receiver as negative acknowledgment/response to transmitter.
+    ^V                  16          SYN             Synchronous Idle	        Used by synchronous transmission network.
+    ^W                  17          ETB             End of Transmission Block   Marks end of transmission segment of data.
+    ^X                  18          CAN             Cancel	                    Indicates that data preceding it is in error.
+    ^Y                  19          EM              End of Medium	            Used to find physical end of medium or end of wanted portion of data.
+    ^Z                  1A          SUB             Substitute	                Used as an alternative for character that has been detected to be invalid or in error.
+    ^[                  1B          ESC             Escape	                    Esc key corresponds to this control character on almost every operating system. Used in many interface to escape from screen, menu, or process.,
+    ^\                  1C          FS              File Separator	            Used to separate data logically, application dependent.
+    ^]                  1D          GS              Group Separator	            Used to separate data logically; application dependent.
+    ^^                  1E          RS              Record Separator	        Used to separate data logically; application dependent.
+    ^_                  1F          US              Unit Separator	            Used to separate data logically; application dependent.
+                        20          SP              Space                       Shifts cursor to move by one character position.
+    ^?                  7F          DEL             Delete	                    Last character in ASCII repertoire, erases incorrect characters.
