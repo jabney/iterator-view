@@ -4,10 +4,51 @@ import { range } from '../iterator'
 import { SystemPanel } from './sys-panel'
 import { waitFps } from '../lib/time'
 
-const ctrl = {
-    eot: '\x03', // control+c
+const code = {
+    enter: '\x0d',
+    space: '\x20',
+    up: '\x1b\x5b\x41',
+    down: '\x1b\x5b\x42',
+    right: '\x1b\x5b\x43',
+    left: '\x1b\x5b\x44',
 }
 
+const ctrl = {
+    null: '\x00', // Null character
+    a01: '\x01', // Start of Heading
+    a02: '\x02', // Start of Text
+    eot: '\x03', // End of Text (ctrl+c)
+    a04: '\x04', // End of Transmission
+    a05: '\x05', // Enquiry
+    a06: '\x06', // Acknowledge
+    bel: '\x07', // Bell, Alert
+    a08: '\x08', // Backspace
+    tab: '\x09', // Horizontal Tab
+    lf: '\x0A', // Line Feed
+    a0B: '\x0B', // Vertical Tabulation
+    a0C: '\x0C', // Form Feed
+    cr: '\x0D', // Carriage Return
+    a0E: '\x0E', // Shift Out
+    a0F: '\x0F', // Shift In
+    a10: '\x10', // Data Link Escape
+    a11: '\x11', // Device Control One (XON)
+    a12: '\x12', // Device Control Two
+    a13: '\x13', // Device Control Three (XOFF)
+    a14: '\x14', // Device Control Four
+    a15: '\x15', // Negative Acknowledge
+    a16: '\x16', // Synchronous Idle
+    a17: '\x17', // End of Transmission Block
+    a18: '\x18', // Cancel
+    a19: '\x19', // End of medium
+    a1A: '\x1A', // Substitute
+    esc: '\x1B', // Escape
+    a1C: '\x1C', // File Separator
+    a1D: '\x1D', // Group Separator
+    a1E: '\x1E', // Record Separator
+    a1F: '\x1F', // Unit Separator
+    space: '\x20', // Space
+    del: '\x7F', // Delete
+}
 const id = (() => {
     const counter = range(1, Infinity)
     return {
@@ -20,13 +61,15 @@ const id = (() => {
 class System implements ISystem {
     private readonly emitter = new EventEmitter()
     private readonly out = process.stdout
-    private timerIsRunning = false
+    private input: ReturnType<typeof InputManager>
+
     readonly error = (str: string) => void process.stderr.write(str + '\n')
     readonly write = (str: string) => void this.out.write(str)
     readonly writeln = (str?: string) => void this.out.write((str ?? '') + '\n')
-    private destroyed = false
+    private timerIsRunning = false
 
     constructor(private readonly sysPanel: SystemPanel) {
+        this.input = InputManager(this.sigint)
         this.init()
     }
 
@@ -37,9 +80,9 @@ class System implements ISystem {
     }
 
     private destroy() {
+        this.input.destroy()
         process.off('SIGINT', this.sigint)
         process.off('exit', this.exit)
-        this.destroyed = true
     }
 
     nextId(): number {
@@ -88,6 +131,14 @@ class System implements ISystem {
 
     get timerHasListeners() {
         return this.emitter.listenerCount('timer') > 0
+    }
+
+    get inputHasListeners() {
+        return this.emitter.listenerCount('keyboard') > 0
+    }
+
+    readonly addInputListener = (fn: (char: string) => void): Disposer => {
+        return this.input.addListener(fn)
     }
 
     addEventListener<T extends EventType>(event: T, fn: (data: EventData<T>) => void): Disposer {
@@ -140,30 +191,63 @@ class System implements ISystem {
             }
         }
     }
+}
 
-    private async createInput() {
+export const sys = new System(new SystemPanel())
+
+/**
+ *
+ */
+function InputManager(interrupt: () => void) {
+    const emitter = new EventEmitter()
+    const name = 'input'
+    let running = false
+
+    async function start() {
         const rawMode = process.stdin.isRaw
         process.stdin.setRawMode(true)
-
-        while (this.readInput()) {
-            if (this.destroyed) break
+        running = true
+        while (readInput()) {
+            if (!running) break
             await waitFps(30)
         }
         process.stdin.setRawMode(rawMode)
     }
 
-    private readInput(): boolean {
-        const data = process.stdin.read()
+    function readInput(): boolean {
+        const data: Buffer = process.stdin.read()
         if (data != null) {
-            const [char] = data.toString()
-            if (char === ctrl.eot) {
-                this.sigint()
+            const str = data.toString()
+            if (str === ctrl.eot) {
+                interrupt()
                 return false
             }
-            this.emitter.emit('keyboard', char)
+            emitter.emit(name, str)
         }
         return true
     }
-}
 
-export const sys = new System(new SystemPanel())
+    return {
+        addListener(fn: (char: string) => void): Disposer {
+            emitter.addListener(name, fn)
+
+            if (!running) start()
+
+            return () => {
+                emitter.removeListener(name, fn)
+                if (emitter.listenerCount(name) === 0) {
+                    running = false
+                }
+            }
+        },
+
+        stop() {
+            running = false
+        },
+
+        destroy() {
+            this.stop()
+            emitter.removeAllListeners(name)
+        },
+    }
+}

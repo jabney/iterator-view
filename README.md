@@ -184,3 +184,78 @@ const show = '\x1B[?25h'
     │ └──┴──┘           │▒
     └───────────────────┘▒
     ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+
+```
+Code	HEX         HTML Number	    Name
+0       00          &#00;           Null character
+1       01          &#01;           Start of Heading
+2       02          &#02;           Start of Text
+3       03          &#03;           End of Text
+4       04          &#04;           End of Transmission
+5       05          &#05;           Enquiry
+6       06          &#06;           Acknowledge
+7       07          &#07;           Bell, Alert
+8       08          &#08;           Backspace
+9       09          &#09;           Horizontal Tab
+10      0A          &#10;           Line Feed
+11      0B          &#11;           Vertical Tabulation
+12      0C          &#12;           Form Feed
+13      0D          &#13;           Carriage Return
+14      0E          &#14;           Shift Out
+15      0F          &#15;           Shift In
+16      10          &#16;           Data Link Escape
+17      11          &#17;           Device Control One (XON)
+18      12          &#18;           Device Control Two
+19      13          &#19;           Device Control Three (XOFF)
+20      14          &#20;           Device Control Four
+21      15          &#21;           Negative Acknowledge
+22      16          &#22;           Synchronous Idle
+23      17          &#23;           End of Transmission Block
+24      18          &#24;           Cancel
+25      19          &#25;           End of medium
+26      1A          &#26;           Substitute
+27      1B          &#27;           Escape
+28      1C          &#28;           File Separator
+29      1D          &#29;           Group Separator
+30      1E          &#30;           Record Separator
+31      1F          &#31;           Unit Separator
+32      20          &#32;           Space
+127     7F          &#127;          Delete
+```
+
+```js
+a00: '\x00', // Null character
+a01: '\x01', // Start of Heading
+a02: '\x02', // Start of Text
+a03: '\x03', // End of Text
+a04: '\x04', // End of Transmission
+a05: '\x05', // Enquiry
+a06: '\x06', // Acknowledge
+a07: '\x07', // Bell, Alert
+a08: '\x08', // Backspace
+a09: '\x09', // Horizontal Tab
+a0A: '\x0A', // Line Feed
+a0B: '\x0B', // Vertical Tabulation
+a0C: '\x0C', // Form Feed
+a0D: '\x0D', // Carriage Return
+a0E: '\x0E', // Shift Out
+a0F: '\x0F', // Shift In
+a10: '\x10', // Data Link Escape
+a11: '\x11', // Device Control One (XON)
+a12: '\x12', // Device Control Two
+a13: '\x13', // Device Control Three (XOFF)
+a14: '\x14', // Device Control Four
+a15: '\x15', // Negative Acknowledge
+a16: '\x16', // Synchronous Idle
+a17: '\x17', // End of Transmission Block
+a18: '\x18', // Cancel
+a19: '\x19', // End of medium
+a1A: '\x1A', // Substitute
+a1B: '\x1B', // Escape
+a1C: '\x1C', // File Separator
+a1D: '\x1D', // Group Separator
+a1E: '\x1E', // Record Separator
+a1F: '\x1F', // Unit Separator
+a20: '\x20', // Space
+a7F: '\x7F', // Delete
+```

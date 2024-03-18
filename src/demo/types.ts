@@ -49,7 +49,8 @@ export type EventData<K extends EventType> = { [T in Event as T['type']]: T['dat
 // ---------------------
 
 export interface ISystem {
-    addEventListener<T extends EventType>(event: T, fn: (data: EventData<T>) => void): Disposer
+    addInputListener(fn: (char: string) => void): Disposer
+    // addEventListener<T extends EventType>(event: T, fn: (data: EventData<T>) => void): Disposer
 }
 
 export interface IPanel {

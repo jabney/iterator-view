@@ -61,6 +61,9 @@ export class SystemPanel {
 
     setSystem(sys: ISystem) {
         this.sys = sys
+        sys.addInputListener(str => {
+            // console.log('input listener:', char)
+        })
     }
 
     setMainPanel(panel: IPanel) {
