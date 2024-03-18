@@ -1,9 +1,8 @@
 import { count } from '../iterator'
 import { Color } from '../lib/color'
-import { Panel, TextPanel } from './Panel'
+import { Insets, Panel, Rect, TextPanel } from './panel'
 import { runScenes, runScript, waitSeconds } from './demo-utils'
-import { sys } from './system'
-import { Insets, Rect } from './types'
+import { sys } from './system/system'
 import { applyColor, fill, insetRect } from './util'
 
 const out = process.stdout

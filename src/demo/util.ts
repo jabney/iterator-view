@@ -1,7 +1,7 @@
 import { count } from '../iterator'
 import { clamp } from '../lib/clamp'
 import { Color } from '../lib/color'
-import { sys } from './system'
+import { sys } from './system/system'
 import { IInsets, IRect, Nil, Nullable, Rect } from './types'
 
 export function insetRect(insets: IInsets, rect?: Nullable<IRect>): IRect {

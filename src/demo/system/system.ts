@@ -1,8 +1,13 @@
 import EventEmitter from 'events'
-import { Disposer, EventData, EventType, IPanel, ISystem } from './types'
-import { range } from '../iterator'
-import { SystemPanel } from './sys-panel'
-import { waitFps } from '../lib/time'
+import { Disposer, IPanel } from '../types'
+import { EventData, EventType } from './event'
+import { range } from '../../iterator'
+import { SystemPanel } from './system-panel'
+import { waitFps } from '../../lib/time'
+
+export interface ISystem {
+    addInputListener(fn: (char: string) => void): Disposer
+}
 
 const code = {
     enter: '\x0d',

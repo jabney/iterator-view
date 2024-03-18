@@ -1,5 +1,8 @@
-import { clamp } from '../lib/clamp'
-import { IPanel, ISystem, Insets, Rect, WindowSize } from './types'
+import { clamp } from '../../lib/clamp'
+import { Insets } from '../panel/insets'
+import { Rect } from '../panel/rect'
+import { IPanel, WindowSize } from '../types'
+import { ISystem } from './system'
 
 const createPanel = () => ({
     rect: new Rect(),

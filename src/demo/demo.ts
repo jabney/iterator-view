@@ -3,11 +3,13 @@ import { IteratorView } from '../iterator-view'
 import { Color } from '../lib/color'
 import { fpsMs, timeUnit, waitMs, whenMs } from '../lib/time'
 import { Scheduler } from '../schedule'
-import { Panel, TextPanel } from './Panel'
+import { Panel, TextPanel } from './panel'
 import { Controller } from './controller'
 import { runScript, scroller, text as t, unfold, write as w, waitSeconds, whenSeconds } from './demo-utils'
-import { sys } from './system'
-import { IPoint, IRect, Rect, IUnfoldItem, AsyncFn, Point, Insets } from './types'
+import { sys } from './system/system'
+import { IPoint, IRect, IUnfoldItem, AsyncFn } from './types'
+import { Point } from './panel/point'
+import { Rect } from './panel/rect'
 
 const out = process.stdout
 
