@@ -13,8 +13,44 @@ export type Nullable<T> = T | Nil
 
 export type WindowSize = { cols: number; lines: number }
 
+// ---------------------
+// Event System
+//
+interface KeyboardEvent {
+    type: 'keyboard'
+    data: WindowSize
+}
+
+interface TimerEvent {
+    type: 'timer'
+    data: number
+}
+
+export type Event = KeyboardEvent | TimerEvent
+
+/**
+ * Maps events to a union of their types.
+ *
+ * Interpretation
+ *   - [K in keyof Event]: Event[K] crates a type where the proprties are unionized.
+ *   - ['type'] pulls the type union off of the mapped type
+ */
+export type EventType = { [K in keyof Event]: Event[K] }['type']
+
+/**
+ * Maps events to their data type for a given EventType
+ *
+ * Interpretaion:
+ *   - [T in Event as T['type']] creates a union of events which can be discriminated based on type
+ *   - :T['data'] maps these to the 'data' key union
+ *   - [K] selects the one that matches T['type']
+ */
+export type EventData<K extends EventType> = { [T in Event as T['type']]: T['data'] }[K]
+//
+// ---------------------
+
 export interface ISystem {
-    addTimerListener(fn: (data: number) => void): Disposer
+    addEventListener<T extends EventType>(event: T, fn: (data: EventData<T>) => void): Disposer
 }
 
 export interface IPanel {

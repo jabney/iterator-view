@@ -10,21 +10,15 @@ const createPanel = () => ({
     destroy: () => void 0,
 })
 
-const ctrl = {
-    eot: '\x03', // control+c
-}
-
 const aspect = 0.3
 const wMin = 80
-const wMax = 100
+const wMax = 120
 
 export class SystemPanel {
     private readonly id: number
     private sys: ISystem | null = null
     private rect: Rect = new Rect()
     private panel: IPanel = createPanel()
-    private interrupt = (): void => void 0
-    private destroyed = false
 
     private bounds = {
         w: { min: wMin, max: wMax },
@@ -36,21 +30,20 @@ export class SystemPanel {
     }
 
     start() {
-        this.resize(this.getWindowSize())
+        this.rect = this.createRect(this.getWindowSize())
 
         if (!this.initialized) {
             throw new Error('<SystemPanel> not initialized')
         }
 
         process.stdout.on('resize', this.resize)
-        this.readInput()
+        // this.readInput()
 
         console.clear()
         this.render()
     }
 
     private destroy() {
-        this.destroyed = true
         process.stdout.off('resize', this.resize)
         this.panel.destroy()
     }
@@ -75,55 +68,26 @@ export class SystemPanel {
         this.panel = panel
     }
 
-    setInterrupt(fn: () => void) {
-        this.interrupt = fn
-    }
-
     exit() {
         this.destroy()
         console.clear()
     }
 
-    private resize(size: WindowSize): void {
+    private createRect(size: WindowSize) {
         const width = clamp(this.bounds.w.min, this.bounds.w.max, size.cols)
         const height = clamp(this.bounds.h.min, this.bounds.h.max, size.lines)
-        this.rect = new Rect(width, height)
-
-        console.clear()
-        this.render()
+        return new Rect(width, height)
     }
 
-    onInput = (key: string) => {
-        // console.debug('sys panel keyboard input:', key.toString())
+    private readonly resize = (): void => {
+        this.rect = this.createRect(this.getWindowSize())
+        console.clear()
+        this.render()
     }
 
     private getWindowSize(): WindowSize {
         const [cols, lines] = process.stdout.getWindowSize()
         return { cols, lines }
-    }
-
-    private async readInput() {
-        const rawMode = process.stdin.isRaw
-        process.stdin.setRawMode(true)
-
-        while (this.handleInput()) {
-            if (this.destroyed) break
-            await waitFps(30)
-        }
-        process.stdin.setRawMode(rawMode)
-    }
-
-    private handleInput(): boolean {
-        const data = process.stdin.read()
-        if (data != null) {
-            const [char] = data.toString()
-            if (char === ctrl.eot) {
-                this.interrupt()
-                return false
-            }
-            this.onInput(char)
-        }
-        return true
     }
 
     render(): void {
