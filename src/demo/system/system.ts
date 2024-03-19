@@ -1,5 +1,5 @@
 import EventEmitter from 'events'
-import { DisposeFn, IPanel } from '../types'
+import { DisposeFn, IPanel, KeyType } from '../types'
 import { range } from '../../iterator'
 import { SystemPanel } from './system-panel'
 import { IInputManager, InputManager } from './input-manager'
@@ -65,6 +65,10 @@ class System implements ISystem {
         this.exit()
     }
 
+    render() {
+        this.sysPanel.render()
+    }
+
     private readonly exit = () => {
         this.sysPanel.exit()
         this.destroy()
@@ -100,7 +104,7 @@ class System implements ISystem {
         return this.emitter.listenerCount('keyboard') > 0
     }
 
-    readonly addInputListener = (fn: (char: string) => void): DisposeFn => {
+    readonly addInputListener = (fn: (key: KeyType) => void): DisposeFn => {
         return this.input.addListener(fn)
     }
 

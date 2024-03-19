@@ -1,4 +1,4 @@
-import { count } from '../iterator'
+import { count, enumerate } from '../iterator'
 import { clamp } from '../lib/clamp'
 import { Color } from '../lib/color'
 import { Rect } from './panel'
@@ -57,3 +57,43 @@ export function fallbackBg(...args: (Color | Nil)[]): Color {
 export function applyColor(color: Color, text: string[]) {
     return text.map(x => color.text(x))
 }
+
+/**
+ * @param skip [1...n] 1: print every line, 2: print every sec line
+ */
+export function* heightIterator(rect: IRect, print: 'even' | 'odd' | null = null) {
+    switch (print) {
+        case 'even':
+            for (const [i, line] of enumerate(count(rect.height))) {
+                if (i % 2 === 0) yield line + rect.y
+            }
+            break
+        case 'odd':
+            for (const [i, line] of enumerate(count(rect.height))) {
+                if ((i + 1) % 2 === 0) yield line + rect.y
+            }
+            break
+        default:
+            for (const [i, line] of enumerate(count(rect.height))) {
+                yield line + rect.y
+            }
+    }
+}
+
+export function* iterator<T>(it: Iterable<T>): IterableIterator<T> {
+    for (const x of it) {
+        yield x
+    }
+}
+
+// async function run() {
+//     const rect = new Rect(20, 20)
+
+//     for (const line of heightIterator(rect, null)) {
+//         console.log(line)
+//     }
+
+//     await waitSeconds(5)
+// }
+
+// run()

@@ -69,16 +69,6 @@ export class SystemPanel {
 
     setSystem(sys: ISystem) {
         this.sys = sys
-        this.disposer.add(
-            sys.addInputListener(key => {
-                console.log(key)
-            })
-        )
-        const disposer = sys.addTimerListener(elapsed => {
-            console.log(elapsed)
-        })
-
-        setTimeout(disposer, 5000)
     }
 
     setMainPanel(panel: IPanel) {
@@ -107,7 +97,7 @@ export class SystemPanel {
         return { cols, lines }
     }
 
-    private render(): void {
+    render(): void {
         this.panel.render(this.rect)
     }
 }

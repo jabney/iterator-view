@@ -4,7 +4,7 @@ import { sys } from '../system/system'
 import { IRect, Nullable, TextAlign } from '../types'
 import { fallbackBg, fill, insetRect } from '../util'
 import { Insets } from './insets'
-import { BasePanel } from './panel'
+import { BasePanel } from './base-panel'
 
 export class TextPanel extends BasePanel {
     protected readonly text: Color[]

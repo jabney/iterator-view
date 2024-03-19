@@ -45,7 +45,7 @@ export interface IRect {
 }
 
 export interface IPanel {
-    readonly insets: IInsets
+    // readonly insets: IInsets
     render(bounds: IRect, bg?: Nullable<Color>): void
     destroy(): void
 }

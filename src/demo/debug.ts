@@ -4,6 +4,7 @@ import { Insets, Panel, Rect, TextPanel } from './panel'
 import { runScript, waitSeconds } from './demo-utils'
 import { sys } from './system/system'
 import { applyColor, fill, insetRect } from './util'
+import { UIPanel } from './panel/ui-panel'
 
 const out = process.stdout
 
@@ -52,13 +53,54 @@ async function PanelTest() {
     sys.start()
 }
 
+async function UITest() {
+    const insets = new Insets(1, 2, 1, 2)
+    const bgBlue = Color.bgBlue()
+
+    const options = [
+        {
+            type: 'check-box',
+            group: 'jimmy',
+            text: Color.white('Option 1'),
+        },
+        {
+            type: 'check-box',
+            group: 'jimmy',
+            text: Color.white('Option 2'),
+        },
+        {
+            type: 'check-box',
+            group: 'jimmy',
+            text: Color.white('Option 3'),
+        },
+        {
+            type: 'check-box',
+            group: 'jimmy',
+            text: Color.white('Option 4'),
+        },
+    ]
+
+    const main = new Panel(insets, Color.bgWhite())
+    sys.setMainPanel(main)
+
+    const insetPanel = new Panel(insets, bgBlue)
+    main.add(insetPanel)
+
+    const ui = new UIPanel(options, insets)
+    insetPanel.add(ui)
+
+    sys.start()
+}
+
 async function debug() {
     const script = [
         // async () => await RectTest(),
         //
         async () => await PanelTest(),
         //
-        async () => await waitSeconds(20),
+        async () => await UITest(),
+        //
+        async () => await waitSeconds(999),
     ]
 
     await runScript(script)
