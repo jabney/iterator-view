@@ -1,9 +1,7 @@
 import { count } from '../iterator'
 import { IteratorView } from '../iterator-view'
 import { Color } from '../lib/color'
-import { fpsMs, timeUnit, waitMs, whenMs } from '../lib/time'
 import { Scheduler } from '../schedule'
-import { Panel, TextPanel } from './panel'
 import { Controller } from './controller'
 import { runScript, scroller, text as t, unfold, write as w, waitSeconds, whenSeconds } from './demo-utils'
 import { sys } from './system/system'
@@ -118,20 +116,24 @@ async function Demo_LazyTimeout(ctrl = new Controller()) {
     }
     const pos = new Point(rectTitle.x, rectTitle.y)
 
+    const title = `Demo: Very Lazy Iteration`
+    const underline = t.inset(Pad.x, '-'.repeat(title.length))
+    const titleText = c.text(`${title}\n${underline}`)
+
     const a = {
-        title: c.text('Demo: Very Lazy Iteration'),
+        title: titleText,
         lines: [
-            { color: c.text(`- A basic iterator, processing 1 value every 100ms`), seconds: 3, point: pos },
+            { color: c.text(`- A basic iterator, processing 1 value every 100ms\n`), seconds: 3, point: pos },
             { color: c.text(`- Then another iterator stream, mixed in spontaneously`), seconds: 3, point: pos },
         ] as IUnfoldItem[],
     }
 
     const b = {
-        title: c.text('Demo: Very Lazy Iteration'),
+        title: titleText,
         lines: [
-            { color: c.text(`- A basic iterator, processing 1 value every 100ms`), seconds: 0, point: pos },
-            { color: c.text(`- Then another iterator stream, mixed in spontaneously`), seconds: 2, point: pos },
-            { color: c.text(`- Now let's try 0ms`), seconds: 3, point: pos },
+            { color: c.text(`- A basic iterator, processing 1 value every 100ms\n`), seconds: 0, point: pos },
+            { color: c.text(`- Then another iterator stream, mixed in spontaneously\n`), seconds: 1, point: pos },
+            { color: c.text(`- Now let's try 0 ms`), seconds: 3, point: pos },
         ] as IUnfoldItem[],
     }
 
@@ -155,6 +157,7 @@ async function Demo_LazyTimeout(ctrl = new Controller()) {
         async () => void stream1(0),
         async () => void stream2(50, 80),
         async () => whenSeconds(2, () => void (ctrl.halt = true)),
+        async () => waitSeconds(1),
         async () => writeHeading(c.text(`That was faster.`), rectTitle),
         async () => waitSeconds(2),
 
@@ -190,8 +193,8 @@ async function Demo_Immediate(ctrl = new Controller()) {
     }
     const pos = new Point(rectTitle.x, rectTitle.y)
 
-    const title1 = c.text(`Now let's see immediate scheduling`)
-    const title2 = c.text(`That was with the secondary events at 0 ms`)
+    const title1 = c.text(`Let's see immediate scheduling`)
+    const title2 = c.text(`The secondary events were scheduled at 0 ms`)
 
     const script: AsyncFn[] = [
         async () => void console.clear(),
