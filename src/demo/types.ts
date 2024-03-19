@@ -1,8 +1,19 @@
 import { Color } from '../lib/color'
+import { Keyboard } from './system/kb'
+
+export type KeysOf<T extends object> = { [K in keyof T]: K }[keyof T]
+
+export type Immutable<T> = {
+    readonly [key in keyof T]: T[key]
+}
+
+export type Mutable<T> = {
+    -readonly [key in keyof T]: T[key]
+}
 
 export type AsyncFn<T = void> = () => Promise<T>
 
-export type Disposer = () => void
+export type DisposeFn = () => void
 
 export type Stringable = { toString(): string }
 
@@ -12,13 +23,7 @@ export type Nullable<T> = T | Nil
 
 export type WindowSize = { cols: number; lines: number }
 
-export type Immutable<T> = {
-    readonly [key in keyof T]: T[key]
-}
-
-export type Mutable<T> = {
-    -readonly [key in keyof T]: T[key]
-}
+export type KeyType = KeysOf<Keyboard>
 
 export interface IPoint {
     readonly x: number

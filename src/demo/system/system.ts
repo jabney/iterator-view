@@ -1,13 +1,14 @@
 import EventEmitter from 'events'
-import { Disposer, IPanel } from '../types'
-import { EventData, EventType } from './event'
+import { DisposeFn, IPanel } from '../types'
 import { range } from '../../iterator'
 import { SystemPanel } from './system-panel'
-import { waitFps } from '../../lib/time'
-import { InputManager } from './input-manager'
+import { IInputManager, InputManager } from './input-manager'
+import { TimerManager, ITimerManager } from './timer-manager'
+import { EventData, EventType } from './event'
 
 export interface ISystem {
-    addInputListener(fn: (char: string) => void): Disposer
+    addInputListener(fn: (char: string) => void): DisposeFn
+    addTimerListener(fn: (elapsed: number) => void): DisposeFn
 }
 
 const id = (() => {
@@ -22,15 +23,16 @@ const id = (() => {
 class System implements ISystem {
     private readonly emitter = new EventEmitter()
     private readonly out = process.stdout
-    private input: ReturnType<typeof InputManager>
+    private input: IInputManager
+    private timer: ITimerManager
 
     readonly error = (str: string) => void process.stderr.write(str + '\n')
     readonly write = (str: string) => void this.out.write(str)
     readonly writeln = (str?: string) => void this.out.write((str ?? '') + '\n')
-    private timerIsRunning = false
 
     constructor(private readonly sysPanel: SystemPanel) {
         this.input = InputManager(this.sigint)
+        this.timer = TimerManager()
         this.init()
     }
 
@@ -98,59 +100,16 @@ class System implements ISystem {
         return this.emitter.listenerCount('keyboard') > 0
     }
 
-    readonly addInputListener = (fn: (char: string) => void): Disposer => {
+    readonly addInputListener = (fn: (char: string) => void): DisposeFn => {
         return this.input.addListener(fn)
     }
 
-    addEventListener<T extends EventType>(event: T, fn: (data: EventData<T>) => void): Disposer {
-        this.emitter.addListener(event, fn)
-
-        switch (event) {
-            case 'timer':
-                this.onTimerListener('add')
-                break
-            case 'keyboard':
-                break
-        }
-        return () => {
-            this.emitter.removeListener(event, fn)
-
-            switch (event) {
-                case 'timer':
-                    this.onTimerListener('remove')
-                    break
-                case 'keyboard':
-                    break
-            }
-        }
+    readonly addTimerListener = (fn: (elapsed: number) => void): DisposeFn => {
+        return this.timer.addListener(fn)
     }
 
-    private onTimerListener(type: 'add' | 'remove') {
-        if (type === 'add') {
-            if (!this.timerIsRunning) {
-                this.createTimer()
-            }
-        } else {
-            if (!this.timerHasListeners) {
-                this.timerIsRunning = false
-            }
-        }
-    }
-
-    private async createTimer() {
-        this.timerIsRunning = true
-        let start = process.hrtime.bigint()
-
-        while (true) {
-            if (this.timerHasListeners) {
-                const end = process.hrtime.bigint()
-                await waitFps(60)
-                const elapsed = end - start
-                this.emitter.emit('timer', Number(elapsed) / 1e6) // to ms
-            } else {
-                break
-            }
-        }
+    private addEventListener<T extends EventType>(event: T, fn: (data: EventData<T>) => void): DisposeFn {
+        return () => {}
     }
 }
 

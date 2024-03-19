@@ -1,4 +1,5 @@
 import { clamp } from '../../lib/clamp'
+import { Disposer } from '../../lib/disposer'
 import { Insets } from '../panel/insets'
 import { Rect } from '../panel/rect'
 import { IPanel, WindowSize } from '../types'
@@ -21,6 +22,7 @@ export class SystemPanel {
     private sys: ISystem | null = null
     private rect: Rect = new Rect()
     private panel: IPanel = createPanel()
+    private readonly disposer = new Disposer()
 
     private bounds = {
         w: { min: wMin, max: wMax },
@@ -67,9 +69,16 @@ export class SystemPanel {
 
     setSystem(sys: ISystem) {
         this.sys = sys
-        sys.addInputListener(str => {
-            // console.log('input listener:', char)
+        this.disposer.add(
+            sys.addInputListener(key => {
+                console.log(key)
+            })
+        )
+        const disposer = sys.addTimerListener(elapsed => {
+            console.log(elapsed)
         })
+
+        setTimeout(disposer, 5000)
     }
 
     setMainPanel(panel: IPanel) {

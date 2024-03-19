@@ -1,7 +1,7 @@
 import { WindowSize } from '../types'
 
-interface KeyboardEvent {
-    type: 'keyboard'
+interface SystemEvent {
+    type: 'system'
     data: WindowSize
 }
 
@@ -10,7 +10,7 @@ interface TimerEvent {
     data: number
 }
 
-export type Event = KeyboardEvent | TimerEvent
+export type Event = SystemEvent | TimerEvent
 
 /**
  * Maps events to a union of their types.
