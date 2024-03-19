@@ -1,8 +1,9 @@
 import { count } from '../iterator'
 import { clamp } from '../lib/clamp'
 import { Color } from '../lib/color'
+import { Rect } from './panel'
 import { sys } from './system/system'
-import { IInsets, IRect, Nil, Nullable, Rect } from './types'
+import { IInsets, IRect, Nil, Nullable } from './types'
 
 export function insetRect(insets: IInsets, rect?: Nullable<IRect>): IRect {
     const r = rect ?? new Rect()

@@ -39,10 +39,13 @@ export class SystemPanel {
         }
 
         process.stdout.on('resize', this.resize)
-        // this.readInput()
 
-        console.clear()
+        this.clear()
         this.render()
+    }
+
+    private readonly clear = () => {
+        console.clear()
     }
 
     private destroy() {
@@ -75,7 +78,7 @@ export class SystemPanel {
 
     exit() {
         this.destroy()
-        console.clear()
+        this.clear()
     }
 
     private createRect(size: WindowSize) {
@@ -86,7 +89,7 @@ export class SystemPanel {
 
     private readonly resize = (): void => {
         this.rect = this.createRect(this.getWindowSize())
-        console.clear()
+        this.clear()
         this.render()
     }
 

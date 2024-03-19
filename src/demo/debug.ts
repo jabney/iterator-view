@@ -1,7 +1,7 @@
 import { count } from '../iterator'
 import { Color } from '../lib/color'
 import { Insets, Panel, Rect, TextPanel } from './panel'
-import { runScenes, runScript, waitSeconds } from './demo-utils'
+import { runScript, waitSeconds } from './demo-utils'
 import { sys } from './system/system'
 import { applyColor, fill, insetRect } from './util'
 
