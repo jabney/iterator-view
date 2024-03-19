@@ -2,23 +2,43 @@ import { enumerate } from '../../iterator'
 import { Color } from '../../lib/color'
 import { Disposer } from '../../lib/disposer'
 import { sys } from '../system/system'
-import { IInsets, IPanel, IRect, KeyType, Nullable } from '../types'
+import { FillData, IInsets, IPanel, IRect, IUiPanel, KeyType, Nullable } from '../types'
 import { heightIterator } from '../util'
 import { BasePanel } from './base-panel'
 
-export interface IUIPanel extends IPanel {}
-
 export interface UICheckItem {
-    readonly type: string
-    readonly group: string
     readonly text: Color
+    readonly default?: Nullable<boolean>
 }
 
 interface UICheckState extends UICheckItem {
     selected: boolean
 }
 
-export class UIPanel extends BasePanel implements UIPanel {
+export class UIPanel extends BasePanel implements IUiPanel {
+    protected readonly children: IUiPanel[] = []
+
+    protected get name(): string {
+        return UIPanel.name
+    }
+
+    add(child: IPanel) {
+        this.children.push(child)
+    }
+
+    render(bounds: IRect, bg?: Nullable<Color>): FillData {
+        return super.render(bounds, bg)
+    }
+
+    destroy() {
+        for (const p of this.children) {
+            p.destroy()
+        }
+        while (this.children.pop());
+    }
+}
+
+export class UICheckPanel extends UIPanel {
     protected readonly children: IPanel[] = []
     private readonly items: UICheckState[]
     private readonly disposer = new Disposer()
@@ -26,12 +46,12 @@ export class UIPanel extends BasePanel implements UIPanel {
 
     constructor(options: UICheckItem[], insets: IInsets, bgColor?: Color) {
         super(insets, bgColor ?? new Color())
-        this.items = options.map(x => ({ ...x, selected: Math.random() < 0.5 ? false : false }))
+        this.items = options.map(x => ({ ...x, selected: x.default ?? false }))
         this.handleInput()
     }
 
     protected get name() {
-        return UIPanel.name
+        return UICheckPanel.name
     }
 
     protected get highlighted() {
@@ -62,12 +82,8 @@ export class UIPanel extends BasePanel implements UIPanel {
         return o.selected ? `[x] ${text}` : `[ ] ${text}`
     }
 
-    add(child: IUIPanel) {
-        this.children.push(child)
-    }
-
-    render(bounds: IRect, bg?: Nullable<Color>): void {
-        const [rect, bgc] = this.fill(bounds, bg)
+    render(bounds: IRect, bg?: Nullable<Color>): FillData {
+        const [rect, bgc] = super.render(bounds, bg)
 
         const opts = enumerate(this.items)
 
@@ -81,13 +97,11 @@ export class UIPanel extends BasePanel implements UIPanel {
                 sys.write(bgc.text(item).str)
             }
         }
+        return [rect, bgc]
     }
 
     destroy() {
-        for (const p of this.children) {
-            p.destroy()
-        }
-        while (this.children.pop());
         this.disposer.destroy()
+        super.destroy()
     }
 }

@@ -44,11 +44,14 @@ export interface IRect {
     readonly y: number
 }
 
+export type FillData = readonly [IRect, Color]
+
 export interface IPanel {
-    // readonly insets: IInsets
-    render(bounds: IRect, bg?: Nullable<Color>): void
+    render(bounds: IRect, bg?: Nullable<Color>): FillData
     destroy(): void
 }
+
+export interface IUiPanel extends IPanel {}
 
 export type hAlign = 'left' | 'center' | 'right'
 export type vAlign = 'top' | 'middle' | 'bottom'

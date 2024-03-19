@@ -1,10 +1,12 @@
 import { Color } from '../../lib/color'
 import { sys } from '../system/system'
-import { IPanel, IInsets, IRect, Nullable } from '../types'
+import { IPanel, IInsets, IRect, Nullable, FillData } from '../types'
 import { fallbackBg, fill, insetRect } from '../util'
 
 export abstract class BasePanel implements IPanel {
     private readonly id: number
+    protected cachedRect: Nullable<IRect> = null
+    protected cachedBg: Nullable<Color> = null
 
     constructor(
         private _insets: IInsets,
@@ -31,20 +33,22 @@ export abstract class BasePanel implements IPanel {
         return insetRect(this.insets, bounds)
     }
 
-    protected fill(bounds: IRect, bg?: Nullable<Color>): [IRect, Color] {
+    protected fallbackBg(...bg: Nullable<Color>[]) {
+        return fallbackBg(this.bg, ...bg, new Color())
+    }
+
+    protected fill(bounds: IRect, bg?: Nullable<Color>): FillData {
         const rect = this.insetRect(bounds)
-        const bgc = fallbackBg(this.bg, bg, new Color())
+        const bgc = this.fallbackBg(bg)
         fill(bgc, rect)
         return [rect, bgc]
     }
 
-    // abstract resize(bounds: IRect, bg: Color): void
-
-    // render(bounds: IRect, bg?: Nullable<Color>): void {
-    //     this.fill(bounds, this.bg ?? bg)
-    // }
-
-    abstract render(bounds: IRect, bg?: Nullable<Color>): void
+    render(bounds: IRect, bg?: Nullable<Color>): FillData {
+        this.cachedRect = bounds
+        this.cachedBg = bg
+        return this.fill(bounds, bg)
+    }
 
     abstract destroy(): void
 }

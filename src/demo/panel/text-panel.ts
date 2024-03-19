@@ -1,8 +1,7 @@
 import { enumerate } from '../../iterator'
 import { Color } from '../../lib/color'
 import { sys } from '../system/system'
-import { IRect, Nullable, TextAlign } from '../types'
-import { fallbackBg, fill, insetRect } from '../util'
+import { FillData, IRect, Nullable, TextAlign } from '../types'
 import { Insets } from './insets'
 import { BasePanel } from './base-panel'
 
@@ -23,10 +22,8 @@ export class TextPanel extends BasePanel {
         return TextPanel.name
     }
 
-    render(bounds: IRect, bg?: Nullable<Color>) {
-        const rect = insetRect(this.insets, bounds)
-        const bgc = fallbackBg(this.bg, bg)
-        fill(bgc, rect)
+    render(bounds: IRect, bg?: Nullable<Color>): FillData {
+        const [rect, bgc] = super.render(bounds, bg)
 
         const top = this.vAlign(this.text.length, rect)
         for (const [row, text] of enumerate(this.text)) {
@@ -34,6 +31,7 @@ export class TextPanel extends BasePanel {
             const padded = this.hAlign(text, rect.width)
             sys.write(padded.bgFrom(bgc).str)
         }
+        return [rect, bgc]
     }
 
     private hAlign(c: Color, width: number) {

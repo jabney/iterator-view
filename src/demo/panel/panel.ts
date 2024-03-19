@@ -1,5 +1,5 @@
 import { Color } from '../../lib/color'
-import { IInsets, IPanel, IRect, Nullable } from '../types'
+import { FillData, IInsets, IPanel, IRect, Nullable } from '../types'
 import { BasePanel } from './base-panel'
 
 export class Panel extends BasePanel {
@@ -17,12 +17,13 @@ export class Panel extends BasePanel {
         this.children.push(child)
     }
 
-    render(bounds: IRect, bg?: Nullable<Color>): void {
-        const [rect, bgc] = this.fill(bounds, bg)
+    render(bounds: IRect, bg?: Nullable<Color>): FillData {
+        const [rect, bgc] = super.render(bounds, bg)
 
         for (const p of this.children) {
             p.render(rect, bgc)
         }
+        return [rect, bgc]
     }
 
     destroy() {
