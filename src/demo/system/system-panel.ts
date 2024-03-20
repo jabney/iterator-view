@@ -1,7 +1,9 @@
+import { count } from '../../iterator'
 import { clamp } from '../../lib/clamp'
+import { Color } from '../../lib/color'
 import { Disposer } from '../../lib/disposer'
 import { Rect } from '../panel/rect'
-import { IPanel, WindowSize } from '../types'
+import { IPanel, IRect, WindowSize } from '../types'
 import { ISystem, PanelConfig } from './system'
 
 const createPanel = (): IPanel => ({
@@ -13,10 +15,73 @@ const aspect = 0.3
 const wMin = 40
 const wMax = 120
 
+type Frame = Color[][]
+
+export class FrameBuffer {
+    private frame: Frame = []
+
+    constructor(private readonly rect: IRect) {
+        const line = ' '.repeat(rect.width)
+        for (const _ of count(rect.height)) {
+            this.frame.push(this.stringToPixels(line))
+        }
+    }
+
+    private stringToPixels(line: string) {
+        return [...line].map(x => new Color(x))
+    }
+
+    write(x: number, y: number, text: Color) {
+        if (x > this.rect.width || y > this.rect.height) {
+            throw new Error(`<FrameBuffer.write> coordinates overflow for x=${x}, y=${y}`)
+        }
+        const str = text.raw
+
+        if (str == null) {
+            throw new Error(`<FrameBuffer.write> text object has null string`)
+        }
+        if (x + str.length > this.rect.width) {
+            throw new Error(`<FrameBuffer.write> text overflows buffer line`)
+        }
+        const row = this.frame[y]
+        const [start, end] = [x, x + str.length]
+
+        if (text.hasBg) {
+            const bg = text.bg
+            for (let i = start; i < end; i++) {
+                row[i] = bg.text(str[i - x])
+            }
+        } else {
+            for (let i = start; i < end; i++) {
+                const c = row[i]
+                row[i] = c.bg.text(str[i - x])
+            }
+        }
+    }
+
+    fill(color: Color) {
+        const bg = color.bg
+        for (const row of count(this.rect.height)) {
+            for (const col of count(this.rect.width)) {
+                this.frame[row][col] = bg.text(' ')
+            }
+        }
+    }
+
+    present() {
+        const out = process.stdout
+        for (const row of this.frame) {
+            const line = row.map(x => x.str).join('')
+            out.write(`${line}\n`)
+        }
+    }
+}
+
 export class SystemPanel {
     private readonly id: number
     private sys: ISystem | null = null
     private rect: Rect = new Rect()
+
     private cfg: PanelConfig | null = null
     private readonly disposer = new Disposer()
 

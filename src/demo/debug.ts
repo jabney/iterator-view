@@ -5,6 +5,7 @@ import { runScript, waitSeconds } from './demo-utils'
 import { sys } from './system/system'
 import { applyColor, fill, insetRect } from './util'
 import { UICheckItem, UICheckPanel } from './panel/ui-panel'
+import { FrameBuffer } from './system/system-panel'
 
 const out = process.stdout
 
@@ -85,13 +86,22 @@ async function UITest() {
     sys.start()
 }
 
+async function FrameBufferTest() {
+    const buf = new FrameBuffer(new Rect(80, 20))
+    buf.fill(Color.bgMagenta())
+    buf.write(0, 0, Color.white('Jimmy'))
+    buf.present()
+}
+
 async function debug() {
     const script = [
         // async () => await RectTest(),
         //
         // async () => await PanelTest(),
         //
-        async () => await UITest(),
+        // async () => await UITest(),
+        //
+        async () => await FrameBufferTest(),
         //
         async () => await waitSeconds(999),
     ]
