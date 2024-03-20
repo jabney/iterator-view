@@ -1,10 +1,11 @@
 import { enumerate } from '../../iterator'
 import { Color } from '../../lib/color'
 import { sys } from '../system/system'
-import { Ctx, IRect, Nullable, TextAlign } from '../types'
+import { IRect, Nullable, TextAlign } from '../types'
 import { Insets } from './insets'
 import { BasePanel } from './base-panel'
 import { fallbackBg, fill } from '../util'
+import { Context } from '../system/context'
 
 export class TextPanel extends BasePanel {
     protected readonly text: Color[]
@@ -23,7 +24,7 @@ export class TextPanel extends BasePanel {
         return TextPanel.name
     }
 
-    render(ctx: Ctx): void {
+    render(ctx: Context): void {
         const rect = this.insetRect(ctx.rect)
 
         if (this.bg) {

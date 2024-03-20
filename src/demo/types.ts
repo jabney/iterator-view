@@ -1,4 +1,5 @@
 import { Color } from '../lib/color'
+import { IContext } from './system/context'
 import { Keyboard } from './system/kb'
 
 export type KeysOf<T extends object> = { [K in keyof T]: K }[keyof T]
@@ -46,12 +47,8 @@ export interface IRect {
 
 export type FillData = readonly [IRect, Color]
 
-export interface Ctx {
-    readonly rect: IRect
-    readonly bg?: Nullable<Color>
-}
 export interface IPanel {
-    render(ctx: Ctx): void
+    render(ctx: IContext): void
     destroy(): void
 }
 

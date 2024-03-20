@@ -1,5 +1,6 @@
 import { Color } from '../../lib/color'
-import { Ctx, IInsets, IPanel } from '../types'
+import { Context } from '../system/context'
+import { IInsets, IPanel } from '../types'
 import { fill } from '../util'
 import { BasePanel } from './base-panel'
 
@@ -18,7 +19,7 @@ export class Panel extends BasePanel {
         this.children.push(child)
     }
 
-    render(ctx: Ctx): void {
+    render(ctx: Context): void {
         const rect = this.insetRect(ctx.rect)
 
         if (this.bg != null) {
@@ -26,7 +27,7 @@ export class Panel extends BasePanel {
         }
 
         for (const p of this.children) {
-            p.render({ rect, bg: this.bg ?? ctx.bg })
+            p.render(new Context(ctx, rect, this.bg ?? ctx.bg))
         }
     }
 

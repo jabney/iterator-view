@@ -41,6 +41,7 @@ const id = (() => {
 class System implements ISystem {
     private readonly emitter = new EventEmitter()
     private readonly out = process.stdout
+    private panel: SystemPanel
     private input: IInputManager
     private timer: ITimerManager
     private cfg: UiConfig | null = null
@@ -49,7 +50,8 @@ class System implements ISystem {
     readonly write = (str: string) => void this.out.write(str)
     readonly writeln = (str?: string) => void this.out.write((str ?? '') + '\n')
 
-    constructor(private readonly sysPanel: SystemPanel) {
+    constructor() {
+        this.panel = new SystemPanel(this)
         this.input = InputManager(this.sigint)
         this.timer = TimerManager()
         this.init()
@@ -60,7 +62,6 @@ class System implements ISystem {
     }
 
     private init() {
-        this.sysPanel.setSystem(this)
         process.on('SIGINT', this.sigint)
         process.on('exit', this.exit)
     }
@@ -77,13 +78,13 @@ class System implements ISystem {
 
     setMainPanel(panel: IPanel): IUiConfig {
         this.cfg = new UiConfig(panel)
-        this.sysPanel.setMainPanel(this.cfg)
+        this.panel.setMainPanel(this.cfg)
         return this.cfg
     }
 
     start() {
         this.hideCursor()
-        this.sysPanel.start()
+        this.panel.start()
     }
 
     end() {
@@ -91,11 +92,11 @@ class System implements ISystem {
     }
 
     redraw() {
-        this.sysPanel.render()
+        this.panel.render()
     }
 
     private readonly exit = () => {
-        this.sysPanel.exit()
+        this.panel.exit()
         this.destroy()
         this.showCursor()
         process.exit(0)
@@ -142,4 +143,4 @@ class System implements ISystem {
     }
 }
 
-export const sys = new System(new SystemPanel())
+export const sys = new System()

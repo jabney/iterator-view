@@ -1,8 +1,9 @@
 import { enumerate } from '../../iterator'
 import { Color } from '../../lib/color'
 import { Disposer } from '../../lib/disposer'
+import { Context } from '../system/context'
 import { sys } from '../system/system'
-import { Ctx, IInsets, IPanel, IUiPanel, KeyType, Nullable } from '../types'
+import { IInsets, IPanel, IUiPanel, KeyType, Nullable } from '../types'
 import { fallbackBg, fill, heightIterator } from '../util'
 import { BasePanel } from './base-panel'
 
@@ -26,7 +27,7 @@ export abstract class UIPanel extends BasePanel implements IUiPanel {
         this.children.push(child)
     }
 
-    abstract render(ctx: Ctx): void
+    abstract render(ctx: Context): void
 
     destroy() {
         for (const p of this.children) {
@@ -80,7 +81,7 @@ export class UICheckPanel extends UIPanel {
         return o.selected ? `[x] ${text}` : `[ ] ${text}`
     }
 
-    render(ctx: Ctx): void {
+    render(ctx: Context): void {
         const rect = this.insetRect(ctx.rect)
 
         if (this.bg) {

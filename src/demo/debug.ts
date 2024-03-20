@@ -5,7 +5,7 @@ import { runScript, waitSeconds } from './demo-utils'
 import { sys } from './system/system'
 import { applyColor, fill, insetRect } from './util'
 import { UICheckItem, UICheckPanel } from './panel/ui-panel'
-import { FrameBuffer } from './system/system-panel'
+import { FrameBuffer } from './system/frame-buffer'
 
 const out = process.stdout
 
@@ -87,9 +87,11 @@ async function UITest() {
 }
 
 async function FrameBufferTest() {
-    const buf = new FrameBuffer(new Rect(80, 20))
-    buf.fill(Color.bgMagenta())
-    buf.write(0, 0, Color.white('Jimmy'))
+    const rect = new Rect(80, 20)
+    const buf = new FrameBuffer(rect)
+    buf.fill(Color.bgMagenta(), rect)
+    buf.fill(Color.bgCyan(), new Rect(20, 10, 4, 2))
+    buf.write(0, 5, Color.green('Jimmy was here'))
     buf.present()
 }
 

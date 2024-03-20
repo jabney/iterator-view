@@ -1,6 +1,7 @@
 import { Color } from '../../lib/color'
+import { Context } from '../system/context'
 import { sys } from '../system/system'
-import { IPanel, IInsets, IRect, Ctx } from '../types'
+import { IPanel, IInsets, IRect } from '../types'
 import { insetRect } from '../util'
 import { Insets } from './insets'
 
@@ -24,7 +25,7 @@ export abstract class BasePanel implements IPanel {
         return insetRect(this.insets, bounds)
     }
 
-    abstract render(ctx: Ctx): void
+    abstract render(ctx: Context): void
 
     abstract destroy(): void
 }
