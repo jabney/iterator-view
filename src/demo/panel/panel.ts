@@ -1,12 +1,13 @@
 import { Color } from '../../lib/color'
-import { FillData, IInsets, IPanel, IRect, Nullable } from '../types'
+import { Ctx, IInsets, IPanel } from '../types'
+import { fill } from '../util'
 import { BasePanel } from './base-panel'
 
 export class Panel extends BasePanel {
     protected readonly children: IPanel[] = []
 
-    constructor(insets: IInsets, bgColor?: Color) {
-        super(insets, bgColor ?? new Color())
+    constructor(insets: IInsets, bg?: Color) {
+        super(insets, bg)
     }
 
     protected get name() {
@@ -17,13 +18,16 @@ export class Panel extends BasePanel {
         this.children.push(child)
     }
 
-    render(bounds: IRect, bg?: Nullable<Color>): FillData {
-        const [rect, bgc] = super.render(bounds, bg)
+    render(ctx: Ctx): void {
+        const rect = this.insetRect(ctx.rect)
+
+        if (this.bg != null) {
+            fill(this.bg, rect)
+        }
 
         for (const p of this.children) {
-            p.render(rect, bgc)
+            p.render({ rect, bg: this.bg ?? ctx.bg })
         }
-        return [rect, bgc]
     }
 
     destroy() {

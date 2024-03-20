@@ -1,27 +1,23 @@
 import { clamp } from '../../lib/clamp'
 import { Disposer } from '../../lib/disposer'
-import { Insets } from '../panel/insets'
 import { Rect } from '../panel/rect'
 import { IPanel, WindowSize } from '../types'
-import { ISystem } from './system'
+import { ISystem, PanelConfig } from './system'
 
-const createPanel = () => ({
-    rect: new Rect(),
-    insets: new Insets(),
-    resize: () => void 0,
-    render: () => void 0,
-    destroy: () => void 0,
+const createPanel = (): IPanel => ({
+    render: () => {},
+    destroy: () => {},
 })
 
 const aspect = 0.3
-const wMin = 80
+const wMin = 40
 const wMax = 120
 
 export class SystemPanel {
     private readonly id: number
     private sys: ISystem | null = null
     private rect: Rect = new Rect()
-    private panel: IPanel = createPanel()
+    private cfg: PanelConfig | null = null
     private readonly disposer = new Disposer()
 
     private bounds = {
@@ -31,6 +27,18 @@ export class SystemPanel {
 
     constructor() {
         this.id = 0
+    }
+
+    get bg() {
+        return this.cfg?.bg ?? null
+    }
+
+    get tc() {
+        return this.cfg?.tc ?? null
+    }
+
+    get panel() {
+        return this.cfg?.panel ?? createPanel()
     }
 
     start() {
@@ -50,7 +58,7 @@ export class SystemPanel {
         console.clear()
     }
 
-    private destroy() {
+    destroy() {
         process.stdout.off('resize', this.resize)
         this.panel.destroy()
     }
@@ -71,8 +79,8 @@ export class SystemPanel {
         this.sys = sys
     }
 
-    setMainPanel(panel: IPanel) {
-        this.panel = panel
+    setMainPanel(cfg: PanelConfig) {
+        this.cfg = cfg
     }
 
     exit() {
@@ -98,6 +106,6 @@ export class SystemPanel {
     }
 
     render(): void {
-        this.panel.render(this.rect)
+        this.panel.render({ rect: this.rect, bg: this.bg })
     }
 }

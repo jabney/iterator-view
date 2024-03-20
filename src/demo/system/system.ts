@@ -1,14 +1,32 @@
 import EventEmitter from 'events'
-import { DisposeFn, IPanel, KeyType } from '../types'
+import { DisposeFn, IPanel, KeyType, Nullable } from '../types'
 import { range } from '../../iterator'
 import { SystemPanel } from './system-panel'
 import { IInputManager, InputManager } from './input-manager'
 import { TimerManager, ITimerManager } from './timer-manager'
 import { EventData, EventType } from './event'
+import { Color } from '../../lib/color'
 
-export interface ISystem {
-    addInputListener(fn: (char: string) => void): DisposeFn
-    addTimerListener(fn: (elapsed: number) => void): DisposeFn
+export interface ISystem extends System {}
+
+export type PanelConfig = Pick<UiConfig, 'bg' | 'tc' | 'panel'>
+export type IUiConfig = Pick<UiConfig, 'background' | 'text'>
+
+class UiConfig {
+    bg: Nullable<Color>
+    tc: Nullable<Color>
+
+    constructor(readonly panel: IPanel) {}
+
+    background(bg: Color) {
+        this.bg = bg
+        return this
+    }
+
+    text(color: Color) {
+        this.tc = color
+        return this
+    }
 }
 
 const id = (() => {
@@ -25,6 +43,7 @@ class System implements ISystem {
     private readonly out = process.stdout
     private input: IInputManager
     private timer: ITimerManager
+    private cfg: UiConfig | null = null
 
     readonly error = (str: string) => void process.stderr.write(str + '\n')
     readonly write = (str: string) => void this.out.write(str)
@@ -34,6 +53,10 @@ class System implements ISystem {
         this.input = InputManager(this.sigint)
         this.timer = TimerManager()
         this.init()
+    }
+
+    get bg(): Color | null {
+        return this.cfg?.bg ?? null
     }
 
     private init() {
@@ -52,8 +75,10 @@ class System implements ISystem {
         return id.next
     }
 
-    setMainPanel(panel: IPanel): void {
-        this.sysPanel.setMainPanel(panel)
+    setMainPanel(panel: IPanel): IUiConfig {
+        this.cfg = new UiConfig(panel)
+        this.sysPanel.setMainPanel(this.cfg)
+        return this.cfg
     }
 
     start() {
@@ -65,7 +90,7 @@ class System implements ISystem {
         this.exit()
     }
 
-    render() {
+    redraw() {
         this.sysPanel.render()
     }
 

@@ -1,9 +1,10 @@
 import { enumerate } from '../../iterator'
 import { Color } from '../../lib/color'
 import { sys } from '../system/system'
-import { FillData, IRect, Nullable, TextAlign } from '../types'
+import { Ctx, IRect, Nullable, TextAlign } from '../types'
 import { Insets } from './insets'
 import { BasePanel } from './base-panel'
+import { fallbackBg, fill } from '../util'
 
 export class TextPanel extends BasePanel {
     protected readonly text: Color[]
@@ -14,7 +15,7 @@ export class TextPanel extends BasePanel {
         bg?: Nullable<Color>,
         private readonly align: Nullable<TextAlign> = { h: 'center', v: 'middle' }
     ) {
-        super(insets, bg?.bg)
+        super(insets, bg)
         this.text = Array.isArray(text) ? text : [text]
     }
 
@@ -22,8 +23,13 @@ export class TextPanel extends BasePanel {
         return TextPanel.name
     }
 
-    render(bounds: IRect, bg?: Nullable<Color>): FillData {
-        const [rect, bgc] = super.render(bounds, bg)
+    render(ctx: Ctx): void {
+        const rect = this.insetRect(ctx.rect)
+
+        if (this.bg) {
+            fill(this.bg, rect)
+        }
+        const bgc = fallbackBg(this.bg, ctx.bg)
 
         const top = this.vAlign(this.text.length, rect)
         for (const [row, text] of enumerate(this.text)) {
@@ -31,7 +37,6 @@ export class TextPanel extends BasePanel {
             const padded = this.hAlign(text, rect.width)
             sys.write(padded.bgFrom(bgc).str)
         }
-        return [rect, bgc]
     }
 
     private hAlign(c: Color, width: number) {

@@ -73,13 +73,13 @@ async function UITest() {
         },
     ]
 
-    const main = new Panel(insets, Color.bgWhite())
+    const main = new Panel(insets /* , Color.bgWhite() */)
     sys.setMainPanel(main)
 
     const insetPanel = new Panel(insets, Color.bgBlue())
     main.add(insetPanel)
 
-    const ui = new UICheckPanel(options, insets)
+    const ui = new UICheckPanel(options, insets /* , Color.bgBlue() */)
     insetPanel.add(ui)
 
     sys.start()

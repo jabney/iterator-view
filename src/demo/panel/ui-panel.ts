@@ -2,8 +2,8 @@ import { enumerate } from '../../iterator'
 import { Color } from '../../lib/color'
 import { Disposer } from '../../lib/disposer'
 import { sys } from '../system/system'
-import { FillData, IInsets, IPanel, IRect, IUiPanel, KeyType, Nullable } from '../types'
-import { heightIterator } from '../util'
+import { Ctx, IInsets, IPanel, IUiPanel, KeyType, Nullable } from '../types'
+import { fallbackBg, fill, heightIterator } from '../util'
 import { BasePanel } from './base-panel'
 
 export interface UICheckItem {
@@ -15,7 +15,7 @@ interface UICheckState extends UICheckItem {
     selected: boolean
 }
 
-export class UIPanel extends BasePanel implements IUiPanel {
+export abstract class UIPanel extends BasePanel implements IUiPanel {
     protected readonly children: IUiPanel[] = []
 
     protected get name(): string {
@@ -26,9 +26,7 @@ export class UIPanel extends BasePanel implements IUiPanel {
         this.children.push(child)
     }
 
-    render(bounds: IRect, bg?: Nullable<Color>): FillData {
-        return super.render(bounds, bg)
-    }
+    abstract render(ctx: Ctx): void
 
     destroy() {
         for (const p of this.children) {
@@ -45,7 +43,7 @@ export class UICheckPanel extends UIPanel {
     private index: number = 0
 
     constructor(options: UICheckItem[], insets: IInsets, bgColor?: Color) {
-        super(insets, bgColor ?? new Color())
+        super(insets, bgColor)
         this.items = options.map(x => ({ ...x, selected: x.default ?? false }))
         this.handleInput()
     }
@@ -70,23 +68,27 @@ export class UICheckPanel extends UIPanel {
                 case 'space':
                     this.highlighted.selected = !this.highlighted.selected
             }
-            sys.render()
+            sys.redraw()
         })
 
         this.disposer.add(dispose)
     }
 
     protected wrap(o: UICheckState, index: number, bg: Color) {
-        const hl = index === this.index ? bg.rev : bg
+        const hl = index === this.index ? bg.reverse : bg
         const text = hl.text(o.text).str
         return o.selected ? `[x] ${text}` : `[ ] ${text}`
     }
 
-    render(bounds: IRect, bg?: Nullable<Color>): FillData {
-        const [rect, bgc] = super.render(bounds, bg)
+    render(ctx: Ctx): void {
+        const rect = this.insetRect(ctx.rect)
+
+        if (this.bg) {
+            fill(this.bg, rect)
+        }
+        const bgc = fallbackBg(this.bg, ctx.bg)
 
         const opts = enumerate(this.items)
-
         for (const line of heightIterator(rect, 'even')) {
             const it = opts.next()
 
@@ -97,7 +99,6 @@ export class UICheckPanel extends UIPanel {
                 sys.write(bgc.text(item).str)
             }
         }
-        return [rect, bgc]
     }
 
     destroy() {

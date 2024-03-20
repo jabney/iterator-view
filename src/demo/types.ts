@@ -46,8 +46,12 @@ export interface IRect {
 
 export type FillData = readonly [IRect, Color]
 
+export interface Ctx {
+    readonly rect: IRect
+    readonly bg?: Nullable<Color>
+}
 export interface IPanel {
-    render(bounds: IRect, bg?: Nullable<Color>): FillData
+    render(ctx: Ctx): void
     destroy(): void
 }
 
