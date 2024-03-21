@@ -35,12 +35,12 @@ export class Context {
         buf.fill(color, rect)
     }
 
-    write(x: number, y: number, text: Color): void {
+    write(x: number, y: number, text: Color): number {
         const buf = this[pbuf]
 
         if (buf.rect.width === 0 || buf.rect.height === 0) {
             throw new Error(`<Context.write> rect is empty`)
         }
-        buf.write(x, y, text)
+        return buf.write(x, y, text)
     }
 }

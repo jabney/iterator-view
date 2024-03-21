@@ -29,7 +29,7 @@ export class FrameBuffer {
         return rect.width === 0 || rect.height === 0
     }
 
-    write(x: number, y: number, text: Color): void {
+    write(x: number, y: number, text: Color): number {
         if (x > this.rect.width || y > this.rect.height) {
             throw new Error(`<FrameBuffer.write> coordinates overflow for x=${x}, y=${y}`)
         }
@@ -59,6 +59,7 @@ export class FrameBuffer {
                 row[i] = pixel
             }
         }
+        return x + str.length
     }
 
     fill(color: Color, rect: IRect): void {
