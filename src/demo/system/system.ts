@@ -73,6 +73,7 @@ class System implements ISystem {
 
     private destroy() {
         this.input.destroy()
+        this.timer.destroy()
         process.off('SIGINT', this.sigint)
         process.off('exit', this.exit)
     }
