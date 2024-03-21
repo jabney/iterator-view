@@ -17,7 +17,6 @@ const wMax = 120
 
 export class SystemPanel {
     private readonly id: number
-    private rect: Rect = new Rect()
     private buf: FrameBuffer = new FrameBuffer(new Rect())
     private cfg: PanelConfig | null = null
     private readonly disposer = new Disposer()
@@ -29,6 +28,10 @@ export class SystemPanel {
 
     constructor(private readonly sys: ISystem) {
         this.id = 0
+    }
+
+    private get rect() {
+        return this.buf.rect
     }
 
     private get bg() {
@@ -44,20 +47,14 @@ export class SystemPanel {
     }
 
     start() {
-        this.rect = this.createRect(this.getWindowSize())
+        this.buf = this.createBuffer()
 
         if (!this.initialized) {
             throw new Error('<SystemPanel> not initialized')
         }
-
         process.stdout.on('resize', this.resize)
 
-        this.clear()
         this.render()
-    }
-
-    private readonly clear = () => {
-        console.clear()
     }
 
     destroy() {
@@ -83,19 +80,17 @@ export class SystemPanel {
 
     exit() {
         this.destroy()
-        this.clear()
     }
 
-    private createRect(size: WindowSize) {
+    private createBuffer() {
+        const size = this.getWindowSize()
         const width = clamp(this.bounds.w.min, this.bounds.w.max, size.cols)
         const height = clamp(this.bounds.h.min, this.bounds.h.max, size.lines)
-        return new Rect(width, height)
+        return new FrameBuffer(new Rect(width, height))
     }
 
     private readonly resize = (): void => {
-        this.rect = this.createRect(this.getWindowSize())
-        this.buf = new FrameBuffer(this.rect)
-        this.clear()
+        this.buf = this.createBuffer()
         this.render()
     }
 
@@ -104,7 +99,9 @@ export class SystemPanel {
         return { cols, lines }
     }
 
-    render(): void {
+    render = (): void => {
+        this.sys.clearScreen()
         this.panel.render(new Context(this.buf, this.rect, this.bg, this.tc))
+        this.buf.present()
     }
 }

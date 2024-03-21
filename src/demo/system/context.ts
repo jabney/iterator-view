@@ -26,7 +26,7 @@ export class Context {
             this[pbuf] = ctx[pbuf]
             this.rect = rect
             this.bg = bg ?? ctx.bg
-            this.tc = ctx.tc
+            this.tc = tc ?? ctx.tc
         }
     }
 
