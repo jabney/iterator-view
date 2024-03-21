@@ -23,7 +23,7 @@ export class Panel extends BasePanel {
         const rect = this.insetRect(ctx.rect)
 
         if (this.bg != null) {
-            fill(this.bg, rect)
+            ctx.fill(this.bg, rect)
         }
 
         for (const p of this.children) {

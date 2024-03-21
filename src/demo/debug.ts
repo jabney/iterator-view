@@ -76,7 +76,7 @@ async function UITest() {
         },
     ]
 
-    const main = new Panel(insets /* , Color.bgWhite() */)
+    const main = new Panel(insets, Color.bgWhite())
     sys.setMainPanel(main)
 
     const insetPanel = new Panel(insets, Color.bgBlue())
@@ -103,9 +103,9 @@ async function debug() {
         //
         // async () => await PanelTest(),
         //
-        // async () => await UITest(),
+        async () => await UITest(),
         //
-        async () => await FrameBufferTest(),
+        // async () => await FrameBufferTest(),
         //
         async () => await waitSeconds(999),
     ]
