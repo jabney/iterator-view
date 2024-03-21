@@ -6,8 +6,8 @@ import { Controller } from './controller'
 import { runScript, scroller, text as t, unfold, write as w, waitSeconds, whenSeconds } from './demo-utils'
 import { sys } from './system/system'
 import { IPoint, IRect, IUnfoldItem, AsyncFn } from './types'
-import { Point } from './panel/point'
-import { Rect } from './panel/rect'
+import { Point } from './system/point'
+import { Rect } from './system/rect'
 
 const out = process.stdout
 

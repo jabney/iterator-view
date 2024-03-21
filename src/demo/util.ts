@@ -1,7 +1,7 @@
 import { count, enumerate } from '../iterator'
 import { clamp } from '../lib/clamp'
 import { Color } from '../lib/color'
-import { Rect } from './panel'
+import { Rect } from './system/rect'
 import { sys } from './system/system'
 import { IInsets, IRect, Nil, Nullable } from './types'
 

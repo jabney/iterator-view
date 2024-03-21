@@ -1,7 +1,7 @@
 import { Color } from '../../lib/color'
 import { FrameBuffer } from './frame-buffer'
 import { IRect, Nullable } from '../types'
-import { Rect } from '../panel'
+import { Rect } from './rect'
 
 export interface IContext extends Context {}
 

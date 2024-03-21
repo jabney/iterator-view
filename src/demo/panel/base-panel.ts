@@ -3,7 +3,7 @@ import { Context } from '../system/context'
 import { sys } from '../system/system'
 import { IPanel, IInsets, IRect } from '../types'
 import { insetRect } from '../util'
-import { Insets } from './insets'
+import { Insets } from '../system/insets'
 
 export abstract class BasePanel implements IPanel {
     private readonly id: number
