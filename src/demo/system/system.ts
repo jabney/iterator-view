@@ -89,6 +89,7 @@ class System implements ISystem {
     }
 
     start() {
+        console.clear()
         this.hideCursor()
         this.panel.start()
     }
@@ -102,6 +103,7 @@ class System implements ISystem {
     }
 
     private readonly exit = () => {
+        console.clear()
         this.panel.exit()
         this.destroy()
         this.showCursor()
@@ -126,6 +128,11 @@ class System implements ISystem {
 
     readonly showCursor = () => {
         return void process.stdout.write('\x1B[?25h')
+    }
+
+    readonly clearScreen = () => {
+        this.cursorTo(0, 0)
+        this.out.clearScreenDown()
     }
 
     get timerHasListeners() {
