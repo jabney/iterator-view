@@ -4,7 +4,7 @@ import { Disposer } from '../../lib/disposer'
 import { Context } from '../system/context'
 import { sys } from '../system/system'
 import { IInsets, IPanel, IUiPanel, KeyType, Nullable } from '../types'
-import { fallbackBg, fill, heightIterator } from '../util'
+import { fallbackBg, heightIterator } from '../util'
 import { BasePanel } from './base-panel'
 
 export interface UICheckItem {
@@ -75,29 +75,32 @@ export class UICheckPanel extends UIPanel {
         this.disposer.add(dispose)
     }
 
-    protected wrap(o: UICheckState, index: number, bg: Color) {
-        const hl = index === this.index ? bg.reverse : bg
-        const text = hl.text(o.text).str
-        return o.selected ? `[x] ${text}` : `[ ] ${text}`
+    private checkState(option: UICheckState) {
+        return option.selected ? '[x] ' : '[ ] '
+    }
+
+    private textState(index: number, text: Color) {
+        return index === this.index ? text.reverse : text
     }
 
     render(ctx: Context): void {
         const rect = this.insetRect(ctx.rect)
 
         if (this.bg) {
-            fill(this.bg, rect)
+            ctx.fill(this.bg, rect)
         }
         const bgc = fallbackBg(this.bg, ctx.bg)
-
         const opts = enumerate(this.items)
+
         for (const line of heightIterator(rect, 'even')) {
             const it = opts.next()
 
             if (!it.done) {
                 const [i, opt] = it.value
-                const item = this.wrap(opt, i, bgc)
-                sys.cursorTo(rect.x, line)
-                sys.write(bgc.text(item).str)
+                const text = opt.text.bgFrom(bgc)
+                let x = rect.x
+                x = ctx.write(x, line, text.text(this.checkState(opt)))
+                ctx.write(x, line, this.textState(i, text))
             }
         }
     }
