@@ -1,16 +1,23 @@
 import { count } from '../../iterator'
 import { Color } from '../../lib/color'
+import { Rect } from './rect'
 import { IRect } from '../types'
 
 export type Frame = Color[][]
+const sanitize = /[\n\r]+/g
 
 export class FrameBuffer {
+    readonly rect: Rect
     private frame: Frame = []
 
-    constructor(readonly rect: IRect) {
-        const line = ' '.repeat(rect.width)
-        for (const _ of count(rect.height)) {
-            this.frame.push(this.stringToPixels(line))
+    constructor(rect: IRect) {
+        this.rect = new Rect(rect.width, rect.height)
+
+        if (!this.rect.empty()) {
+            const line = ' '.repeat(rect.width)
+            for (const _ of count(rect.height)) {
+                this.frame.push(this.stringToPixels(line))
+            }
         }
     }
 
@@ -18,18 +25,24 @@ export class FrameBuffer {
         return [...line].map(x => new Color(x))
     }
 
+    private isEmpty(rect: IRect) {
+        return rect.width === 0 || rect.height === 0
+    }
+
     write(x: number, y: number, text: Color): void {
         if (x > this.rect.width || y > this.rect.height) {
             throw new Error(`<FrameBuffer.write> coordinates overflow for x=${x}, y=${y}`)
         }
-        const str = text.raw
 
-        if (str == null) {
-            throw new Error(`<FrameBuffer.write> text object has null string`)
+        if (text.raw == null) {
+            throw new Error(`<FrameBuffer.write> null text`)
         }
-        if (x + str.length > this.rect.width) {
+        const str = text.raw.replace(sanitize, '')
+
+        if (x + text.raw.length > this.rect.width) {
             throw new Error(`<FrameBuffer.write> text overflows buffer line`)
         }
+
         const row = this.frame[y]
         const [start, end] = [x, x + str.length]
 
@@ -49,8 +62,8 @@ export class FrameBuffer {
     }
 
     fill(color: Color, rect: IRect): void {
-        if (rect.x + rect.width > this.rect.width || rect.y + rect.height > this.rect.height) {
-            throw new Error(``)
+        if (this.isEmpty(rect)) {
+            throw new Error(`<FrameBuffer.fill> rect is empty`)
         }
         const bg = color.bg
 
@@ -63,9 +76,7 @@ export class FrameBuffer {
 
     present(): void {
         const out = process.stdout
-        for (const row of this.frame) {
-            const line = row.map(x => x.str).join('')
-            out.write(`${line}\n`)
-        }
+        const rows = this.frame.map(row => row.map(p => p.str).join(''))
+        out.write(rows.join('\n'))
     }
 }

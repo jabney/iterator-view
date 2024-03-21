@@ -1,6 +1,6 @@
 import { clamp } from '../../lib/clamp'
 import { Disposer } from '../../lib/disposer'
-import { Rect } from '../panel/rect'
+import { Rect } from './rect'
 import { IPanel, WindowSize } from '../types'
 import { Context } from './context'
 import { FrameBuffer } from './frame-buffer'
@@ -31,15 +31,15 @@ export class SystemPanel {
         this.id = 0
     }
 
-    get bg() {
+    private get bg() {
         return this.cfg?.bg ?? null
     }
 
-    get tc() {
+    private get tc() {
         return this.cfg?.tc ?? null
     }
 
-    get panel() {
+    private get panel() {
         return this.cfg?.panel ?? createPanel()
     }
 
@@ -77,7 +77,7 @@ export class SystemPanel {
         return `${this.name}: ${this.id}`
     }
 
-    setMainPanel(cfg: PanelConfig) {
+    setConfig(cfg: PanelConfig) {
         this.cfg = cfg
     }
 
@@ -105,6 +105,6 @@ export class SystemPanel {
     }
 
     render(): void {
-        this.panel.render(new Context(this.buf, this.rect, this.bg))
+        this.panel.render(new Context(this.buf, this.rect, this.bg, this.tc))
     }
 }

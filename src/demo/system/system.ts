@@ -18,16 +18,21 @@ class UiConfig {
 
     constructor(readonly panel: IPanel) {}
 
-    background(bg: Color) {
+    background = (bg: Color) => {
         this.bg = bg
-        return this
+        return createConfig(this)
     }
 
-    text(color: Color) {
+    text = (color: Color) => {
         this.tc = color
-        return this
+        return createConfig(this)
     }
 }
+
+const createConfig = (cfg: UiConfig): IUiConfig => ({
+    background: cfg.background,
+    text: cfg.text,
+})
 
 const id = (() => {
     const counter = range(1, Infinity)
@@ -78,8 +83,8 @@ class System implements ISystem {
 
     setMainPanel(panel: IPanel): IUiConfig {
         this.cfg = new UiConfig(panel)
-        this.panel.setMainPanel(this.cfg)
-        return this.cfg
+        this.panel.setConfig(this.cfg)
+        return createConfig(this.cfg)
     }
 
     start() {

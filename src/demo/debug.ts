@@ -93,7 +93,7 @@ async function FrameBufferTest() {
     const buf = new FrameBuffer(rect)
     buf.fill(Color.bgMagenta(), rect)
     buf.fill(Color.bgBlue(), new Rect(20, 10, 4, 2))
-    buf.write(0, 5, Color.white('Jimmy was here\n'))
+    buf.write(0, 5, Color.white('Jimmy was here'))
     buf.present()
 }
 
