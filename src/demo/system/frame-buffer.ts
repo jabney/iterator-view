@@ -7,6 +7,28 @@ export type Frame = Color[][]
 
 const sanitize = /[\n\r]+/g
 
+function stringToPixels(line: string) {
+    return [...line].map(x => new Color(x))
+}
+
+class Surface {
+    private rect = new Rect()
+    private frame: Frame = []
+
+    constructor(
+        private readonly maxWidth: number,
+        private readonly maxHeight: number
+    ) {}
+
+    write(pixel: Color, x: number, y: number): void
+    write(pixels: Color[], x: number, y: number): void
+    write(pixels: Color | Color[], x: number, y: number): void {
+        pixels = Array.isArray(pixels) ? pixels : [pixels]
+        const r = this.rect.expand(new Rect(x + pixels.length, y))
+        this.rect = this.rect.clip(r)
+    }
+}
+
 export class FrameBuffer {
     readonly rect: Rect
     private frame: Frame = []
@@ -18,13 +40,9 @@ export class FrameBuffer {
         if (this.rect.hasArea) {
             const line = ' '.repeat(this.rect.width)
             for (const _ of count(this.rect.height)) {
-                this.frame.push(this.stringToPixels(line))
+                this.frame.push(stringToPixels(line))
             }
         }
-    }
-
-    private stringToPixels(line: string) {
-        return [...line].map(x => new Color(x))
     }
 
     write(x: number, y: number, text: Color): number {

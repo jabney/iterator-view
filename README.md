@@ -1,5 +1,9 @@
 # Notes
 
+## Ascii
+
+https://www.ascii-code.com/
+
 ## Ansi Escape Codes
 
 [Ansi Escape Codes](https://en.wikipedia.org/wiki/ANSI_escape_code)

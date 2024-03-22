@@ -63,35 +63,9 @@ export interface IUiPanel extends IPanel {}
 export type hAlign = 'left' | 'center' | 'right'
 export type vAlign = 'top' | 'middle' | 'bottom'
 
-export interface TextAlign {
+export interface ContentAlign {
     h: hAlign
     v: vAlign
-}
-
-class ValueError extends Error {
-    constructor(value: number | string) {
-        super(`invalid value: ${value}`)
-    }
-}
-
-class Char {
-    readonly code: number
-
-    get str() {
-        return String.fromCodePoint(this.code)
-    }
-
-    constructor(code: number)
-    constructor(char: string)
-    constructor(char: number | string)
-    constructor(value: number | string) {
-        if (typeof value === 'number') {
-            this.code = value
-        } else {
-            this.code = value.codePointAt(0) ?? -1
-            if (this.code < 0 || this.code >= 0x110000) throw new ValueError(value)
-        }
-    }
 }
 
 export interface IUnfoldItem {
