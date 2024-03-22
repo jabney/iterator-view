@@ -39,7 +39,6 @@ export const scroller = (point: IPoint, fps: number) => async (color: Color, del
 
     let lines = point.y
     while ((lines -= 1) >= 0) {
-        // console.log(' ', lines)
         await waitMs(fpsMs(fps))
         console.clear()
         write.blank(lines)

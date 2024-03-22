@@ -99,7 +99,6 @@ export class SystemPanel {
     }
 
     render = (): void => {
-        this.sys.clearScreen()
         this.panel.render(new Context(this.buf, this.rect, this.bg, this.tc))
         this.buf.present()
     }

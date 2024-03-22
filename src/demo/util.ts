@@ -85,15 +85,3 @@ export function* iterator<T>(it: Iterable<T>): IterableIterator<T> {
         yield x
     }
 }
-
-// async function run() {
-//     const rect = new Rect(20, 20)
-
-//     for (const line of heightIterator(rect, null)) {
-//         console.log(line)
-//     }
-
-//     await waitSeconds(5)
-// }
-
-// run()

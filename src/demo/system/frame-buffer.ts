@@ -130,6 +130,7 @@ export class FrameBuffer {
     }
 
     present(): void {
+        this.out.cursorTo(0, 0)
         for (const row of this.frame) {
             const line = row.map(p => p.str).join('')
             this.out.write(line + '\n')

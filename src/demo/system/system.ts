@@ -89,7 +89,6 @@ class System implements ISystem {
     }
 
     start() {
-        console.clear()
         this.hideCursor()
         this.panel.start()
     }
@@ -103,9 +102,10 @@ class System implements ISystem {
     }
 
     private readonly exit = () => {
-        console.clear()
         this.panel.exit()
         this.destroy()
+        this.cursorTo(0, 0)
+        this.clearScreen()
         this.showCursor()
         process.exit(0)
     }
