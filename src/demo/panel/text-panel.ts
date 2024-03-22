@@ -1,7 +1,7 @@
 import { enumerate } from '../../iterator'
 import { Color } from '../../lib/color'
 import { sys } from '../system/system'
-import { IRect, Nullable, TextAlign } from '../types'
+import { IRect, Nullable, ContentAlign } from '../types'
 import { Insets } from '../system/insets'
 import { BasePanel } from './base-panel'
 import { fallbackBg, fill } from '../util'
@@ -10,13 +10,8 @@ import { Context } from '../system/context'
 export class TextPanel extends BasePanel {
     protected readonly text: Color[]
 
-    constructor(
-        text: Color | Color[],
-        insets = new Insets(),
-        bg?: Nullable<Color>,
-        private readonly align: Nullable<TextAlign> = { h: 'center', v: 'middle' }
-    ) {
-        super(insets, bg)
+    constructor(text: Color | Color[], insets = new Insets(), bg?: Nullable<Color>, align?: Nullable<ContentAlign>) {
+        super(insets, bg, { h: 'center', v: 'middle', ...align })
         this.text = Array.isArray(text) ? text : [text]
     }
 

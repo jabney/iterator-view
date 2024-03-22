@@ -1,14 +1,14 @@
 import { Color } from '../../lib/color'
 import { Context } from '../system/context'
-import { IInsets, IPanel } from '../types'
+import { ContentAlign, IInsets, IPanel, Nullable } from '../types'
 import { fill } from '../util'
 import { BasePanel } from './base-panel'
 
 export class Panel extends BasePanel {
     protected readonly children: IPanel[] = []
 
-    constructor(insets: IInsets, bg?: Color) {
-        super(insets, bg)
+    constructor(insets: IInsets, bg?: Color, align?: Nullable<ContentAlign>) {
+        super(insets, bg, align)
     }
 
     protected get name() {

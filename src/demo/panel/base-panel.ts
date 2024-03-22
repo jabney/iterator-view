@@ -1,18 +1,21 @@
 import { Color } from '../../lib/color'
 import { Context } from '../system/context'
 import { sys } from '../system/system'
-import { IPanel, IInsets, IRect } from '../types'
+import { IPanel, IInsets, IRect, ContentAlign, Nullable } from '../types'
 import { insetRect } from '../util'
 import { Insets } from '../system/insets'
 
 export abstract class BasePanel implements IPanel {
     private readonly id: number
+    protected readonly align: ContentAlign
 
     constructor(
         private readonly insets: IInsets = new Insets(),
-        protected readonly bg: Color | null = null
+        protected readonly bg: Color | null = null,
+        align?: Nullable<ContentAlign>
     ) {
         this.id = sys.nextId()
+        this.align = { h: 'left', v: 'top', ...align }
     }
 
     protected abstract get name(): string
