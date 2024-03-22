@@ -28,6 +28,10 @@ export type KeyType = KeysOf<Keyboard>
 
 export type Range<T> = [T, T]
 
+export type PointList = [x1: number, y1: number, x2: number, y2: number]
+
+export type RectPoints = { x1: number; y1: number; x2: number; y2: number }
+
 export interface IPoint {
     readonly x: number
     readonly y: number

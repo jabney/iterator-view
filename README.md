@@ -260,3 +260,62 @@ const show = '\x1B[?25h'
     ^_                  1F          US              Unit Separator	            Used to separate data logically; application dependent.
                         20          SP              Space                       Shifts cursor to move by one character position.
     ^?                  7F          DEL             Delete	                    Last character in ASCII repertoire, erases incorrect characters.
+
+## Code
+
+### Rect
+
+```ts
+function boundingRect(rects: IRect[]): IRect {
+    if (rects.length == 0) return Rect.empty
+    let rect = Rect.from(rects[0])
+
+    for (let i = 1; i < rects.length; i++) {
+        rect = rect.expand(rects[i])
+    }
+    return rect
+}
+
+function clipRect(rect: IRect, base: IRect) {
+    return Rect.from(base).clip(rect)
+}
+
+function hitTest(rects: IRect[], x: number, y: number): boolean {
+    return rects.some(rect => Rect.from(rect).hitTest(x, y))
+}
+
+function clipLine(rect: IRect, x1: number, x2: number): Range<number> {
+    return [Math.max(x1, rect.x), Math.min(x2, rect.x + rect.width)]
+}
+```
+
+```ts
+function boundingRect(rects: IRect[]): IRect {
+    if (rects.length == 0) return new Rect()
+
+    const first = rects[0]
+    let x1 = first.x
+    let y1 = first.y
+    let x2 = first.x + first.width
+    let y2 = first.y + first.height
+
+    for (let i = 1; i < rects.length; i++) {
+        const r = rects[i]
+        x1 = Math.min(x1, r.x)
+        y1 = Math.min(y1, r.y)
+        x2 = Math.max(x2, r.x + r.width)
+        y2 = Math.max(y2, r.y + r.height)
+    }
+
+    return new Rect(x2 - x1, y2 - y1, x1, y1)
+}
+
+function clipRect(r: IRect, v: IRect) {
+    const x1 = Math.max(r.x, v.x)
+    const x2 = Math.min(r.x + r.width, v.x + v.width)
+    const y1 = Math.max(r.y, v.y)
+    const y2 = Math.min(r.y + r.height, v.y + v.height)
+    if (x1 < x2 && y1 < y2) return new Rect(x2 - x1, y2 - y1, x1, y1)
+    return new Rect()
+}
+```

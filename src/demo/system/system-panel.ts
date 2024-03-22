@@ -62,7 +62,7 @@ export class SystemPanel {
     }
 
     get initialized() {
-        return this.sys != null && !this.rect.empty()
+        return this.sys != null && this.rect.hasArea
     }
 
     get name(): string {

@@ -1,57 +1,7 @@
 import { count } from '../../iterator'
 import { Color } from '../../lib/color'
 import { Rect } from './rect'
-import { IRect, Range } from '../types'
-
-function boundingRect(rects: IRect[]): IRect {
-    if (rects.length == 0) return new Rect()
-
-    const first = rects[0]
-    let x1 = first.x
-    let y1 = first.y
-    let x2 = first.x + first.width
-    let y2 = first.y + first.height
-
-    for (let i = 1; i < rects.length; i++) {
-        const r = rects[i]
-        x1 = Math.min(x1, r.x)
-        y1 = Math.min(y1, r.y)
-        x2 = Math.max(x2, r.x + r.width)
-        y2 = Math.max(y2, r.y + r.height)
-    }
-
-    return new Rect(x2 - x1, y2 - y1, x1, y1)
-}
-
-function clipRect(r: IRect, v: IRect) {
-    const x1 = Math.max(r.x, v.x)
-    const x2 = Math.min(r.x + r.width, v.x + v.width)
-    const y1 = Math.max(r.y, v.y)
-    const y2 = Math.min(r.y + r.height, v.y + v.height)
-    if (x1 < x2 && y1 < y2) return new Rect(x2 - x1, y2 - y1, x1, y1)
-    return new Rect()
-}
-
-function hitTestRects(rects: IRect[], x: number, y: number): boolean {
-    return rects.some(rect => {
-        return x >= rect.x && y >= rect.y && x < rect.x + rect.width && y < rect.y + rect.height
-    })
-}
-
-function clipLine(rect: IRect, x1: number, x2: number): Range<number> {
-    return [Math.max(x1, rect.x), Math.min(x2, rect.x + rect.width)]
-}
-
-// const r1 = new Rect(10, 10, 0, 0)
-// const r2 = new Rect(10, 10, 10, 10)
-// const b = boundingRect([r1, r2])
-
-// for (let row = b.y; row < b.y + b.height; row++) {
-//     for (let col = b.x; col < b.x + b.width; col++) {
-//         process.stdout.write(hitTestRects([r1, r2], col, row) ? 'x ' : '- ')
-//     }
-//     process.stdout.write('\n')
-// }
+import { IRect } from '../types'
 
 export type Frame = Color[][]
 
@@ -65,7 +15,7 @@ export class FrameBuffer {
     constructor(width: number, height: number) {
         this.rect = new Rect(width, height)
 
-        if (!this.rect.empty()) {
+        if (this.rect.hasArea) {
             const line = ' '.repeat(this.rect.width)
             for (const _ of count(this.rect.height)) {
                 this.frame.push(this.stringToPixels(line))
@@ -75,10 +25,6 @@ export class FrameBuffer {
 
     private stringToPixels(line: string) {
         return [...line].map(x => new Color(x))
-    }
-
-    private isEmpty(rect: IRect) {
-        return rect.width === 0 || rect.height === 0
     }
 
     write(x: number, y: number, text: Color): number {
@@ -115,7 +61,7 @@ export class FrameBuffer {
     }
 
     fill(color: Color, rect: IRect): void {
-        if (this.isEmpty(rect)) {
+        if (!Rect.hasArea(rect)) {
             throw new Error(`<FrameBuffer.fill> rect is empty`)
         }
         const bg = color.bg
