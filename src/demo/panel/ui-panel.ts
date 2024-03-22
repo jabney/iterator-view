@@ -71,16 +71,7 @@ export class UICheckPanel extends UIPanel {
             }
             sys.redraw()
         })
-
         this.disposer.add(dispose)
-    }
-
-    private checkState(option: UICheckState) {
-        return option.selected ? '[x] ' : '[ ] '
-    }
-
-    private textState(index: number, text: Color) {
-        return index === this.index ? text.reverse : text
     }
 
     render(ctx: Context): void {
@@ -97,12 +88,18 @@ export class UICheckPanel extends UIPanel {
 
             if (!it.done) {
                 const [i, opt] = it.value
-                const text = opt.text.bgFrom(bgc)
-                let x = rect.x
-                x = ctx.write(x, line, text.text(this.checkState(opt)))
-                ctx.write(x, line, this.textState(i, text))
+                const [checkbox, label] = this.buildRenderItem(bgc, i, opt)
+                const x = ctx.write(rect.x, line, checkbox)
+                ctx.write(x, line, label)
             }
         }
+    }
+
+    private buildRenderItem(bg: Color, index: number, opt: UICheckState) {
+        const text = opt.text.bgFrom(bg)
+        const checkbox = opt.selected ? '[x] ' : '[ ] '
+        const label = index === this.index ? text.reverse : text
+        return [text.text(checkbox), label]
     }
 
     destroy() {

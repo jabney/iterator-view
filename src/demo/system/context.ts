@@ -1,14 +1,13 @@
 import { Color } from '../../lib/color'
 import { FrameBuffer } from './frame-buffer'
 import { IRect, Nullable } from '../types'
-import { Rect } from './rect'
 
 export interface IContext extends Context {}
 
 const pbuf = Symbol()
 
 export class Context {
-    private readonly [pbuf]: FrameBuffer = new FrameBuffer(new Rect())
+    private readonly [pbuf]: FrameBuffer = new FrameBuffer(0, 0)
     readonly rect: IRect
     readonly bg: Nullable<Color>
     readonly tc: Nullable<Color>

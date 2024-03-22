@@ -1,6 +1,5 @@
 import { clamp } from '../../lib/clamp'
 import { Disposer } from '../../lib/disposer'
-import { Rect } from './rect'
 import { IPanel, WindowSize } from '../types'
 import { Context } from './context'
 import { FrameBuffer } from './frame-buffer'
@@ -17,7 +16,7 @@ const wMax = 120
 
 export class SystemPanel {
     private readonly id: number
-    private buf: FrameBuffer = new FrameBuffer(new Rect())
+    private buf: FrameBuffer = new FrameBuffer(0, 0)
     private cfg: PanelConfig | null = null
     private readonly disposer = new Disposer()
 
@@ -86,7 +85,7 @@ export class SystemPanel {
         const size = this.getWindowSize()
         const width = clamp(this.bounds.w.min, this.bounds.w.max, size.cols)
         const height = clamp(this.bounds.h.min, this.bounds.h.max, size.lines)
-        return new FrameBuffer(new Rect(width, height))
+        return new FrameBuffer(width, height)
     }
 
     private readonly resize = (): void => {

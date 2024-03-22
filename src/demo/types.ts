@@ -26,6 +26,8 @@ export type WindowSize = { cols: number; lines: number }
 
 export type KeyType = KeysOf<Keyboard>
 
+export type Range<T> = [T, T]
+
 export interface IPoint {
     readonly x: number
     readonly y: number

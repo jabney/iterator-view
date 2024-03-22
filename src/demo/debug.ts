@@ -89,9 +89,8 @@ async function UITest() {
 }
 
 async function FrameBufferTest() {
-    const rect = new Rect(80, 20)
-    const buf = new FrameBuffer(rect)
-    buf.fill(Color.bgMagenta(), rect)
+    const buf = new FrameBuffer(80, 20)
+    buf.fill(Color.bgMagenta(), new Rect(80, 20))
     buf.fill(Color.bgBlue(), new Rect(20, 10, 4, 2))
     buf.write(0, 5, Color.white('Jimmy was here'))
     buf.present()
