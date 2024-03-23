@@ -10,7 +10,7 @@ https://www.ascii-code.com/
 
 ### Excerpts
 
-[C0 control codes](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code&action=edit&section=5)
+[C0 control codes](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code#C0_control_codes)
 
 > Almost all users assume some functions of some single-byte characters. Initially defined as part of ASCII, the default C0 control code set is now defined in ISO 6429 (ECMA-48), making it part of the same standard as the C1 set invoked by the ANSI escape sequences (although ISO 2022 allows the ISO 6429 C0 set to be used without the ISO 6429 C1 set, and vice versa, provided that 0x1B is always ESC). This is used to shorten the amount of data transmitted, or to perform some functions that are unavailable from escape sequences:
 
@@ -36,7 +36,7 @@ const ctrl = '\x1B'
 const esc = '\x1B['
 ```
 
-[Fe Escape sequences](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code&action=edit&section=6)
+[Fe Escape sequences](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code#Fe_Escape_sequences)
 
 > If the ESC is followed by a byte in the range 0x40 to 0x5F, the escape sequence is of type Fe. Its interpretation is delegated to the applicable C1 control code standard.[15]: 13.2.1  Accordingly, all escape sequences corresponding to C1 control codes from ANSI X3.64 / ECMA-48 follow this format.[5]: 5.3.a
 >
@@ -55,7 +55,7 @@ const esc = '\x1B['
     ESC ^	    0x9E	PM	    Privacy Message
     ESC _	    0x9F	APC	    Application Program Command
 
-[CSI (Control Sequence Introducer) sequences](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code&action=edit&section=7)
+[CSI (Control Sequence Introducer) sequences](<https://en.wikipedia.org/w/index.php?title=ANSI_escape_code#CSI_(Control_Sequence_Introducer)_sequences>)
 
 > For Control Sequence Introducer, or CSI, commands, the ESC [ (written as \e[ or \033[ in several programming languages) is followed by any number (including none) of "parameter bytes" in the range 0x30–0x3F (ASCII 0–9:;<=>?), then by any number of "intermediate bytes" in the range 0x20–0x2F (ASCII space and !"#$%&'()\*+,-./), then finally by a single "final byte" in the range 0x40–0x7E (ASCII @A–Z[\]^\_`a–z{|}~).[5]: 5.4
 >
@@ -105,19 +105,19 @@ const esc = '\x1B['
                                                                     In bracketed paste mode, text pasted into the terminal will be surrounded by ESC [200~ and ESC [201~; programs running in the terminal should not treat characters bracketed by those sequences as commands (Vim, for example, does not treat them as commands).[22] From xterm[23]
     CSI ? 2004 l			                                        Turn off bracketed paste mode.
 
-[SGR (Select Graphic Rendition) parameters](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code&action=edit&section=8)
+[SGR (Select Graphic Rendition) parameters](<https://en.wikipedia.org/w/index.php?title=ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters>)
 
     see doc
 
-[Colors](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code&action=edit&section=9)
+[Colors](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code#Colors)
 
     see doc
 
-[3-bit and 4-bit](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code&action=edit&section=10)
+[3-bit and 4-bit](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code#3-bit_and_4-bit)
 
     see doc
 
-[8 bit](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code&action=edit&section=11)
+[8 bit](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code#8-bit)
 
 > As [256-color](https://en.wikipedia.org/wiki/8-bit_color) lookup tables became common on graphic cards, escape sequences were added to select from a pre-defined set of 256 colors:[citation needed]
 
@@ -136,6 +136,13 @@ const esc = '\x1B['
 > 256-color mode — foreground: ESC[38;5;#m background: ESC[48;5;#m
 
 ![256-color mode](./img/256%20Color%20Mode.png '256 Color Mode')
+
+[24 bit](https://en.wikipedia.org/w/index.php?title=ANSI_escape_code#24-bit)
+
+> As "true color" graphic cards with 16 to 24 bits of color became common, applications began to support 24-bit colors. Terminal emulators supporting setting 24-bit foreground and background colors with escape sequences include Xterm,[16] KDE's Konsole,[37][38] and iTerm, as well as all libvte based terminals,[39] including GNOME Terminal.[40]
+
+    ESC[38;2;⟨r⟩;⟨g⟩;⟨b⟩ m Select RGB foreground color
+    ESC[48;2;⟨r⟩;⟨g⟩;⟨b⟩ m Select RGB background color
 
 #### Example
 
@@ -322,4 +329,60 @@ function clipRect(r: IRect, v: IRect) {
     if (x1 < x2 && y1 < y2) return new Rect(x2 - x1, y2 - y1, x1, y1)
     return new Rect()
 }
+```
+
+## Template Literals
+
+    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals
+
+### Tagged Templates
+
+    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates
+
+```ts
+function myTag(strings: TemplateStringsArray, personExp: string, ageExp: number) {
+    const str0 = strings[0] // "That "
+    const str1 = strings[1] // " is a "
+    const str2 = strings[2] // "."
+
+    const ageStr = ageExp < 100 ? 'youngster' : 'centenarian'
+
+    // We can even return a string built using a template literal
+    return `${str0}${personExp}${str1}${ageStr}${str2}`
+}
+
+const output = myTag`That ${'dude'} is a ${100}.`
+
+// console.log(output)
+// console.log`Hello dude`
+
+// function write(strings: TemplateStringsArray, num1: number, num2: number) {
+//     console.log('write function', strings)
+// }
+// write`whatever ${10} and ${20}`
+
+function template(strings: TemplateStringsArray, ...keys: any[]) {
+    return (...values: any[]) => {
+        const dict = values[values.length - 1] || {}
+        const result = [strings[0]]
+        keys.forEach((key, i) => {
+            const value = Number.isInteger(key) ? values[key] : dict[key]
+            result.push(value, strings[i + 1])
+        })
+        return result.join('')
+    }
+}
+
+const t1Closure = template`${0}${1}${0}!`
+// const t1Closure = template(["","","","!"],0,1,0);
+console.log(t1Closure('Y', 'A')) // "YAY!"
+
+const t2Closure = template`${0} ${'foo'}!`
+// const t2Closure = template([""," ","!"],0,"foo");
+console.log(t2Closure('Hello', { foo: 'World' })) // "Hello World!"
+
+const t3Closure = template`I'm ${'name'}. I'm almost ${'age'} years old.`
+// const t3Closure = template(["I'm ", ". I'm almost ", " years old."], "name", "age");
+console.log(t3Closure('foo', { name: 'MDN', age: 30 })) // "I'm MDN. I'm almost 30 years old."
+console.log(t3Closure({ name: 'MDN', age: 30 })) // "I'm MDN. I'm almost 30 years old."
 ```
