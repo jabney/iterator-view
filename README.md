@@ -386,3 +386,15 @@ const t3Closure = template`I'm ${'name'}. I'm almost ${'age'} years old.`
 console.log(t3Closure('foo', { name: 'MDN', age: 30 })) // "I'm MDN. I'm almost 30 years old."
 console.log(t3Closure({ name: 'MDN', age: 30 })) // "I'm MDN. I'm almost 30 years old."
 ```
+
+```js
+function run() {
+    const [d1, d2] = [0, 255]
+    const map = Scale.domain([d1, d2]).range([0, 5], Math.round)
+
+    for (let t = d1; t <= d2; t++) {
+        console.log(map(t))
+    }
+}
+run()
+```

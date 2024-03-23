@@ -4,21 +4,13 @@
  */
 import { ValueError } from './error'
 
-const uMax = 0x10ffff
-
-//
 export class Char {
     private readonly code: number
 
     constructor(code: number)
     constructor(char: string)
     constructor(value: number | string) {
-        const code = typeof value === 'number' ? Math.trunc(value) : value.codePointAt(0)
-
-        if (!(code != null && 0 <= code && code <= uMax)) {
-            throw new ValueError(value)
-        }
-        this.code = code
+        this.code = this.toCode(value)
     }
 
     get str() {
@@ -29,11 +21,23 @@ export class Char {
         return this.sanitize()
     }
 
-    private isPrintable() {
+    private isValid(code: number): boolean {
+        return 0 <= code && code <= 0x10ffff // [0, 1114111]
+    }
+
+    private toCode(value: number | string): number {
+        const code = typeof value === 'number' ? Math.trunc(value) : value?.codePointAt(0) ?? 0
+        if (!this.isValid(code)) {
+            throw new ValueError(value)
+        }
+        return code
+    }
+
+    private isPrintable(): boolean {
         return this.code >= 0x20 && this.code < 0x80 // [32, 127]
     }
 
-    private sanitize() {
+    private sanitize(): string {
         return this.isPrintable() ? String.fromCharCode(this.code) : ' '
     }
 }
