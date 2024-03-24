@@ -4,12 +4,13 @@
  */
 import { IComparable } from './comparable'
 import { ValueError } from './error'
+import { IStringable } from './stringable'
 
 export interface IChar {
     readonly code: number
 }
 
-export class Char implements IComparable<IChar> {
+export class Char implements IComparable<IChar>, IStringable {
     readonly code: number
 
     constructor(code: number)
@@ -23,7 +24,7 @@ export class Char implements IComparable<IChar> {
     }
 
     toString() {
-        return this.sanitize()
+        return this.str
     }
 
     compareTo(other: IChar): boolean {
