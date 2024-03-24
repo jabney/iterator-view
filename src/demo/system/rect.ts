@@ -1,4 +1,11 @@
-import { IRect, PointList, RectPoints } from '../types'
+import { PointList, RectPoints } from '../types'
+
+export interface IRect {
+    readonly width: number
+    readonly height: number
+    readonly x: number
+    readonly y: number
+}
 
 export class Rect implements IRect {
     static readonly empty = new Rect(0, 0, 0, 0)

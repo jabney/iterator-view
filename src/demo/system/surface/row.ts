@@ -7,6 +7,7 @@ export interface IRow {
     readonly str: string
     readonly length: number
     compare(pixel: Nullable<IPixel>, index: number): boolean
+    get(col: number): IPixel | null
     set(col: number, pixel: IPixel): void
 }
 
@@ -25,6 +26,10 @@ export class Row implements IRow {
 
     toString() {
         return this.str
+    }
+
+    get(col: number) {
+        return this.pixels[col] ?? null
     }
 
     set(col: number, pixel: Pixel) {

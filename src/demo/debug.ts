@@ -8,6 +8,11 @@ import { UICheckItem, UICheckPanel } from './panel/ui-panel'
 import { FrameBuffer } from './system/frame-buffer'
 import { Rect } from './system/rect'
 import { Insets } from './system/insets'
+import { Surface } from './system/surface/surface'
+import { Pixel } from './system/pixel'
+import { Char } from './system/char'
+import { Color as SColor } from './system/color'
+import { Nullable } from './types'
 
 const out = process.stdout
 
@@ -96,15 +101,49 @@ async function FrameBufferTest() {
     buf.present()
 }
 
+const reset = '\x1b[0m'
+
+function strToPix(str: string, bg?: Nullable<SColor>, fg?: Nullable<SColor>): Pixel[] {
+    const pixels: Pixel[] = []
+    for (const c of str) {
+        pixels.push(new Pixel(new Char(c), bg, fg))
+    }
+    return pixels
+}
+
+function strToPixStr(str: string, bg?: Nullable<SColor>, fg?: Nullable<SColor>) {
+    return strToPix(str, bg, fg).join('') + '\x1b[0m'
+}
+
+async function SurfaceTest() {
+    // const fill = new Pixel(new Char(' '), SColor.bit8(224, 0, 224))
+    //
+    const bg = SColor.bit8(229, 0, 0)
+    const fg = SColor.bit8(229, 229, 229)
+    const surface = new Surface(80, 30)
+
+    const pix = strToPix(' Jimmy ', bg, fg)
+    surface.write(pix, 10, 20)
+    // console.log(surface)
+    surface.render(SColor.bit24(128, 0, 220))
+
+    //
+    //
+    // const scale = Scale.domain([0, 255]).range([0, 5], Math.round)
+    // console.log(scale(229))
+}
+
 async function debug() {
     const script = [
         // async () => await RectTest(),
         //
         // async () => await PanelTest(),
         //
-        async () => await UITest(),
+        // async () => await UITest(),
         //
         // async () => await FrameBufferTest(),
+        //
+        async () => await SurfaceTest(),
         //
         async () => await waitSeconds(999),
     ]

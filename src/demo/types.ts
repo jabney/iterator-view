@@ -1,6 +1,9 @@
 import { Color } from '../lib/color'
 import { IContext } from './system/context'
 import { Keyboard } from './system/kb'
+import { IRect } from './system/rect'
+
+export { IRect }
 
 export type KeysOf<T extends object> = { [K in keyof T]: K }[keyof T]
 
@@ -42,13 +45,6 @@ export interface IInsets {
     readonly left: number
     readonly bottom: number
     readonly right: number
-}
-
-export interface IRect {
-    readonly width: number
-    readonly height: number
-    readonly x: number
-    readonly y: number
 }
 
 export type FillData = readonly [IRect, Color]

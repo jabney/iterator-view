@@ -6,16 +6,17 @@ import { IComparable } from './comparable'
 import { ValueError } from './error'
 import { IStringable } from './stringable'
 
-export interface IChar {
+export interface IChar extends IComparable<IChar>, IStringable {
     readonly code: number
 }
 
-export class Char implements IComparable<IChar>, IStringable {
+export class Char implements IChar {
     readonly code: number
 
+    constructor()
     constructor(code: number)
     constructor(char: string)
-    constructor(value: number | string) {
+    constructor(value: number | string = 0) {
         this.code = this.toCode(value)
     }
 
