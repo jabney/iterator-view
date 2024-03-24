@@ -2,10 +2,15 @@
  * Unicode code points range from 0 to 1114111 (0x10FFFF).
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/fromCodePoint
  */
+import { IComparable } from './comparable'
 import { ValueError } from './error'
 
-export class Char {
-    private readonly code: number
+export interface IChar {
+    readonly code: number
+}
+
+export class Char implements IComparable<IChar> {
+    readonly code: number
 
     constructor(code: number)
     constructor(char: string)
@@ -19,6 +24,10 @@ export class Char {
 
     toString() {
         return this.sanitize()
+    }
+
+    compareTo(other: IChar): boolean {
+        return this.code === other.code
     }
 
     private isValid(code: number): boolean {

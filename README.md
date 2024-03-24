@@ -398,3 +398,17 @@ function run() {
 }
 run()
 ```
+
+```js
+const b8a = Color.bit8(255, 0, 192)
+const b8b = Color.bit8(0, 255, 0)
+
+const b24a = Color.bit24(255, 0, 192)
+const b24b = Color.bit24(0, 255, 0)
+
+console.log(`${b8a.bg}${b8b.fg}Jimmy\x1b[0m`)
+console.log(`${b24a.bg}${b24b.fg}Jimmy\x1b[0m`)
+
+console.log(`${b8b.bg}${b8a.fg}Jimmy\x1b[0m`)
+console.log(`${b24b.bg}${b24a.fg}Jimmy\x1b[0m`)
+```

@@ -7,104 +7,126 @@
  * 232-255:                grayscale from dark to light in 24 steps
  */
 
+import { IComparable } from '../comparable'
 import { Scale } from './math'
-
-const esc = '\x1b['
-const reset = `\x1b[0m`
 
 type Bits = 8 | 24
 
-type Template = TemplateStringsArray
-
-export interface ColorGenerator {
-    fg(t: Template): string
-    bg(t: Template): string
-}
-
 export interface IRgb {
-    r: number
-    g: number
-    b: number
-}
-
-export type RgbList = [r: number, g: number, b: number]
-
-const scale8 = Scale.domain([0, 255]).range([0, 5], Math.round)
-
-/**
- * 16-231: 6 × 6 × 6 cube (216 colors):
- *         16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
- */
-const rgbToByte = (r: number, g: number, b: number) => {
-    return 16 + 36 * r + 6 * g + b
-}
-
-function bit8Gen(r: number, g: number, b: number): ColorGenerator {
-    const code = rgbToByte(scale8(r), scale8(g), scale8(b))
-    console.log(code)
-    return {
-        fg(t: Template) {
-            const [text = ''] = t
-            return `${esc}38;5;${code}m${text}`
-        },
-        bg(t: Template) {
-            const [text = ''] = t
-            return `${esc}48;5;${code}m${text}`
-        },
-    }
-}
-
-function bit24Gen(r: number, g: number, b: number): ColorGenerator {
-    console.log([r, g, b])
-    return {
-        fg(t: Template) {
-            const [text = ''] = t
-            return `${esc}38;2;${r};${g};${b}m${text}`
-        },
-        bg(t: Template) {
-            const [text = ''] = t
-            return `${esc}48;2;${r};${g};${b}m${text}`
-        },
-    }
-}
-
-const sanitize = (r: number, g: number, b: number): IRgb => {
-    return { r: Math.max(0, r) & 0xff, g: Math.max(0, g) & 0xff, b: Math.max(0, b) & 0xff }
+    readonly r: number
+    readonly g: number
+    readonly b: number
 }
 
 export interface IColor {
-    rgb(r: number, g: number, b: number): void
-    gray(value: number): void
+    readonly bits: Bits
+    readonly rgb: IRgb
+    readonly r: number
+    readonly g: number
+    readonly b: number
+    readonly fg: string
+    readonly bg: string
 }
 
-export class Color<T extends Bits> {
-    static rgb<T extends Bits>(bits: T, r: number, g: number, b: number): Color<T> {
-        const s = sanitize(r, g, b)
+const esc = '\x1b['
 
-        if (bits === 8) {
-            return new Color(bits, scale8(s.r), scale8(s.g), scale8(s.b))
-        } else {
-            return new Color(bits, s.r, s.g, s.b)
-        }
+export abstract class Color implements IColor, IComparable<IColor> {
+    static bit8(r: number, g: number, b: number) {
+        return new Color8(r, g, b)
     }
 
-    constructor(
-        readonly bits: T,
-        readonly r: number,
-        readonly g: number,
-        readonly b: number
-    ) {
-        const s = sanitize(r, g, b)
-        this.r = s.r
-        this.g = s.g
-        this.b = s.b
+    static bit24(r: number, g: number, b: number) {
+        return new Color24(r, g, b)
     }
 
-    get str() {
-        if (this.bits === 8) {
-            return bit8Gen(this.r, this.g, this.b)
-        } else {
-            return bit24Gen(this.r, this.g, this.b)
-        }
+    abstract readonly bits: Bits
+    abstract readonly fg: string
+    abstract readonly bg: string
+
+    private readonly _rgb: IRgb
+
+    constructor(r: number, g: number, b: number) {
+        this._rgb = Object.freeze(this.sanitize(r, g, b))
+    }
+
+    get rgb(): IRgb {
+        return this._rgb
+    }
+
+    get r() {
+        return this.rgb.r
+    }
+
+    get g() {
+        return this.rgb.g
+    }
+
+    get b() {
+        return this.rgb.b
+    }
+
+    compareTo(other: IColor): boolean {
+        return (
+            this.bits === other.bits &&
+            //
+            this.r === other.r &&
+            this.g === other.g &&
+            this.b === other.b
+        )
+    }
+
+    private sanitize = (r: number, g: number, b: number): IRgb => {
+        return { r: Math.max(0, r) & 0xff, g: Math.max(0, g) & 0xff, b: Math.max(0, b) & 0xff }
+    }
+}
+
+class Color8 extends Color {
+    private readonly code: number
+
+    constructor(r: number, g: number, b: number) {
+        super(r, g, b)
+
+        this.code = this.rgbToCode()
+    }
+
+    get bits(): Bits {
+        return 8
+    }
+
+    get fg() {
+        const code = this.rgbToCode()
+        return `${esc}38;5;${code}m`
+    }
+
+    get bg() {
+        const code = this.rgbToCode()
+        return `${esc}48;5;${code}m`
+    }
+
+    private rgbToCode() {
+        const scale = Scale.domain([0, 255]).range([0, 5], Math.round)
+        const c = this.rgb
+        const [r, g, b] = [scale(c.r), scale(c.g), scale(c.b)]
+        return 16 + 36 * r + 6 * g + b
+    }
+}
+
+class Color24 extends Color {
+    constructor(r: number, g: number, b: number) {
+        super(r, g, b)
+    }
+
+    get bits(): Bits {
+        return 24
+    }
+
+    get fg() {
+        const { r, g, b } = this.rgb
+        return `${esc}38;2;${r};${g};${b}m`
+    }
+
+    get bg() {
+        const { r, g, b } = this.rgb
+        return `${esc}48;2;${r};${g};${b}m`
     }
 }
