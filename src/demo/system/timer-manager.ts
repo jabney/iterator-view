@@ -7,7 +7,7 @@ export interface ITimerManager extends ReturnType<typeof TimerManager> {}
 /**
  *
  */
-export function TimerManager() {
+export function TimerManager(fps = 60) {
     const emitter = new EventEmitter()
     const name = 'timer'
     let running = false
@@ -25,7 +25,7 @@ export function TimerManager() {
         while (true) {
             if (hasListeners()) {
                 const end = process.hrtime.bigint()
-                await waitFps(60)
+                await waitFps(fps)
                 const elapsed = end - start
                 emitter.emit('timer', Number(elapsed) / 1e6) // to ms
             } else {

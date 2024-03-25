@@ -118,7 +118,7 @@ function strToPixStr(str: string, bg?: Nullable<SColor>, fg?: Nullable<SColor>) 
 async function SurfaceTest() {
     const width = 2 * 60
     const height = 40
-    const surface = new Surface(width, height)
+    const surface = new Surface(width, height, SColor.bit24(0, 152, 64))
     /**
      *
      */
@@ -132,12 +132,11 @@ async function SurfaceTest() {
             lastMs = ms
 
             const fpsText = fps.toFixed(1) + ' fps '
-            const fpsBox = fpsText.padStart(10, ' ')
+            const fpsBox = fpsText.padStart(12, ' ')
             const info = strToPix(fpsBox, debugFill)
             surface.write(info, 2, 1)
         }
     }
-
     /**
      *
      */
@@ -147,7 +146,7 @@ async function SurfaceTest() {
         const fg = SColor.bit24(220, 220, 220)
         const bg = SColor.bit24(50, 0, 50)
         const pixels = strToPix(` Jimmy `, bg, fg)
-        const [amp, time] = [15, 0.004]
+        const [amp, time] = [15, 0.005]
 
         return (elapsed: number) => {
             const x = pos.x + Math.round(0.5 * amp * Math.cos(3 * time * elapsed))
@@ -155,7 +154,6 @@ async function SurfaceTest() {
             surface.write(pixels, x, y)
         }
     }
-
     /**
      *
      */
@@ -164,32 +162,25 @@ async function SurfaceTest() {
 
         console.clear()
         const fill = SColor.bit24(160, 0, 220)
-
+        surface.fill()
         const drawDebug = debugInfo()
         const drawAnim = animText()
 
         sys.addTimerListener(elapsed => {
-            surface.clear()
+            // surface.clear()
+            surface.clearFrame()
+
             drawDebug(elapsed)
             drawAnim(elapsed)
-            surface.render(fill)
+
+            // surface.render(fill)
+            surface.renderFrame()
         })
     }
-
-    // run()
-
-    function fill() {
-        const width = 2 * 60
-        const height = 40
-        const surface = new Surface(width, height)
-
-        const bgc = SColor.bit24(0, 64, 152)
-        surface.fill(bgc)
-        surface.preset()
-    }
-
-    fill()
+    run()
 }
+
+function SurfaceAnim() {}
 
 async function debug() {
     const script = [
@@ -202,6 +193,8 @@ async function debug() {
         // async () => await FrameBufferTest(),
         //
         async () => await SurfaceTest(),
+        //
+        async () => await SurfaceAnim(),
         //
         async () => await waitSeconds(999),
     ]
