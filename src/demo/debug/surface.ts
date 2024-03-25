@@ -4,6 +4,7 @@ import { Color as SColor } from '../system/color'
 import { PixelEntity } from './pixel-entity'
 import { strToPix } from './helper'
 import { TimerManager } from '../system/timer-manager'
+import { count } from '../system/iteration'
 
 const timer = TimerManager(120)
 
@@ -12,12 +13,17 @@ const timer = TimerManager(120)
  */
 const debugInfo = (surface: Surface, width: number, height: number) => {
     const debugFill = SColor.bit24(32, 0, 64)
-    let lastMs = 0
+    const fpsValues: number[] = [...count(50)]
 
+    let lastMs = 0
+    let fps = 0
     return (ms: number) => {
         const delta = ms - lastMs
-        const fps = 1000 / delta
         lastMs = ms
+
+        fpsValues.push(1000 / delta)
+        fpsValues.shift()
+        fps = fpsValues.reduce((t, x) => t + x, 0) / fpsValues.length
 
         const fpsText = fps.toFixed(1) + ' fps '
         const fpsBox = fpsText.padStart(12, ' ')
@@ -83,19 +89,20 @@ export async function SurfaceAnim() {
      */
     const width = 2 * 60
     const height = 40
-
-    sys.hideCursor()
     const bgc = SColor.bit24(0, 100, 50)
     const surface = new Surface(width, height, bgc)
-    const drawDebug = debugInfo(surface, width, height)
     const entities: PixelEntity[] = []
 
-    for (let i = 0; i < 50; i++) {
-        entities.push(new PixelEntity(surface, width, height))
-    }
+    const drawDebug = debugInfo(surface, width, height)
 
     console.clear()
+    sys.hideCursor()
     surface.fill()
+
+    for (let i = 0; i < 50; i++) {
+        const entity = new PixelEntity(surface, width, height)
+        entities.push(entity)
+    }
 
     timer.addListener(elapsed => {
         surface.clearFrame()
