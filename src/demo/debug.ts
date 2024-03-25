@@ -180,7 +180,82 @@ async function SurfaceTest() {
     run()
 }
 
-function SurfaceAnim() {}
+async function SurfaceAnim() {
+    const width = 2 * 60
+    const height = 40
+    /**
+     *
+     */
+    const debugInfo = (surface: Surface) => {
+        const debugFill = SColor.bit24(32, 0, 64)
+        let lastMs = 0
+
+        return (ms: number) => {
+            const delta = ms - lastMs
+            const fps = 1000 / delta
+            lastMs = ms
+
+            const fpsText = fps.toFixed(1) + ' fps '
+            const fpsBox = fpsText.padStart(12, ' ')
+            const info = strToPix(fpsBox, debugFill)
+            surface.write(info, 2, 1)
+        }
+    }
+
+    /**
+     *
+     */
+    class Entity {
+        rand = Math.random()
+        x = width / 2 - 1 + (this.rand < 0.5 ? -5 : 5)
+        y = height / 2 + (this.rand < 0.5 ? -5 : 5)
+        bgc = SColor.bit24(255 * Math.random(), 255 * Math.random(), 255 * Math.random())
+        pixels: Pixel[]
+        amp = 10 + 10 * Math.random()
+        time = 0.02 + 0.02 * Math.random()
+
+        constructor(private readonly sfc: Surface) {
+            const p = Pixel.from(this.bgc)
+            this.pixels = [p, p]
+        }
+
+        render(elapsed: number) {
+            elapsed = elapsed / 10
+            const x = this.x + 2 * this.amp * Math.cos(this.time * elapsed)
+            const y = this.y + this.amp * Math.sin(this.time * elapsed)
+            this.sfc.write(this.pixels, x, y)
+            this.sfc.write(this.pixels, x, y)
+        }
+    }
+
+    /**
+     *
+     */
+    async function run() {
+        sys.hideCursor()
+        // const bgc = SColor.bit24(0, 152, 64)
+        const bgc = SColor.bit24(0, 100, 50)
+
+        const surface = new Surface(width, height, bgc)
+
+        console.clear()
+        surface.fill()
+        const drawDebug = debugInfo(surface)
+        const entities: Entity[] = []
+
+        for (let i = 0; i < 50; i++) {
+            entities.push(new Entity(surface))
+        }
+
+        sys.addTimerListener(elapsed => {
+            surface.clearFrame()
+            drawDebug(elapsed)
+            entities.forEach(x => x.render(elapsed))
+            surface.renderFrame()
+        })
+    }
+    run()
+}
 
 async function debug() {
     const script = [
@@ -192,7 +267,7 @@ async function debug() {
         //
         // async () => await FrameBufferTest(),
         //
-        async () => await SurfaceTest(),
+        // async () => await SurfaceTest(),
         //
         async () => await SurfaceAnim(),
         //
