@@ -9,10 +9,17 @@ export interface IRow {
     compare(pixel: Nullable<IPixel>, index: number): boolean
     get(col: number): IPixel | null
     set(col: number, pixel: IPixel): void
+    render(): string
 }
 
 export class Row implements IRow {
-    readonly pixels: Pixel[] = []
+    static fill(i: number, length: number, p: IPixel): Row {
+        const row = new Row(i)
+        row.pixels = new Array(length).fill(p)
+        return row
+    }
+
+    private pixels: IPixel[] = []
 
     constructor(readonly index: number) {}
 
@@ -34,6 +41,10 @@ export class Row implements IRow {
 
     set(col: number, pixel: Pixel) {
         this.pixels[col] = pixel
+    }
+
+    render() {
+        return this.pixels.map(p => p.str).join('')
     }
 
     compare(other: Nullable<IPixel>, index: number): boolean {

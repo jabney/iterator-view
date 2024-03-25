@@ -147,7 +147,7 @@ async function SurfaceTest() {
         const fg = SColor.bit24(220, 220, 220)
         const bg = SColor.bit24(50, 0, 50)
         const pixels = strToPix(` Jimmy `, bg, fg)
-        const [amp, time] = [15, 0.005]
+        const [amp, time] = [15, 0.004]
 
         return (elapsed: number) => {
             const x = pos.x + Math.round(0.5 * amp * Math.cos(3 * time * elapsed))
@@ -176,7 +176,19 @@ async function SurfaceTest() {
         })
     }
 
-    run()
+    // run()
+
+    function fill() {
+        const width = 2 * 60
+        const height = 40
+        const surface = new Surface(width, height)
+
+        const bgc = SColor.bit24(0, 64, 152)
+        surface.fill(bgc)
+        surface.preset()
+    }
+
+    fill()
 }
 
 async function debug() {

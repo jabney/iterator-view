@@ -1,27 +1,31 @@
 import { Nullable } from '../types'
 import { Char, IChar } from './char'
-import { Color } from './color'
+import { IColor } from './color'
 import { IComparable } from './comparable'
 import { IStringable } from './stringable'
 
 export interface IPixel extends IComparable<IPixel>, IStringable {
     readonly char: IChar
-    readonly bgc?: Color | null
-    readonly fgc?: Color | null
+    readonly bgc?: IColor | null
+    readonly fgc?: IColor | null
     readonly str: string
     compareTo(p: IPixel): boolean
 }
 
 export class Pixel implements IPixel {
+    static from(bgc: IColor) {
+        return new Pixel(new Char(), bgc)
+    }
+
     constructor()
     constructor(char: IChar)
-    constructor(char: IChar, bgc: Color | null)
-    constructor(char: IChar, bgc: Color, fgc: Color)
-    constructor(char: IChar, bgc?: Color | null, fgc?: Color | null)
+    constructor(char: IChar, bgc: IColor | null)
+    constructor(char: IChar, bgc: IColor, fgc: IColor)
+    constructor(char: IChar, bgc?: IColor | null, fgc?: IColor | null)
     constructor(
         readonly char: IChar = new Char(),
-        readonly bgc: Nullable<Color> = null,
-        readonly fgc: Nullable<Color> = null
+        readonly bgc: Nullable<IColor> = null,
+        readonly fgc: Nullable<IColor> = null
     ) {}
 
     get str() {
@@ -38,7 +42,7 @@ export class Pixel implements IPixel {
         return bg && fg && this.char.compareTo(other.char)
     }
 
-    private compareColor(a: Nullable<Color>, b: Nullable<Color>): boolean {
+    private compareColor(a: Nullable<IColor>, b: Nullable<IColor>): boolean {
         if (a != null) {
             return b == null ? false : a.compareTo(b)
         }
