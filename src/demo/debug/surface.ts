@@ -1,18 +1,20 @@
 import { sys } from '../system/system'
 import { Surface } from '../system/surface/surface'
-import { Color as SColor } from '../system/color'
+import { Color } from '../system/color'
 import { PixelEntity } from './pixel-entity'
 import { strToPix } from './helper'
 import { TimerManager } from '../system/timer-manager'
 import { count } from '../system/iteration'
 
 const timer = TimerManager(120)
+const rgbFn = Color.bit8
 
 /**
  *
  */
 const debugInfo = (surface: Surface, width: number, height: number) => {
-    const debugFill = SColor.bit24(32, 0, 64)
+    const bgc = rgbFn(32, 0, 64)
+    const fgc = rgbFn(220, 220, 220)
     const fpsValues: number[] = [...count(50)]
 
     let lastMs = 0
@@ -27,7 +29,7 @@ const debugInfo = (surface: Surface, width: number, height: number) => {
 
         const fpsText = fps.toFixed(1) + ' fps '
         const fpsBox = fpsText.padStart(12, ' ')
-        const info = strToPix(fpsBox, debugFill)
+        const info = strToPix(fpsBox, bgc, fgc)
         surface.write(info, 2, 1)
     }
 }
@@ -35,15 +37,15 @@ const debugInfo = (surface: Surface, width: number, height: number) => {
 export async function SurfaceTest() {
     const width = 2 * 60
     const height = 40
-    const surface = new Surface(width, height, SColor.bit24(0, 152, 64))
+    const surface = new Surface(width, height, rgbFn(0, 152, 64))
 
     /**
      *
      */
     const animText = (surface: Surface, width: number, height: number) => {
         const text = `Jimmy`
-        const fg = SColor.bit24(220, 220, 220)
-        const bg = SColor.bit24(50, 0, 50)
+        const fg = rgbFn(220, 220, 220)
+        const bg = rgbFn(50, 0, 50)
         const pixels = strToPix(` Jimmy `, bg, fg)
 
         const [amp, time] = [15, 0.005]
@@ -59,11 +61,12 @@ export async function SurfaceTest() {
             surface.write(pixels, x, y)
         }
     }
+
     /**
      *
      */
     function run() {
-        const fill = SColor.bit24(160, 0, 220)
+        const fill = rgbFn(160, 0, 220)
         const drawDebug = debugInfo(surface, width, height)
         const drawAnim = animText(surface, width, height)
 
@@ -89,7 +92,7 @@ export async function SurfaceAnim() {
      */
     const width = 2 * 60
     const height = 40
-    const bgc = SColor.bit24(0, 100, 50)
+    const bgc = rgbFn(0, 100, 50)
     const surface = new Surface(width, height, bgc)
     const entities: PixelEntity[] = []
 
@@ -100,7 +103,7 @@ export async function SurfaceAnim() {
     surface.fill()
 
     for (let i = 0; i < 50; i++) {
-        const entity = new PixelEntity(surface, width, height)
+        const entity = new PixelEntity(surface, width, height, rgbFn)
         entities.push(entity)
     }
 

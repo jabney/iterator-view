@@ -1,7 +1,7 @@
 import { Surface } from '../system/surface/surface'
 import { Pixel } from '../system/pixel'
-import { Color } from '../system/color'
 import { Scale } from '../system/color/math'
+import { IColor, RgbFn } from '../system/color/color'
 
 /**
  *
@@ -14,7 +14,7 @@ export class PixelEntity {
     private readonly rand2 = Math.random()
     private readonly rand3 = Math.random()
 
-    private readonly bgc = Color.bit24(255 * this.rand1, 255 * this.rand2, 255 * this.rand3)
+    private readonly bgc: IColor
     private readonly pixels: Pixel[]
 
     private readonly amp = 10 + 10 * this.rand2
@@ -25,8 +25,10 @@ export class PixelEntity {
     constructor(
         private readonly sfc: Surface,
         width: number,
-        height: number
+        height: number,
+        rgbFn: RgbFn
     ) {
+        this.bgc = rgbFn(255 * this.rand1, 255 * this.rand2, 255 * this.rand3)
         this.offs = this.randOffset(this.rand1, this.rand2)
 
         this.x = width / 2 + this.offs.x

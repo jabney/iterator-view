@@ -36,6 +36,8 @@ const sanitize = (r: number, g: number, b: number): IRgb => {
     return { r: Math.max(0, r) & 0xff, g: Math.max(0, g) & 0xff, b: Math.max(0, b) & 0xff }
 }
 
+export type RgbFn = (r: number, g: number, b: number) => IColor
+
 export abstract class Color implements IColor {
     static create(bits: Bits, r: number, g: number, b: number) {
         return bits === 8 ? this.bit8(r, g, b) : this.bit24(r, g, b)
@@ -93,8 +95,6 @@ function scaleBytes(r: number, g: number, b: number, raw = false): RgbComps {
 
 function rgbToCode(rgb: IRgb, raw = false): number {
     const [r, g, b] = scaleBytes(rgb.r, rgb.g, rgb.b, raw)
-    // console.log('8bit rgb:', [r, g, b], 16 + 36 * r + 6 * g + b)
-
     return 16 + 36 * r + 6 * g + b
 }
 
