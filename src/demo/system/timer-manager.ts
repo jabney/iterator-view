@@ -25,7 +25,7 @@ export function TimerManager() {
         while (true) {
             if (hasListeners()) {
                 const end = process.hrtime.bigint()
-                await waitFps(30)
+                await waitFps(60)
                 const elapsed = end - start
                 emitter.emit('timer', Number(elapsed) / 1e6) // to ms
             } else {

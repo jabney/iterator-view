@@ -18,7 +18,7 @@ export interface IRgb {
     readonly b: number
 }
 
-export interface IColor {
+export interface IColor extends IComparable<IColor> {
     readonly bits: Bits
     readonly rgb: IRgb
     readonly r: number
@@ -36,7 +36,7 @@ const sanitize = (r: number, g: number, b: number): IRgb => {
     return { r: Math.max(0, r) & 0xff, g: Math.max(0, g) & 0xff, b: Math.max(0, b) & 0xff }
 }
 
-export abstract class Color implements IColor, IComparable<IColor> {
+export abstract class Color implements IColor {
     static create(bits: Bits, r: number, g: number, b: number) {
         return bits === 8 ? this.bit8(r, g, b) : this.bit24(r, g, b)
     }

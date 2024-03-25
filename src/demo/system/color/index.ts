@@ -1,1 +1,1 @@
-export { Color } from './color'
+export { IColor, Color } from './color'
