@@ -116,21 +116,67 @@ function strToPixStr(str: string, bg?: Nullable<SColor>, fg?: Nullable<SColor>) 
 }
 
 async function SurfaceTest() {
-    // const fill = new Pixel(new Char(' '), SColor.bit8(224, 0, 224))
-    //
-    const bg = SColor.bit8(229, 0, 0)
-    const fg = SColor.bit8(229, 229, 229)
-    const surface = new Surface(80, 30)
+    const width = 2 * 60
+    const height = 40
+    const surface = new Surface(width, height)
+    /**
+     *
+     */
+    const debugInfo = () => {
+        const debugFill = SColor.bit24(32, 0, 64)
+        let lastMs = 0
 
-    const pix = strToPix(' Jimmy ', bg, fg)
-    surface.write(pix, 10, 20)
-    // console.log(surface)
-    surface.render(SColor.bit24(128, 0, 220))
+        return (ms: number) => {
+            const delta = ms - lastMs
+            const fps = 1000 / delta
+            lastMs = ms
 
-    //
-    //
-    // const scale = Scale.domain([0, 255]).range([0, 5], Math.round)
-    // console.log(scale(229))
+            const fpsText = fps.toFixed(1) + ' fps '
+            const fpsBox = fpsText.padStart(10, ' ')
+            const info = strToPix(fpsBox, debugFill)
+            surface.write(info, 2, 1)
+        }
+    }
+
+    /**
+     *
+     */
+    const animText = () => {
+        const text = `Jimmy`
+        const pos = { x: width / 2 - text.length / 2, y: height / 2 }
+        const fg = SColor.bit24(220, 220, 220)
+        const bg = SColor.bit24(50, 0, 50)
+        const pixels = strToPix(` Jimmy `, bg, fg)
+        const [amp, time] = [15, 0.005]
+
+        return (elapsed: number) => {
+            const x = pos.x + Math.round(0.5 * amp * Math.cos(3 * time * elapsed))
+            const y = pos.y + Math.round(amp * Math.sin(time * elapsed))
+            surface.write(pixels, x, y)
+        }
+    }
+
+    /**
+     *
+     */
+    function run() {
+        sys.hideCursor()
+
+        console.clear()
+        const fill = SColor.bit24(160, 0, 220)
+
+        const drawDebug = debugInfo()
+        const drawAnim = animText()
+
+        sys.addTimerListener(elapsed => {
+            surface.clear()
+            drawDebug(elapsed)
+            drawAnim(elapsed)
+            surface.render(fill)
+        })
+    }
+
+    run()
 }
 
 async function debug() {
