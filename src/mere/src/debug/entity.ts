@@ -1,7 +1,7 @@
-import { Surface } from '../system/surface/surface'
-import { Pixel } from '../system/pixel'
-import { Scale } from '../system/color/math'
-import { IColor, RgbFn } from '../system/color/color'
+import { Surface } from '../surface'
+import { Pixel } from '../pixel'
+import { Scale } from '../math'
+import { IColor, RgbFn } from '../color'
 
 /**
  *

@@ -7,7 +7,7 @@
  * 232-255:                grayscale from dark to light in 24 steps
  */
 
-import { IComparable } from '../comparable'
+import { IComparable } from './comparable'
 import { Scale } from './math'
 
 type Bits = 8 | 24

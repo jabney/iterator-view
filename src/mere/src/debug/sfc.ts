@@ -1,38 +1,12 @@
-import { sys } from '../system/system'
-import { Surface } from '../system/surface/surface'
-import { Color } from '../system/color'
-import { PixelEntity } from './pixel-entity'
+import { Surface } from '../surface'
+import { PixelEntity } from './entity'
 import { strToPix } from './helper'
-import { TimerManager } from '../system/timer-manager'
-import { count } from '../system/iteration'
+import { Timer } from '../timer'
+import { hideCursor } from './cursor'
+import { rgbFn } from './rgb-fn'
+import { debugInfo } from './info'
 
-const timer = TimerManager(120)
-const rgbFn = Color.bit8
-
-/**
- *
- */
-const debugInfo = (surface: Surface, width: number, height: number) => {
-    const bgc = rgbFn(32, 0, 64)
-    const fgc = rgbFn(220, 220, 220)
-    const fpsValues: number[] = [...count(50)]
-
-    let lastMs = 0
-    let fps = 0
-    return (ms: number) => {
-        const delta = ms - lastMs
-        lastMs = ms
-
-        fpsValues.push(1000 / delta)
-        fpsValues.shift()
-        fps = fpsValues.reduce((t, x) => t + x, 0) / fpsValues.length
-
-        const fpsText = fps.toFixed(1) + ' fps '
-        const fpsBox = fpsText.padStart(12, ' ')
-        const info = strToPix(fpsBox, bgc, fgc)
-        surface.write(info, 2, 1)
-    }
-}
+const timer = Timer(120)
 
 export async function SurfaceTest() {
     const width = 2 * 60
@@ -70,7 +44,7 @@ export async function SurfaceTest() {
         const drawDebug = debugInfo(surface, width, height)
         const drawAnim = animText(surface, width, height)
 
-        sys.hideCursor()
+        hideCursor()
         console.clear()
         surface.fill()
 
@@ -99,7 +73,7 @@ export async function SurfaceAnim() {
     const drawDebug = debugInfo(surface, width, height)
 
     console.clear()
-    sys.hideCursor()
+    hideCursor()
     surface.fill()
 
     for (let i = 0; i < 50; i++) {

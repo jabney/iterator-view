@@ -1,7 +1,7 @@
-import { Pixel } from '../system/pixel'
-import { Char } from '../system/char'
-import { Color } from '../system/color'
-import { Nullable } from '../types'
+import { Pixel } from '../pixel'
+import { Char } from '../char'
+import { Color } from '../color'
+import { Nullable } from '../nullable'
 
 export function strToPix(str: string, bg?: Nullable<Color>, fg?: Nullable<Color>): Pixel[] {
     const pixels: Pixel[] = []

@@ -12,6 +12,7 @@
   "scripts": {
     "demo": "ts-node src/demo",
     "dev": "ts-node src/demo/debug",
+    "mere": "ts-node src/mere",
     "test": "ts-node src/unit-test"
   },
   "repository": {

@@ -1,4 +1,4 @@
-import { Nullable } from '../types'
+import { Nullable } from './nullable'
 import { Char, IChar } from './char'
 import { IColor } from './color'
 import { IComparable } from './comparable'

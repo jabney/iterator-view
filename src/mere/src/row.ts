@@ -1,5 +1,5 @@
-import { Nullable } from '../../types'
-import { IPixel, Pixel } from '../pixel'
+import { Nullable } from './nullable'
+import { IPixel, Pixel } from './pixel'
 
 export type Frame = Pixel[][]
 

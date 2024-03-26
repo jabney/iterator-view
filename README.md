@@ -177,6 +177,17 @@ const show = '\x1B[?25h'
 > Notes
 > 1.^ As of Unicode version 15.1
 
+[Block Elements](https://www.unicode.org/charts/PDF/U2580.pdf)
+
+> Official Unicode Consortium code chart (PDF)
+
+        0	1	2	3	4	5	6	7	8	9	A	B	C	D	E	F
+    U+258x	▀	▁	▂	▃	▄	▅	▆	▇	█	▉	▊	▋	▌	▍	▎	▏
+    U+259x	▐	░	▒	▓	▔	▕	▖	▗	▘	▙	▚	▛	▜	▝	▞	▟
+
+> Notes
+> 1.^ As of Unicode version 15.1
+
 ---
 
 > Examples

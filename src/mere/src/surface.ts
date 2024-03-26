@@ -1,9 +1,9 @@
-import { Rect } from '../rect'
-import { IPixel, Pixel } from '../pixel'
+import { Rect } from './rect'
+import { IPixel, Pixel } from './pixel'
 import { IRow, Row } from './row'
-import { IColor } from '../color'
-import { Char } from '../char'
-import { count } from '../iteration'
+import { IColor } from './color'
+import { Char } from './char'
+import { count } from './iteration'
 
 type Frame = IRow[]
 

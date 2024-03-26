@@ -3,7 +3,6 @@
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/fromCodePoint
  */
 import { IComparable } from './comparable'
-import { ValueError } from './error'
 import { IStringable } from './stringable'
 
 export interface IChar extends IComparable<IChar>, IStringable {
@@ -39,7 +38,7 @@ export class Char implements IChar {
     private toCode(value: number | string): number {
         const code = typeof value === 'number' ? Math.trunc(value) : value?.codePointAt(0) ?? 0
         if (!this.isValid(code)) {
-            throw new ValueError(value)
+            throw new RangeError(`invalid value: ${value}`)
         }
         return code
     }
