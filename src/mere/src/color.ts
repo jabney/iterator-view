@@ -47,6 +47,10 @@ export abstract class Color implements IColor {
         return new Color8(r, g, b)
     }
 
+    static bit8raw(r: number, g: number, b: number) {
+        return new Color8(r, g, b, true)
+    }
+
     static bit24(r: number, g: number, b: number) {
         return new Color24(r, g, b)
     }
@@ -90,7 +94,7 @@ export abstract class Color implements IColor {
 
 function scaleBytes(r: number, g: number, b: number, raw = false): RgbComps {
     const scale = Scale.domain([0, 255]).range([0, 5], Math.round)
-    return raw ? [r, g, b] : [scale(r), scale(g), scale(b)]
+    return raw ? [Math.min(5, r), Math.min(5, g), Math.min(5, b)] : [scale(r), scale(g), scale(b)]
 }
 
 function rgbToCode(rgb: IRgb, raw = false): number {
@@ -108,8 +112,7 @@ class Color8 extends Color {
         private readonly raw = false
     ) {
         super(r, g, b)
-
-        this.code = this.rgbToCode()
+        this.code = rgbToCode(this.rgb, this.raw)
     }
 
     get bits(): Bits {
@@ -117,18 +120,11 @@ class Color8 extends Color {
     }
 
     get fg() {
-        const code = this.rgbToCode()
-        return `${esc}38;5;${code}m`
+        return `${esc}38;5;${this.code}m`
     }
 
     get bg() {
-        const code = this.rgbToCode()
-        return `${esc}48;5;${code}m`
-    }
-
-    private rgbToCode(): number {
-        const code = rgbToCode(this.rgb, this.raw)
-        return code
+        return `${esc}48;5;${this.code}m`
     }
 }
 
