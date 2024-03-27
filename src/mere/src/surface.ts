@@ -1,4 +1,4 @@
-import { Rect } from './rect'
+import { IRect, Rect } from './rect'
 import { IPixel, Pixel } from './pixel'
 import { IRow, Row } from './row'
 import { IColor } from './color'
@@ -21,13 +21,12 @@ export class Surface {
         private readonly bgc: IColor
     ) {}
 
-    write(pixel: IPixel, x: number, y: number): number
-    write(pixels: readonly IPixel[], x: number, y: number): number
-    write(pixels: IPixel | readonly IPixel[], x: number, y: number): number {
+    write(pixel: IPixel, x: number, y: number): void
+    write(pixels: readonly IPixel[], x: number, y: number): void
+    write(pixels: IPixel | readonly IPixel[], x: number, y: number): void {
         pixels = Array.isArray(pixels) ? pixels : [pixels]
         x = Math.round(x)
         y = Math.round(y)
-        pixels = this.clipPixels(pixels, x)
 
         const rect = this.rect.expand(new Rect(x + pixels.length, y))
         this.rect = rect.clip(new Rect(this.width, this.height))
@@ -35,7 +34,6 @@ export class Surface {
         for (const i of count(pixels.length)) {
             this.writePixel(pixels[i], x + i, y)
         }
-        return x + pixels.length
     }
 
     fill(color: IColor = this.bgc) {
@@ -98,19 +96,26 @@ export class Surface {
         this.frame = []
     }
 
-    private clipPixels(pixels: readonly IPixel[], x: number) {
-        const len = x + pixels.length
-
-        if (len > this.width) {
-            const diff = len - this.width
-            return pixels.slice(0, -diff)
-        }
-        return pixels
-    }
-
     private writePixel(pixel: IPixel, x: number, y: number) {
-        const row = this.frame[y] ?? new Row(y)
-        row.set(x, pixel)
-        this.frame[y] = row
+        if (inBounds(this.rect, x, y)) {
+            const row = this.frame[y] ?? new Row(y)
+
+            row.set(x, pixel)
+            this.frame[y] = row
+        }
     }
+}
+
+function inBounds(rect: IRect, x: number, y: number) {
+    return x >= 0 && x < rect.width && y >= 0 && y < rect.height
+}
+
+function clipPixels(pixels: readonly IPixel[], width: number, x: number) {
+    const len = x + pixels.length
+
+    if (len > width) {
+        const diff = len - width
+        return pixels.slice(0, -diff)
+    }
+    return pixels
 }
