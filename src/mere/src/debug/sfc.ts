@@ -5,6 +5,7 @@ import { Timer } from '../timer'
 import { hideCursor } from './cursor'
 import { rgbFn } from './rgb-fn'
 import { debugInfo } from './info'
+import { count } from '../iteration'
 
 const timer = Timer(120)
 
@@ -60,26 +61,32 @@ export async function SurfaceTest() {
     run()
 }
 
+const spawner = (width: number, height: number, surface: Surface) => {
+    return (size: number) => {
+        return [...count(size)].map(() => new PixelEntity(surface, width, height, rgbFn))
+    }
+}
+
 export async function SurfaceAnim() {
-    /**
-     *
-     */
     const width = 2 * 60
     const height = 40
+
     const bgc = rgbFn(0, 100, 50)
     const surface = new Surface(width, height, bgc)
     const entities: PixelEntity[] = []
 
     const drawDebug = debugInfo(surface, width, height)
+    const spawn = spawner(width, height, surface)
 
     console.clear()
     hideCursor()
     surface.fill()
 
-    for (let i = 0; i < 50; i++) {
-        const entity = new PixelEntity(surface, width, height, rgbFn)
-        entities.push(entity)
-    }
+    let count = 0
+    const interval = setInterval(() => {
+        entities.push(...spawn(10))
+        if (++count == 50) clearInterval(interval)
+    }, 100)
 
     timer.addListener(elapsed => {
         surface.clearFrame()
