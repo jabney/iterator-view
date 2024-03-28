@@ -7,6 +7,8 @@ import { IStringable } from './stringable'
 
 export interface IChar extends IComparable<IChar>, IStringable {
     readonly code: number
+    readonly isNull: boolean
+    readonly isPrintable: boolean
 }
 
 export class Char implements IChar {
@@ -17,6 +19,14 @@ export class Char implements IChar {
     constructor(char: string)
     constructor(value: number | string = 0) {
         this.code = this.toCode(value)
+    }
+
+    get isNull() {
+        return this.code === 0
+    }
+
+    get isPrintable(): boolean {
+        return this.code >= 0x20 && this.code < 0x80 // [32, 127]
     }
 
     get str() {
@@ -43,11 +53,7 @@ export class Char implements IChar {
         return code
     }
 
-    private isPrintable(): boolean {
-        return this.code >= 0x20 && this.code < 0x80 // [32, 127]
-    }
-
     private sanitize(): string {
-        return this.isPrintable() ? String.fromCharCode(this.code) : ' '
+        return this.isPrintable ? String.fromCharCode(this.code) : ' '
     }
 }

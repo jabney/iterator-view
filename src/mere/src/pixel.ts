@@ -13,8 +13,13 @@ export interface IPixel extends IComparable<IPixel>, IStringable {
 }
 
 export class Pixel implements IPixel {
-    static from(bgc: IColor) {
-        return new Pixel(new Char(), bgc)
+    static from(bg: IColor) {
+        return new Pixel(new Char(), bg)
+    }
+
+    static fromChar(str: string, fg?: IColor | null, bg?: IColor | null) {
+        const char = new Char(str)
+        return new Pixel(char, bg, fg)
     }
 
     constructor()

@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 import { waitFps } from '../../lib/time'
-import { DisposeFn } from './disposer'
+import { DisposeFn } from './types'
 
 export interface ITimerManager extends ReturnType<typeof Timer> {}
 

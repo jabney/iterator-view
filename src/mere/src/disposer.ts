@@ -1,7 +1,4 @@
-/**
- *
- */
-export type DisposeFn = () => void
+import { DisposeFn } from './types'
 
 export class Disposer {
     private disposers: Set<DisposeFn> | null = new Set()

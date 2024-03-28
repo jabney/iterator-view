@@ -10,10 +10,14 @@ export interface IRect {
 }
 
 export class Rect implements IRect {
-    static readonly empty = new Rect(0, 0, 0, 0)
+    static readonly Empty = new Rect(0, 0, 0, 0)
 
     static from(r: IRect) {
         return new Rect(r.width, r.height, r.x, r.y)
+    }
+
+    static fromAspect(width: number, aspect: number) {
+        return new AspectRect(width, aspect)
     }
 
     static fromList(p: PointList) {
@@ -48,6 +52,10 @@ export class Rect implements IRect {
         return this.area > 0
     }
 
+    toAspect(): AspectRect {
+        return new AspectRect(this.width, this.width / this.height)
+    }
+
     toList(): PointList {
         const { x, y, width, height } = this
         return [x, y, x + width, y + height]
@@ -79,11 +87,31 @@ export class Rect implements IRect {
         const x2 = Math.min(rect.x + rect.width, this.x + this.width)
         const y2 = Math.min(rect.y + rect.height, this.y + this.height)
         if (x1 < x2 && y1 < y2) return Rect.fromList([x1, y1, x2, y2])
-        return Rect.empty
+        return Rect.Empty
     }
 
     hitTest(x: number, y: number): boolean {
         const p = this.toPoints()
         return x >= p.x1 && y > p.y1 && x < p.x2 && y < p.y2
+    }
+}
+
+/**
+ *
+ */
+export class AspectRect implements IRect {
+    constructor(
+        readonly width = 0,
+        readonly aspect: number,
+        readonly x = 0,
+        readonly y = 0
+    ) {}
+
+    get height() {
+        return Math.round(this.aspect * this.width)
+    }
+
+    toRect(): Rect {
+        return Rect.from(this)
     }
 }

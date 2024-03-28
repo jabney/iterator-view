@@ -9,6 +9,7 @@ export interface IRow {
     compare(pixel: Nullable<IPixel>, index: number): boolean
     get(col: number): IPixel | null
     set(col: number, pixel: IPixel): void
+    clip(width: number): IRow
     render(): string
 }
 
@@ -45,6 +46,14 @@ export class Row implements IRow {
 
     render() {
         return this.pixels.map(p => p.str).join('')
+    }
+
+    clip(width: number): Row {
+        if (this.pixels.length > width) {
+            const row = new Row(this.index)
+            row.pixels = this.pixels.slice(0, width)
+        }
+        return this
     }
 
     compare(other: Nullable<IPixel>, index: number): boolean {

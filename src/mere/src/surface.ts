@@ -4,22 +4,39 @@ import { IRow, Row } from './row'
 import { IColor } from './color'
 import { Char } from './char'
 import { count } from './iteration'
+import { IResizable } from './resizable'
 
 type Frame = IRow[]
 
 const out = process.stdout
 
-const rowEnd = '\x1b[0m\n'
+const reset = '\x1b[0m'
 
-export class Surface {
+export class Surface implements IResizable {
     private rect: Rect = new Rect()
     private frame: Frame = []
 
     constructor(
-        private readonly width: number,
-        private readonly height: number,
+        private width: number,
+        private height: number,
         private readonly bgc: IColor
     ) {}
+
+    resize(width: number, height: number) {
+        // this.width = width
+        // this.height = height
+        // this.rect = new Rect(width, height)
+        // const frame: Frame = []
+        // for (const y of count(this.frame.length)) {
+        //     const row = this.frame[y]
+        //     if (row != null) {
+        //         frame[y] = row.clip(this.width)
+        //     }
+        // }
+        // this.frame = frame
+        // this.fill()
+        // this.renderFrame()
+    }
 
     write(pixel: IPixel, x: number, y: number): void
     write(pixels: readonly IPixel[], x: number, y: number): void
@@ -28,7 +45,7 @@ export class Surface {
         x = Math.round(x)
         y = Math.round(y)
 
-        const rect = this.rect.expand(new Rect(x + pixels.length, y))
+        const rect = this.rect.expand(new Rect(x + pixels.length, y + 1))
         this.rect = rect.clip(new Rect(this.width, this.height))
 
         for (const i of count(pixels.length)) {
@@ -36,11 +53,12 @@ export class Surface {
         }
     }
 
-    fill(color: IColor = this.bgc) {
+    fill(/* color: IColor = this.bgc */) {
         for (const y of count(this.height)) {
-            const row = Row.fill(y, this.width, Pixel.from(color))
+            out.cursorTo(0, y)
+            const row = Row.fill(y, this.width, Pixel.from(this.bgc))
             out.write(row.render())
-            out.write(rowEnd)
+            out.write(reset)
         }
     }
 
@@ -56,7 +74,7 @@ export class Surface {
                 out.cursorTo(x, y)
                 out.write(Pixel.from(this.bgc).str)
             }
-            out.write(rowEnd)
+            out.write(reset)
         }
         this.frame = []
     }
@@ -73,7 +91,7 @@ export class Surface {
                     out.write(p.str)
                 }
             }
-            out.write(rowEnd)
+            out.write(reset)
         }
     }
 
@@ -88,7 +106,7 @@ export class Surface {
                 const p = row.get(col) ?? new Pixel(new Char(), fill)
                 out.write(p.str)
             }
-            out.write(rowEnd)
+            out.write(reset)
         }
     }
 

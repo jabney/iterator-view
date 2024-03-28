@@ -6,6 +6,8 @@ import { hideCursor } from './cursor'
 import { rgbFn } from './rgb-fn'
 import { debugInfo } from './info'
 import { count } from '../iteration'
+import { Host } from '../host'
+import { Disposer } from '../disposer'
 
 const timer = Timer(120)
 
@@ -73,13 +75,15 @@ export async function SurfaceAnim() {
 
     const bgc = rgbFn(0, 100, 50)
     const surface = new Surface(width, height, bgc)
+
+    const host = Host.create(width, height, surface)
+
     const entities: PixelEntity[] = []
 
     const drawDebug = debugInfo(surface, width, height)
     const spawn = spawner(width, height, surface)
+    const disposer = new Disposer()
 
-    console.clear()
-    hideCursor()
     surface.fill()
 
     let count = 0
@@ -87,12 +91,19 @@ export async function SurfaceAnim() {
         entities.push(...spawn(10))
         if (++count == 50) clearInterval(interval)
     }, 100)
+    disposer.add(() => void clearInterval(interval))
 
-    timer.addListener(elapsed => {
-        surface.clearFrame()
-        drawDebug(elapsed)
+    disposer.add(
+        timer.addListener(elapsed => {
+            surface.clearFrame()
+            drawDebug(elapsed)
 
-        entities.forEach(x => x.render(elapsed))
-        surface.renderFrame()
+            entities.forEach(x => x.render(elapsed))
+            surface.renderFrame()
+        })
+    )
+
+    host.addEventListener('exit', () => {
+        disposer.destroy()
     })
 }
