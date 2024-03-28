@@ -8,6 +8,9 @@ import { debugInfo } from './info'
 import { count } from '../iteration'
 import { Host } from '../host'
 import { Disposer } from '../disposer'
+import { Scale } from '../math'
+import { IRgb } from '../color'
+import { rgbToRgb } from '../rgb'
 
 const timer = Timer(120)
 
@@ -106,4 +109,17 @@ export async function SurfaceAnim() {
     host.addEventListener('exit', () => {
         disposer.destroy()
     })
+}
+
+export function Burst() {
+    const width = 2 * 60
+    const height = 40
+
+    const bgc = rgbFn(0, 100, 50)
+    const surface = new Surface(width, height, bgc)
+    const c1: IRgb = { r: 200, g: 100, b: 50 }
+    const c2: IRgb = { r: 200, g: 50, b: 0 }
+
+    const cInterpolate = rgbToRgb(c1, c2)
+    cInterpolate(0.5)
 }
